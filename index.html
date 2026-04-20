@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>_ct-MATRIX | Advertising Display</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="matrix-styles.css">
+  <style>
+    #clock-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.2rem;
+      color: var(--accent);
+      text-shadow: 0 0 10px var(--accent-glow);
+    }
+    /* Hidden nav hub for TV - hover top to see or use shortcuts */
+    .nav-hub { 
+      position: fixed; bottom: 0; left: 0; right: 0; 
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border); padding: 10px; 
+      display: flex; justify-content: center; gap: 20px; 
+      z-index: 5000; transform: translateY(100%); transition: 0.3s;
+    }
+    body:hover .nav-hub { transform: translateY(0); }
+    .nav-link { color: #888; text-decoration: none; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+    .nav-link:hover { color: var(--accent); }
+
+    /* Slide Controls - hover to reveal */
+    .slide-controls {
+      position: fixed; top: 1.5rem; left: 1.5rem; z-index: 5000;
+      display: flex; align-items: center; gap: 0.8rem;
+      padding: 0.8rem 1.2rem; border-radius: 2rem;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      opacity: 0; transform: translateY(-10px);
+      transition: all 0.3s ease;
+    }
+    body:hover .slide-controls { opacity: 1; transform: translateY(0); }
+    .ctrl-btn {
+      background: rgba(255,255,255,0.05); border: none; color: #fff;
+      font-size: 1.4rem; cursor: pointer; padding: 0.6rem;
+      border-radius: 0.8rem; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ctrl-btn:hover { background: var(--neon-gold); color: #000; transform: scale(1.1); }
+    .ctrl-btn:active { transform: scale(0.9); }
+  </style>
+</head>
+<body>
+  <div class="matrix-bg"></div>
+  
+  <div id="app">
+    <header class="matrix-header">
+      <div class="brand">_ct-MATRIX</div>
+      <div id="clock-display">00:00:00</div>
+    </header>
+
+    <main class="slide-viewport" id="slide-viewport">
+      <!-- Slides are injected here by matrix-core.js -->
+       <div class="slide active" id="loader-slide">
+          <div class="matrix-card">
+              <div class="slide-type">System Boot</div>
+              <div class="slide-title">Initializing High Performance Display...</div>
+              <div class="slide-subtitle">Connecting to local data nodes...</div>
+          </div>
+       </div>
+    </main>
+
+    <div class="timer-bar" id="progress-bar" style="width: 0%;"></div>
+
+    <!-- Navigation Hub (Hover bottom of TV screen to show) -->
+    <nav class="nav-hub">
+        <a href="index.html" class="nav-link" style="color:var(--accent)">📺 Display</a>
+        <a href="admin.html" class="nav-link">🛠 Admin</a>
+        <a href="remote.html" class="nav-link">📱 Remote</a>
+        <span style="color: #333">|</span>
+        <a href="../_ct-MOM/index.html" class="nav-link">MOM</a>
+        <a href="../_ct-MMR/index.html" class="nav-link">MMR</a>
+        <a href="../_ct-WEA/index.html" class="nav-link">WEA</a>
+    </nav>
+
+    <!-- Slide Controls (hover to show) -->
+    <div class="slide-controls">
+      <button class="ctrl-btn" onclick="prevSlide()" title="Previous">⏮</button>
+      <button class="ctrl-btn" id="play-pause-btn" onclick="togglePause()" title="Play/Pause">⏸</button>
+      <button class="ctrl-btn" onclick="nextSlide()" title="Next">⏭</button>
+    </div>
+  </div>
+
+  <script src="matrix-core.js"></script>
+  <script>
+    // Update Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock-display').innerText = now.toLocaleTimeString('en-NZ', { hour12: false });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Init Logic
+    window.onload = () => {
+      setTimeout(() => {
+        window.initMatrix();
+      }, 1000);
+    };
+  </script>
+</body>
+</html>

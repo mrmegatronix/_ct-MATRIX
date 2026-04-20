@@ -1,0 +1,441 @@
+﻿[
+    {
+"week_starting": "2026-03-30",
+"events": [
+            {
+"date": "2026-04-03",
+"day": "Friday",
+"time": "7:05 PM",
+"event_type": "Super Rugby",
+"title": "Crusaders vs Fijian Drua",
+"notes": "Live on the big screens"
+            },
+            {
+"date": "2026-04-04",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Karaoke",
+"title": "Saturday Night Karaoke",
+"notes": "Grab the mic!"
+            },
+            {
+"date": "2026-04-05",
+"day": "Sunday",
+"time": "4:00 PM",
+"event_type": "NRL",
+"title": "Warriors @ Sharks",
+"notes": "Sunday afternoon footy"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-04-06",
+"events": [
+            {
+"date": "2026-04-11",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Live Music",
+"title": "Mandy",
+"notes": "Live on stage"
+            },
+            {
+"date": "2026-04-11",
+"day": "Saturday",
+"time": "9:30 PM",
+"event_type": "NRL",
+"title": "Warriors @ Storm",
+"notes": "Late night screen"
+            },
+            {
+"date": "2026-04-11",
+"day": "Saturday",
+"time": "9:35 PM",
+"event_type": "Super Rugby",
+"title": "Crusaders @ Reds",
+"notes": "Late night screen"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-04-13",
+"events": [
+            {
+"date": "2026-04-18",
+"day": "Saturday",
+"time": "5:00 PM",
+"event_type": "NRL",
+"title": "Warriors vs Titans",
+"notes": "Great lead-in to Karaoke"
+            },
+            {
+"date": "2026-04-18",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Karaoke",
+"title": "Saturday Night Karaoke",
+"notes": "Grab the mic!"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-04-20",
+"events": [
+            {
+"date": "2026-04-24",
+"day": "Friday",
+"time": "7:35 PM",
+"event_type": "Super Rugby",
+"title": "Crusaders vs Waratahs",
+"notes": "Super Round Opening"
+            },
+            {
+"date": "2026-04-25",
+"day": "Saturday",
+"time": "6:00 PM",
+"event_type": "NRL",
+"title": "Warriors vs Dolphins",
+"notes": "Anzac Day Game"
+            },
+            {
+"date": "2026-04-25",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Live Music",
+"title": "Danny",
+"notes": "Live on stage"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-04-27",
+"events": [
+            {
+"date": "2026-05-01",
+"day": "Friday",
+"time": "7:05 PM",
+"event_type": "Super Rugby",
+"title": "Crusaders @ Hurricanes",
+"notes": "NZ Derby"
+            },
+            {
+"date": "2026-05-02",
+"day": "Saturday",
+"time": "7:30 PM",
+"event_type": "NRL",
+"title": "Warriors @ Eels",
+"notes": "Live on the screens"
+            },
+            {
+"date": "2026-05-02",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Karaoke",
+"title": "Saturday Night Karaoke",
+"notes": "Grab the mic!"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-05-04",
+"events": [
+            {
+"date": "2026-05-08",
+"day": "Friday",
+"time": "7:05 PM",
+"event_type": "Super Rugby",
+"title": "Crusaders vs Blues",
+"notes": "Blockbuster Rivalry"
+            },
+            {
+"date": "2026-05-09",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Live Music",
+"title": "String Therapy",
+"notes": "Live on stage"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-05-11",
+"events": [
+            {
+"date": "2026-05-16",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Karaoke",
+"title": "Saturday Night Karaoke",
+"notes": "Grab the mic!"
+            },
+            {
+"date": "2026-05-17",
+"day": "Sunday",
+"time": "Time TBC",
+"event_type": "NRL",
+"title": "Warriors vs Broncos",
+"notes": "Magic Round"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-05-18",
+"events": [
+            {
+"date": "2026-05-22",
+"day": "Friday",
+"time": "7:05 PM",
+"event_type": "Super Rugby",
+"title": "Crusaders vs Chiefs",
+"notes": "NZ Derby"
+            },
+            {
+"date": "2026-05-23",
+"day": "Saturday",
+"time": "Time TBC",
+"event_type": "NRL",
+"title": "Warriors @ Dragons",
+"notes": "Live on the screens"
+            },
+            {
+"date": "2026-05-23",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Karaoke",
+"title": "Saturday Night Karaoke",
+"notes": "Grab the mic!"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-05-25",
+"events": [
+            {
+"date": "2026-05-29",
+"day": "Friday",
+"time": "7:05 PM",
+"event_type": "Super Rugby",
+"title": "Crusaders vs Hurricanes",
+"notes": "Live on the screens"
+            },
+            {
+"date": "2026-05-30",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Karaoke",
+"title": "Saturday Night Karaoke",
+"notes": "Grab the mic!"
+            },
+            {
+"date": "2026-05-31",
+"day": "Sunday",
+"time": "8:15 PM",
+"event_type": "NRL",
+"title": "Warriors @ Panthers",
+"notes": "Sunday Night Footy"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-06-01",
+"events": [
+            {
+"date": "2026-06-06",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Live Music",
+"title": "Riccstar",
+"notes": "Live on stage"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-06-08",
+"events": [
+            {
+"date": "2026-06-13",
+"day": "Saturday",
+"time": "7:30 PM",
+"event_type": "NRL",
+"title": "Warriors vs Sharks",
+"notes": "Live on the screens"
+            },
+            {
+"date": "2026-06-13",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Karaoke",
+"title": "Saturday Night Karaoke",
+"notes": "Grab the mic!"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-06-15",
+"events": [
+            {
+"date": "2026-06-20",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Live Music",
+"title": "Huakina",
+"notes": "Live on stage"
+            },
+            {
+"date": "2026-06-21",
+"day": "Sunday",
+"time": "4:00 PM",
+"event_type": "NRL",
+"title": "Warriors vs Cowboys",
+"notes": "Sunday afternoon footy"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-06-22",
+"events": [
+            {
+"date": "2026-06-27",
+"day": "Saturday",
+"time": "Time TBC",
+"event_type": "NRL",
+"title": "Warriors @ Dolphins",
+"notes": "Live on the screens"
+            },
+            {
+"date": "2026-06-27",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Karaoke",
+"title": "Saturday Night Karaoke",
+"notes": "Grab the mic!"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-07-13",
+"events": [
+            {
+"date": "2026-07-18",
+"day": "Saturday",
+"time": "7:30 PM",
+"event_type": "NRL",
+"title": "Warriors vs Dragons",
+"notes": "Live on the screens"
+            },
+            {
+"date": "2026-07-18",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Entertainment",
+"title": "Saturday Night Entertainment",
+"notes": "Band or Karaoke TBC"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-07-20",
+"events": [
+            {
+"date": "2026-07-25",
+"day": "Saturday",
+"time": "7:30 PM",
+"event_type": "NRL",
+"title": "Warriors @ Bulldogs",
+"notes": "Live on the screens"
+            },
+            {
+"date": "2026-07-25",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Entertainment",
+"title": "Saturday Night Entertainment",
+"notes": "Band or Karaoke TBC"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-07-27",
+"events": [
+            {
+"date": "2026-08-01",
+"day": "Saturday",
+"time": "5:00 PM",
+"event_type": "NRL",
+"title": "Warriors @ Titans",
+"notes": "Lead-in to evening entertainment"
+            },
+            {
+"date": "2026-08-01",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Entertainment",
+"title": "Saturday Night Entertainment",
+"notes": "Band or Karaoke TBC"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-08-03",
+"events": [
+            {
+"date": "2026-08-07",
+"day": "Friday",
+"time": "8:00 PM",
+"event_type": "NRL",
+"title": "Warriors vs Panthers",
+"notes": "Friday Night Footy"
+            },
+            {
+"date": "2026-08-08",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Entertainment",
+"title": "Saturday Night Entertainment",
+"notes": "Band or Karaoke TBC"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-08-24",
+"events": [
+            {
+"date": "2026-08-29",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Entertainment",
+"title": "Saturday Night Entertainment",
+"notes": "Band or Karaoke TBC"
+            },
+            {
+"date": "2026-08-30",
+"day": "Sunday",
+"time": "4:00 PM",
+"event_type": "NRL",
+"title": "Warriors vs Knights",
+"notes": "Sunday afternoon footy"
+            }
+        ]
+    },
+    {
+"week_starting": "2026-08-31",
+"events": [
+            {
+"date": "2026-09-05",
+"day": "Saturday",
+"time": "5:00 PM",
+"event_type": "NRL",
+"title": "Warriors vs Sea Eagles",
+"notes": "Lead-in to evening entertainment"
+            },
+            {
+"date": "2026-09-05",
+"day": "Saturday",
+"time": "8:00 PM",
+"event_type": "Entertainment",
+"title": "Saturday Night Entertainment",
+"notes": "Band or Karaoke TBC"
+            }
+        ]
+    }
+]

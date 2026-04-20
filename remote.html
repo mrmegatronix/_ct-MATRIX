@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remote | _ct-MATRIX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #030712;
+      --accent: #06b6d4;
+      --red: #ef4444;
+      --purple: #8b5cf6;
+      --text: #ffffff;
+      --btn-bg: #111827;
+    }
+    body { 
+      background: var(--bg); 
+      color: var(--text); 
+      font-family: 'Inter', sans-serif; 
+      margin: 0; 
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    header { text-align: center; margin-bottom: 30px; }
+    h1 { font-weight: 900; color: var(--accent); margin: 0; font-size: 1.5rem; }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .btn {
+      background: var(--btn-bg);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      color: var(--text);
+      padding: 30px 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.1s;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active {
+      transform: scale(0.95);
+      background: var(--accent);
+      color: #000;
+    }
+    .btn-icon { font-size: 2rem; }
+    
+    .btn-big { grid-column: span 2; padding: 40px; }
+    .btn-primary { border-color: var(--accent); color: var(--accent); }
+    .btn-celebrate { border-color: var(--purple); color: #a78bfa; }
+    
+    .status-bar {
+      margin-top: auto;
+      background: rgba(255,255,255,0.05);
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      opacity: 0.5;
+      margin-bottom: 80px;
+    }
+
+    /* Navigation Hub */
+    .nav-hub { position: fixed; bottom: 0; left: 0; right: 0; background: #000; border-top: 1px solid var(--border); padding: 15px; display: flex; justify-content: center; gap: 15px; z-index: 1000; }
+    .nav-link { color: #888; text-decoration: none; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; opacity: 0.5; }
+    .nav-link:hover { opacity: 1; color: var(--accent); }
+    .nav-link.active { opacity: 1; color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MATRIX REMOTE</h1>
+    <p style="opacity: 0.5; font-size: 0.8rem;">Multi-Screen Synchronization</p>
+  </header>
+
+  <div class="grid">
+    <button class="btn btn-big btn-primary" onclick="send('NEXT')">
+      <span class="btn-icon">⏭</span>
+      <span>Next Slide</span>
+    </button>
+    
+    <button class="btn" onclick="send('PREV')">
+      <span class="btn-icon">⏮</span>
+      <span>Previous</span>
+    </button>
+    
+    <button class="btn" onclick="send('TOGGLE')">
+      <span class="btn-icon">⏯</span>
+      <span>Play / Pause</span>
+    </button>
+
+    <div style="grid-column: span 2; margin-top: 10px; opacity: 0.3; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">Direct Jump</div>
+
+    <button class="btn" onclick="jump('ct-mom')">
+      <span class="btn-icon">🌸</span>
+      <span>Mother's Day</span>
+    </button>
+    
+    <button class="btn" onclick="jump('ct-mmr')">
+      <span class="btn-icon">🥩</span>
+      <span>Meat Raffle</span>
+    </button>
+
+    <button class="btn btn-big btn-celebrate" onclick="celebrate()">
+      <span class="btn-icon">✨</span>
+      <span>Emergency Confetti</span>
+    </button>
+  </div>
+
+  <div class="status-bar" id="status">Sync Active</div>
+
+  <!-- Navigation Hub -->
+  <nav class="nav-hub">
+      <a href="index.html" class="nav-link">📺 Display</a>
+      <a href="admin.html" class="nav-link">🛠 Admin</a>
+      <a href="remote.html" class="nav-link active">📱 Remote</a>
+      <span style="color: #333">|</span>
+      <a href="../_ct-MOM/index.html" class="nav-link">MOM</a>
+      <a href="../_ct-MMR/index.html" class="nav-link">MMR</a>
+  </nav>
+
+  <script>
+    const bc = new BroadcastChannel('ct_matrix_sync');
+    const bc_sub = new BroadcastChannel('mom_sync'); // For MOM confetti trigger
+
+    function send(type) {
+      bc.postMessage({ type });
+      vibrate();
+      showStatus('Sent: ' + type);
+    }
+
+    function jump(id) {
+      bc.postMessage({ type: 'PROJECT', id });
+      vibrate();
+      showStatus('Jumping to ' + id);
+    }
+
+    function celebrate() {
+      // Send to Matrix (maybe it has its own effect)
+      bc.postMessage({ type: 'CONFETTI' });
+      // Also send to MOM specifically if it's the active iframe
+      bc_sub.postMessage({ type: 'CONFETTI' });
+      vibrate([100, 50, 100]);
+      showStatus('CELEBRATION TRIGGERED');
+    }
+
+    function vibrate(pattern = 50) {
+      if (window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(pattern);
+      }
+    }
+
+    function showStatus(msg) {
+      const el = document.getElementById('status');
+      el.innerText = msg;
+      el.style.opacity = '1';
+      setTimeout(() => el.style.opacity = '0.5', 2000);
+    }
+  </script>
+</body>
+</html>

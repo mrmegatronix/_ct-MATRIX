@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel | _ct-MATRIX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #030712;
+      --card: #111827;
+      --accent: #06b6d4;
+      --accent-hover: #0891b2;
+      --text: #f3f4f6;
+      --border: rgba(255,255,255,0.08);
+      --red: #ef4444;
+      --green: #10b981;
+    }
+    body { 
+        background: radial-gradient(circle at top right, #1e1b4b, var(--bg) 80%); 
+        color: var(--text); 
+        font-family: 'Inter', sans-serif; 
+        padding: 2rem; 
+        margin: 0; 
+        padding-bottom: 100px; 
+        min-height: 100vh;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
+    h1 { font-weight: 900; color: var(--accent); margin: 0; letter-spacing: -1px; }
+
+    .tabs { display: flex; gap: 10px; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+    .tab { padding: 10px 20px; border-radius: 10px; cursor: pointer; background: transparent; border: 1px solid transparent; font-weight: 600; opacity: 0.6; transition: 0.2s ease; }
+    .tab:hover { opacity: 1; background: rgba(255,255,255,0.05); }
+    .tab.active { background: var(--card); color: var(--accent); border: 1px solid var(--border); border-bottom: 1px solid var(--accent); opacity: 1; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+    .panel { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; animation: fadeIn 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+    .setting-info { flex: 1; }
+    .setting-label { font-weight: 700; font-size: 1.1rem; }
+    .setting-desc { font-size: 0.85rem; opacity: 0.5; margin-top: 4px; }
+
+    input[type="text"], input[type="number"], select, textarea {
+      background: #000; border: 1px solid var(--border); color: #fff; padding: 8px 12px; border-radius: 8px; width: 100%; box-sizing: border-box;
+    }
+    .setting-row input { width: 300px; }
+
+    .toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; inset: 0; background: #333; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background: var(--accent); }
+    input:checked + .slider:before { transform: translateX(24px); }
+
+    .btn { background: var(--accent); color: #000; border: none; padding: 0.8rem 1.5rem; border-radius: 10px; font-weight: 800; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3); }
+    .btn:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4); }
+    .btn-red { background: var(--red); color: #fff; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+    .btn-red:hover { background: #dc2626; box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4); }
+    .btn-green { background: var(--green); color: #000; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+    .btn-green:hover { background: #059669; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); }
+    .btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; border-radius: 8px; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: #fff; box-shadow: none; }
+    .btn-outline:hover { background: rgba(255,255,255,0.05); }
+
+    .slide-item { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02); margin-bottom: 8px; border-radius: 12px; }
+    .slide-title { font-weight: 700; font-size: 1.1rem; }
+    .slide-meta { font-size: 0.75rem; opacity: 0.5; margin-top: 4px; }
+    .manual-badge { font-size: 0.6rem; background: var(--purple); color: #fff; padding: 2px 6px; border-radius: 4px; margin-left: 10px; text-transform: uppercase; }
+
+    /* Navigation Hub */
+    .nav-hub { position: fixed; bottom: 0; left: 0; right: 0; background: #000; border-top: 1px solid var(--border); padding: 15px; display: flex; justify-content: center; gap: 20px; z-index: 1000; }
+    .nav-link { color: var(--text-dim); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; opacity: 0.5; transition: 0.2s; }
+    .nav-link:hover { opacity: 1; color: var(--accent); }
+    .nav-link.active { opacity: 1; color: var(--accent); border-bottom: 2px solid var(--accent); }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 2000; }
+    .modal { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 2rem; width: 500px; max-width: 90%; }
+    .modal-header { font-size: 1.5rem; font-weight: 900; margin-bottom: 1.5rem; color: var(--accent); }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 5px; opacity: 0.6; }
+
+    #status { position: fixed; top: 1rem; right: 1rem; background: var(--accent); color: #000; padding: 10px 20px; border-radius: 10px; font-weight: 700; opacity: 0; transform: translateY(-20px); transition: 0.3s; z-index: 3000; }
+    #status.show { opacity: 1; transform: translateY(0); }
+
+    /* PiP Styling */
+    .pip-toggle {
+        position: fixed; bottom: 30px; left: 30px; z-index: 5000;
+        background: var(--accent); color: #000; border: none;
+        padding: 12px 24px; border-radius: 50px; font-weight: 800; cursor: pointer;
+        box-shadow: 0 10px 25px rgba(6, 182, 212, 0.3); font-size: 0.8rem;
+        display: flex; align-items: center; gap: 8px; transition: 0.2s;
+    }
+    .pip-toggle:hover { transform: scale(1.05); }
+    .pip-window {
+        position: fixed; bottom: 90px; left: 30px; width: 355px; height: 200px;
+        background: #000; border: 2px solid var(--accent); border-radius: 15px;
+        z-index: 5000; overflow: hidden; display: none; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        animation: pipIn 0.3s ease;
+    }
+    @keyframes pipIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .pip-window iframe { 
+        width: 1920px; 
+        height: 1080px; 
+        border: none; 
+        transform: scale(0.18489); 
+        transform-origin: top left;
+        pointer-events: none;
+    }
+    
+    .integration-notice {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid var(--green);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        color: #fff;
+    }
+    .integration-notice h3 { margin-top: 0; color: var(--green); }
+    
+    .shortcut-card {
+        background: rgba(0,0,0,0.5);
+        border: 1px solid var(--border);
+        padding: 1rem;
+        border-radius: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="status">Action Completed</div>
+
+  <div class="container">
+    <header>
+      <h1>_ct-MATRIX <span style="font-size: 0.8rem; font-weight: 400; opacity: 0.5;">v1.2 Admin</span></h1>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-green" onclick="openModal()">+ ADD SLIDE</button>
+        <button class="btn" onclick="applySettings()">SAVE SETTINGS</button>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <div class="tab active" id="tab-btn-slides" onclick="setTab('slides')">Slide Management</div>
+      <div class="tab" id="tab-btn-images" onclick="setTab('images')">Image Uploads</div>
+      <div class="tab" id="tab-btn-settings" onclick="setTab('settings')">Display Settings</div>
+    </div>
+
+    <!-- Slides Tab -->
+    <div id="tab-slides" class="panel">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2 style="margin:0">Active Queue</h2>
+        <button class="btn btn-sm" onclick="syncNow()">🔄 RELOAD DATA</button>
+      </div>
+      <div id="slide-list">
+        <!-- Slides will load here -->
+      </div>
+    </div>
+
+    <!-- Images Tab -->
+    <div id="tab-images" class="panel" style="display: none;">
+      <h2>Local Image Upload Manager</h2>
+      <div class="integration-notice">
+        <h3>📂 Auto-Generate Image Slides</h3>
+        <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 1rem;">
+            Because the Matrix runs inside a secure web browser sandbox, you cannot upload files directly through this web remote. Instead, follow these steps to deploy local images:
+        </p>
+        <ol style="margin-left: 2rem; color: #fff; font-size: 0.95rem; line-height: 1.6;">
+            <li>Navigate to the Matrix folder: <code>D:\__GITHUB\_ct-MATRIX\</code></li>
+            <li>Drop your <code>.png</code> or <code>.jpg</code> files into either the <strong>product-slides</strong> or <strong>extra-slides</strong> folder.</li>
+            <li>Double click the <strong>Update-ImageSlides.ps1</strong> script to automatically generate the database.</li>
+            <li>The Matrix display will automatically detect the changes within 15 minutes, or you can force a reload.</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="tab-settings" class="panel" style="display: none;">
+        
+      <div class="integration-notice">
+        <h3>📅 Automatic Scheduling System</h3>
+        <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 0;">
+            The MATRIX uses a smart automation system for scheduling. Events are sequenced directly from the dates inside your Google Sheets. As soon as a date has passed, it is automatically filtered out. There is no need for a manual calendar UI — just update the Sheet!
+        </p>
+      </div>
+
+      <h2>Cloud Integration & Shortcuts</h2>
+      <div class="setting-row" style="display:block;">
+        <div style="margin-bottom: 1rem;">
+          <div class="setting-label">System Google Sheets</div>
+          <div class="setting-desc">Direct links to edit your system databases. Changes take effect on the next reload.</div>
+        </div>
+        <div class="shortcut-card">
+            <div>
+                <strong>MATRIX Main Schedule</strong>
+                <div style="font-size: 0.8rem; opacity: 0.5;">Core events list</div>
+            </div>
+            <a href="https://docs.google.com/spreadsheets/d/1vScH_c43zVyW-WEOMQCQWXG_aCjYOg73NFl6Ni1damBOQEEVPSq89wtv4nXyIDmPxvvPTPge3EbQhIg/edit" target="_blank" class="btn btn-sm btn-outline">Edit Sheet ↗</a>
+        </div>
+        <div class="shortcut-card">
+            <div>
+                <strong>Mother's Day (MOM)</strong>
+                <div style="font-size: 0.8rem; opacity: 0.5;">Seasonal display configuration</div>
+            </div>
+            <a href="https://docs.google.com/spreadsheets/d/1vQG9Gt_6Wi1rVS6DFjBpsOCXFzUDUD-nsgSLAZBIKb-D9KV6JUiW7XzWNAj34A_hpdvA4wmIRLhegXo/edit" target="_blank" class="btn btn-sm btn-outline">Edit Sheet ↗</a>
+        </div>
+        <div class="shortcut-card">
+            <div>
+                <strong>Monster Meat Raffle (MMR)</strong>
+                <div style="font-size: 0.8rem; opacity: 0.5;">Raffle slides and configuration</div>
+            </div>
+            <a href="https://docs.google.com/spreadsheets/d/1vQMXn3GlWIeGLKc3XqYXFSi_ofevUW4JZtptUoDoyzapOQCmoDSdC96QRZf0EXpWQ8CYoJ7YJ5h5Boy/edit" target="_blank" class="btn btn-sm btn-outline">Edit Sheet ↗</a>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-label">Local Matrix CSV Fallback</div>
+          <div class="setting-desc">Advanced: Published CSV URL for Matrix (Must be set to "Publish to Web -> CSV").</div>
+        </div>
+        <input type="text" id="cfg-gsheet-url" placeholder="https://docs.google.com/spreadsheets/d/e/2PACX.../pub?output=csv">
+      </div>
+
+      <h2 style="margin-top: 3rem;">Visual Controls</h2>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-label">TV Header Banner</div>
+          <div class="setting-desc">Toggle the matrix logo and clock overlay.</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="cfg-show-banner">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-label">Weekly Lookahead</div>
+          <div class="setting-desc">Number of weeks to show from local JSON.</div>
+        </div>
+        <input type="number" id="cfg-lookahead">
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Hub -->
+  <nav class="nav-hub">
+    <a href="index.html" class="nav-link">📺 Display</a>
+    <a href="admin.html" class="nav-link active">🛠 Admin</a>
+    <a href="remote.html" class="nav-link">📱 Remote</a>
+    <span style="color: #333">|</span>
+    <a href="../_ct-MOM/index.html" class="nav-link">MOM</a>
+    <a href="../_ct-MMR/index.html" class="nav-link">MMR</a>
+    <a href="../_ct-WEA/index.html" class="nav-link">WEA</a>
+  </nav>
+
+  <!-- PiP Elements -->
+  <div id="pip-window" class="pip-window">
+      <iframe id="pip-frame" src=""></iframe>
+  </div>
+  <button class="pip-toggle" onclick="togglePip()">
+      <span style="font-size: 1.2rem;">🖼️</span> 
+      <span>LIVE PREVIEW</span>
+  </button>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="edit-modal">
+    <div class="modal">
+      <div class="modal-header" id="modal-title">Add New Slide</div>
+      <form id="slide-form">
+        <input type="hidden" id="edit-id">
+        <div class="form-group">
+          <label>Slide Title</label>
+          <input type="text" id="edit-title" required>
+        </div>
+        <div class="form-group">
+          <label>Category (e.g. Karaoke, Live Music)</label>
+          <input type="text" id="edit-type" required>
+        </div>
+        <div class="form-group">
+          <label>Subtitle / Details</label>
+          <textarea id="edit-subtitle" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Date/Meta Info</label>
+          <input type="text" id="edit-meta" placeholder="e.g. Saturday 8:00 PM">
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 2rem;">
+          <button type="button" class="btn btn-red" onclick="closeModal()">CANCEL</button>
+          <button type="submit" class="btn btn-green" style="flex:1">SAVE SLIDE</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="matrix-core.js"></script>
+  <script>
+    const bc_admin = new BroadcastChannel('ct_matrix_sync');
+
+    function setTab(name) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-slides').style.display = name === 'slides' ? 'block' : 'none';
+      document.getElementById('tab-images').style.display = name === 'images' ? 'block' : 'none';
+      document.getElementById('tab-settings').style.display = name === 'settings' ? 'block' : 'none';
+    }
+
+    async function initAdmin() {
+      await initMatrix();
+      
+      const cfg = window.MATRIX.CONFIG;
+      document.getElementById('cfg-show-banner').checked = cfg.SHOW_BANNER;
+      document.getElementById('cfg-gsheet-url').value = cfg.GSHEETS_URL || '';
+      document.getElementById('cfg-lookahead').value = cfg.WEEKS_LOOKAHEAD;
+
+      renderList();
+    }
+
+    function renderList() {
+      const container = document.getElementById('slide-list');
+      container.innerHTML = window.MATRIX.STATE.slides.map((s, i) => `
+        <div class="slide-item">
+          <div class="slide-info">
+            <div class="slide-title">
+                ${s.title}
+                ${s.isManual ? '<span class="manual-badge">Local Edit</span>' : ''}
+            </div>
+            <div class="slide-meta">${s.subType || s.type} • ${s.meta || s.url || ''}</div>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            ${s.isManual ? `<button class="btn btn-sm" style="background: #333; color: #fff;" onclick="editSlide('${s.id}')">EDIT</button>` : ''}
+            ${s.isManual ? `<button class="btn btn-sm btn-red" onclick="deleteSlide('${s.id}')">DEL</button>` : ''}
+            <button class="btn btn-sm" onclick="jumpTo('${s.id}')">JUMP</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function jumpTo(id) {
+      bc_admin.postMessage({ type: 'PROJECT', id });
+      showNotify('Direct Jump Sent');
+    }
+
+    // Modal & CMS Logic
+    function openModal() {
+        document.getElementById('edit-modal').style.display = 'flex';
+    }
+    function closeModal() {
+        document.getElementById('edit-modal').style.display = 'none';
+        document.getElementById('slide-form').reset();
+    }
+
+    function editSlide(id) {
+        const slide = window.MATRIX.STATE.manualSlides.find(s => s.id === id);
+        if (!slide) return;
+        document.getElementById('edit-id').value = slide.id;
+        document.getElementById('edit-title').value = slide.title;
+        document.getElementById('edit-type').value = slide.subType;
+        document.getElementById('edit-subtitle').value = slide.subtitle;
+        document.getElementById('edit-meta').value = slide.meta;
+        document.getElementById('modal-title').innerText = 'Edit Slide';
+        openModal();
+    }
+
+    function deleteSlide(id) {
+        if (!confirm('Remove this local slide?')) return;
+        window.MATRIX.STATE.manualSlides = window.MATRIX.STATE.manualSlides.filter(s => s.id !== id);
+        localStorage.setItem('matrix_manual_slides', JSON.stringify(window.MATRIX.STATE.manualSlides));
+        bc_admin.postMessage({ type: 'SYNC_DATA' });
+        initAdmin();
+        showNotify('Slide Deleted');
+    }
+
+    document.getElementById('slide-form').onsubmit = (e) => {
+        e.preventDefault();
+        const id = document.getElementById('edit-id').value || 'man-' + Date.now();
+        const newSlide = {
+            id,
+            type: 'EVENT',
+            subType: document.getElementById('edit-type').value,
+            title: document.getElementById('edit-title').value,
+            subtitle: document.getElementById('edit-subtitle').value,
+            meta: document.getElementById('edit-meta').value,
+            isManual: true
+        };
+
+        const existingIdx = window.MATRIX.STATE.manualSlides.findIndex(s => s.id === id);
+        if (existingIdx !== -1) {
+            window.MATRIX.STATE.manualSlides[existingIdx] = newSlide;
+        } else {
+            window.MATRIX.STATE.manualSlides.push(newSlide);
+        }
+
+        localStorage.setItem('matrix_manual_slides', JSON.stringify(window.MATRIX.STATE.manualSlides));
+        bc_admin.postMessage({ type: 'SYNC_DATA' });
+        closeModal();
+        initAdmin();
+        showNotify('Slide Saved');
+    };
+
+    function applySettings() {
+      const payload = {
+        SHOW_BANNER: document.getElementById('cfg-show-banner').checked,
+        GSHEETS_URL: document.getElementById('cfg-gsheet-url').value,
+        WEEKS_LOOKAHEAD: parseInt(document.getElementById('cfg-lookahead').value)
+      };
+      bc_admin.postMessage({ type: 'SETTINGS_UPDATE', payload });
+      localStorage.setItem('matrix_config', JSON.stringify(payload));
+      showNotify('Settings Applied Globally');
+      initAdmin();
+    }
+
+    function syncNow() {
+      bc_admin.postMessage({ type: 'SYNC_DATA' });
+      initAdmin();
+      showNotify('Manual Sync Triggered');
+    }
+
+    function showNotify(msg) {
+      const el = document.getElementById('status');
+      el.innerText = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2500);
+    }
+
+    // PiP Controller
+    function togglePip(forceState) {
+        const win = document.getElementById('pip-window');
+        const frame = document.getElementById('pip-frame');
+        const isOpen = forceState !== undefined ? !forceState : win.style.display === 'block';
+
+        if (isOpen) {
+            win.style.display = 'none';
+            frame.src = '';
+            localStorage.setItem('matrix_pip_open', 'false');
+        } else {
+            win.style.display = 'block';
+            frame.src = 'index.html';
+            localStorage.setItem('matrix_pip_open', 'true');
+        }
+    }
+
+    if (localStorage.getItem('matrix_pip_open') === 'true') {
+        togglePip(true);
+    }
+
+    window.onload = initAdmin;
+  </script>
+</body>
+</html>
