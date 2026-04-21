@@ -7,7 +7,7 @@
 window.MATRIX = {
   VERSION: '2.0.0',
   CONFIG: {
-    SWAP_DELAY: 12000,
+    SWAP_DELAY: 30000,
     MODULE_DELAY: 30000,
     SYNC_CHANNEL: 'ct_matrix_sync',
     WEEKS_LOOKAHEAD: 4,
