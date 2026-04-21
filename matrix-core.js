@@ -294,31 +294,55 @@ async function fetchCloudCSV() {
 }
 
 function parseCSVToEvents(text) {
-  const rows = text.split(/\r?\n/).filter(line => line.trim());
-  if (rows.length < 2) return [];
-  
-  // Headers: Date, Day, Time, Type, Title, Notes, Price
-  const events = rows.slice(1).map(line => {
-    // Basic CSV split, ignores commas inside quotes
-    const parts = [];
-    let current = '';
-    let inQuotes = false;
-    for (let char of line) {
-        if (char === '"') inQuotes = !inQuotes;
-        else if (char === ',' && !inQuotes) { parts.push(current.trim()); current = ''; }
-        else current += char;
+  const result = [];
+  let row = [];
+  let col = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const nextChar = text[i+1];
+
+    if (inQuotes) {
+      if (char === '"' && nextChar === '"') {
+        col += '"';
+        i++;
+      } else if (char === '"') {
+        inQuotes = false;
+      } else {
+        col += char;
+      }
+    } else {
+      if (char === '"') {
+        inQuotes = true;
+      } else if (char === ',') {
+        row.push(col.trim());
+        col = '';
+      } else if (char === '\n' || (char === '\r' && nextChar === '\n')) {
+        if (char === '\r') i++;
+        row.push(col.trim());
+        result.push(row);
+        row = [];
+        col = '';
+      } else {
+        col += char;
+      }
     }
-    parts.push(current.trim());
-    
-    const clean = parts.map(p => p.replace(/^"|"$/g, ''));
-    
+  }
+  if (col || row.length > 0) {
+    row.push(col.trim());
+    result.push(row);
+  }
+
+  // Map to events, handle newlines
+  const events = result.slice(1).map(clean => {
     return {
       date: clean[0],
       day: clean[1],
       time: clean[2],
       event_type: clean[3] || 'Event',
-      title: clean[4],
-      notes: clean[5],
+      title: (clean[4] || '').replace(/\n/g, '<br>'),
+      notes: (clean[5] || '').replace(/\n/g, '<br>'),
       price: clean[6]
     };
   }).filter(e => e.title);
@@ -584,7 +608,7 @@ function renderActiveSlide() {
 
         <!-- Description / Notes -->
         ${slide.subtitle ? `
-          <p class="premium-desc animate-content-enter">${slide.subtitle}</p>
+          <p class="premium-desc animate-content-enter">${String(slide.subtitle).replace(/\n/g, '<br>')}</p>
         ` : ''}
 
         <!-- Price Badge (PROMO slides only) -->
