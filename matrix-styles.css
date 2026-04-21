@@ -153,7 +153,7 @@ body {
 /* --- Title --- */
 .premium-title {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(4rem, 10vw, 9rem);
+  font-size: 9rem; /* Initial max size */
   font-weight: 900;
   line-height: 1.1;
   color: #fff;
@@ -161,7 +161,8 @@ body {
   filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.9));
   letter-spacing: -0.02em;
   max-width: 95%;
-  text-wrap: balance;
+  white-space: nowrap;
+  transition: font-size 0.2s ease;
 }
 
 /* --- Accent Divider Bar --- */

@@ -191,32 +191,82 @@
         </p>
       </div>
 
+      <div class="integration-notice" style="background: rgba(6, 182, 212, 0.05); border-color: var(--accent);">
+        <h3>🛡️ System Backup & Integrity</h3>
+        <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 1rem;">
+            A local backup of all module Google Sheets has been saved to the <code>/gsheet_backups/</code> folder. 
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+            <div style="font-size: 0.75rem; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">✅ _ct-MOM (Detected)</div>
+            <div style="font-size: 0.75rem; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">✅ _ct-MMR (Detected)</div>
+            <div style="font-size: 0.75rem; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">✅ _ct-WEA (Detected)</div>
+            <div style="font-size: 0.75rem; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">✅ _ct-ACE (Detected)</div>
+            <div style="font-size: 0.75rem; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">✅ _ct-FIR (Detected)</div>
+        </div>
+      </div>
+
       <h2>Cloud Integration & Shortcuts</h2>
       <div class="setting-row" style="display:block;">
         <div style="margin-bottom: 1rem;">
-          <div class="setting-label">System Google Sheets</div>
-          <div class="setting-desc">Direct links to edit your system databases. Changes take effect on the next reload.</div>
+          <div class="setting-label">System Dashboards & Google Sheets</div>
+          <div class="setting-desc">Direct links to edit your system databases and module dashboards. Changes take effect on the next reload.</div>
         </div>
         <div class="shortcut-card">
             <div>
                 <strong>MATRIX Main Schedule</strong>
                 <div style="font-size: 0.8rem; opacity: 0.5;">Core events list</div>
             </div>
-            <a href="https://docs.google.com/spreadsheets/d/1vScH_c43zVyW-WEOMQCQWXG_aCjYOg73NFl6Ni1damBOQEEVPSq89wtv4nXyIDmPxvvPTPge3EbQhIg/edit" target="_blank" class="btn btn-sm btn-outline">Edit Sheet ↗</a>
+            <div>
+                <a href="https://docs.google.com/spreadsheets/d/1vScH_c43zVyW-WEOMQCQWXG_aCjYOg73NFl6Ni1damBOQEEVPSq89wtv4nXyIDmPxvvPTPge3EbQhIg/edit" target="_blank" class="btn btn-sm btn-outline">Edit Sheet ↗</a>
+            </div>
         </div>
         <div class="shortcut-card">
             <div>
                 <strong>Mother's Day (MOM)</strong>
                 <div style="font-size: 0.8rem; opacity: 0.5;">Seasonal display configuration</div>
             </div>
-            <a href="https://docs.google.com/spreadsheets/d/1vQG9Gt_6Wi1rVS6DFjBpsOCXFzUDUD-nsgSLAZBIKb-D9KV6JUiW7XzWNAj34A_hpdvA4wmIRLhegXo/edit" target="_blank" class="btn btn-sm btn-outline">Edit Sheet ↗</a>
+            <div style="display: flex; gap: 10px;">
+                <a href="../_ct-MOM/admin.html" class="btn btn-sm btn-outline" style="border-color: var(--accent); color: var(--accent);">Admin Panel ↗</a>
+                <a href="https://docs.google.com/spreadsheets/d/1vQG9Gt_6Wi1rVS6DFjBpsOCXFzUDUD-nsgSLAZBIKb-D9KV6JUiW7XzWNAj34A_hpdvA4wmIRLhegXo/edit" target="_blank" class="btn btn-sm btn-outline">Edit Sheet ↗</a>
+            </div>
         </div>
         <div class="shortcut-card">
             <div>
                 <strong>Monster Meat Raffle (MMR)</strong>
                 <div style="font-size: 0.8rem; opacity: 0.5;">Raffle slides and configuration</div>
             </div>
-            <a href="https://docs.google.com/spreadsheets/d/1vQMXn3GlWIeGLKc3XqYXFSi_ofevUW4JZtptUoDoyzapOQCmoDSdC96QRZf0EXpWQ8CYoJ7YJ5h5Boy/edit" target="_blank" class="btn btn-sm btn-outline">Edit Sheet ↗</a>
+            <div style="display: flex; gap: 10px;">
+                <a href="../_ct-MMR/admin.html" class="btn btn-sm btn-outline" style="border-color: var(--accent); color: var(--accent);">Admin Panel ↗</a>
+                <a href="https://docs.google.com/spreadsheets/d/1vQMXn3GlWIeGLKc3XqYXFSi_ofevUW4JZtptUoDoyzapOQCmoDSdC96QRZf0EXpWQ8CYoJ7YJ5h5Boy/edit" target="_blank" class="btn btn-sm btn-outline">Edit Sheet ↗</a>
+            </div>
+        </div>
+        <div class="shortcut-card">
+            <div>
+                <strong>Weather Info (WEA)</strong>
+                <div style="font-size: 0.8rem; opacity: 0.5;">Local weather radar overlay</div>
+            </div>
+            <div>
+                <a href="../_ct-WEA/admin.html" class="btn btn-sm btn-outline" style="border-color: var(--accent); color: var(--accent);">Admin Panel ↗</a>
+            </div>
+        </div>
+        <div class="shortcut-card">
+            <div>
+                <strong>Chase the Ace (ACE)</strong>
+                <div style="font-size: 0.8rem; opacity: 0.5;">Jackpot and draw countdowns</div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <a href="../_ct-ACE/admin.html" class="btn btn-sm btn-outline" style="border-color: var(--accent); color: var(--accent);">Admin Panel ↗</a>
+                <a href="https://docs.google.com/spreadsheets/d/1vKQ868KUAuJv03Z4ULML1XtCTp7aJ8066j17W5pAYpT9yTj0foQt-PMa3aJCViFC6pzKX3jZU8pnk/edit" target="_blank" class="btn btn-sm btn-outline">Edit Sheet ↗</a>
+            </div>
+        </div>
+        <div class="shortcut-card">
+            <div>
+                <strong>Fireplace Ambiance (FIR)</strong>
+                <div style="font-size: 0.8rem; opacity: 0.5;">Digital fireplace loop</div>
+            </div>
+            <div>
+                <a href="../_ct-FIR/index.html" target="_blank" class="btn btn-sm btn-outline">View Ambiance ↗</a>
+            </div>
         </div>
       </div>
 
@@ -253,12 +303,12 @@
   <!-- Navigation Hub -->
   <nav class="nav-hub">
     <a href="index.html" class="nav-link">📺 Display</a>
-    <a href="admin.html" class="nav-link active">🛠 Admin</a>
+    <a href="masteradmin.html" class="nav-link active">🛠 Admin</a>
     <a href="remote.html" class="nav-link">📱 Remote</a>
     <span style="color: #333">|</span>
-    <a href="../_ct-MOM/index.html" class="nav-link">MOM</a>
-    <a href="../_ct-MMR/index.html" class="nav-link">MMR</a>
-    <a href="../_ct-WEA/index.html" class="nav-link">WEA</a>
+    <a href="../_ct-MOM/admin.html" class="nav-link">MOM Dash</a>
+    <a href="../_ct-MMR/admin.html" class="nav-link">MMR Dash</a>
+    <a href="../_ct-WEA/admin.html" class="nav-link">WEA Dash</a>
   </nav>
 
   <!-- PiP Elements -->

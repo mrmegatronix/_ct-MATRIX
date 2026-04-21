@@ -151,6 +151,10 @@ async function initMatrix() {
     }, 15 * 60 * 1000);
   }
 
+  // 6. Hard-lock all active slide durations to 30s (override any internal module timers if needed)
+  window.MATRIX.CONFIG.SWAP_DELAY = 30000;
+  window.MATRIX.CONFIG.MODULE_DELAY = 30000;
+
   // 6. Local File Hot-Reload Watchdog
   if (!window.MATRIX.STATE.watchdog) {
     window.MATRIX.STATE.lastModifiedTags = {};
@@ -209,7 +213,16 @@ function updateConfig(newConfig) {
 function applyUISettings() {
   const header = document.querySelector('.matrix-header');
   if (header) {
-    header.style.display = window.MATRIX.CONFIG.SHOW_BANNER ? 'flex' : 'none';
+    if (window.MATRIX.CONFIG.SHOW_BANNER) {
+      header.style.display = 'flex';
+      header.style.opacity = '1';
+      header.style.transition = 'opacity 1s ease';
+      setTimeout(() => {
+        header.style.opacity = '0';
+      }, 10000);
+    } else {
+      header.style.display = 'none';
+    }
   }
 }
 
@@ -258,7 +271,7 @@ async function fetchLocalImages() {
 
 async function fetchLocalJSON() {
   try {
-    const res = await fetch('matrix data.json?t=' + Date.now());
+    const res = await fetch('matrix-data.json?t=' + Date.now());
     if (!res.ok) return [];
     return await res.json();
   } catch (e) {
@@ -363,12 +376,55 @@ function buildSlideQueue(data) {
   });
 
   // 4. Add Project Modules
-  queue.push({ type: 'MODULE', id: 'ct-mom', url: '../_ct-MOM/index.html', title: "Mother's Day Celebration" });
-  queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display" });
+  queue.push({ type: 'MODULE', id: 'ct-mom', url: '../_ct-MOM/index.html', title: "Mother's Day Celebration", pinned: true });
+  queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true });
   queue.push({ type: 'MODULE', id: 'ct-wea', url: '../_ct-WEA/index.html', title: "Christchurch Weather" });
+  queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true });
+  queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false });
+
+  // 5. Sort by Priority/Pinned
+  queue.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
 
   window.MATRIX.STATE.slides = queue;
   console.log(`[MATRIX v2] Queue built with ${queue.length} slides.`);
+}
+
+/**
+ * Smart Label & Date Logic
+ */
+function getSmartTag(slide) {
+    const now = new Date();
+    const eventDate = slide.date ? new Date(slide.date) : null;
+    const typeLabel = (slide.subType || slide.type || 'Event').toUpperCase();
+    
+    if (!eventDate) return typeLabel;
+
+    const diffDays = Math.ceil((eventDate - now) / (1000 * 60 * 60 * 24));
+    const isSport = ['nrl', 'super rugby', 'rugby', 'league'].includes((slide.subType || '').toLowerCase());
+
+    if (diffDays >= 0 && diffDays <= 7) {
+        if (isSport) return "THIS WEEK'S LIVE SPORT";
+        return `THIS WEEK: ${typeLabel}`;
+    } else if (diffDays > 7 && diffDays <= 14) {
+        return `NEXT WEEK: ${typeLabel}`;
+    }
+
+    return typeLabel;
+}
+
+function fitText(el) {
+    if (!el) return;
+    const parent = el.parentElement;
+    if (!parent) return;
+    
+    let fontSize = parseInt(window.getComputedStyle(el).fontSize);
+    const maxWidth = parent.offsetWidth * 0.95;
+
+    // Fast reduction loop
+    while (el.scrollWidth > maxWidth && fontSize > 20) {
+        fontSize -= 2;
+        el.style.fontSize = fontSize + 'px';
+    }
 }
 
 function isEventCurrent(dateStr) {
@@ -493,8 +549,7 @@ function renderActiveSlide() {
     const isPromo = slide.type === 'PROMO';
     const bgImg = isPromo ? (slide.bgImage || getBackgroundForSlide(slide)) : getBackgroundForSlide(slide);
     const color = isPromo ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide.subType);
-    const typeLabel = (slide.subType || slide.type || 'Event').toUpperCase();
-    const typeKey = (slide.subType || '').toLowerCase();
+    const smartTag = getSmartTag(slide);
 
     slideEl.innerHTML = `
       <!-- Cycling Background Wallpaper -->
@@ -512,8 +567,10 @@ function renderActiveSlide() {
             background-color: ${color}40;
             border-color: ${color};
             box-shadow: 0 0 40px ${color}60;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
           ">
-            ${typeLabel}
+            ${smartTag}
           </span>
         </div>
 
@@ -544,11 +601,14 @@ function renderActiveSlide() {
           </div>
         ` : ''}
 
-        <!-- Meta Information (Date / Time) -->
-        ${slide.meta ? `
-          <div class="premium-meta animate-content-enter">
-            <div class="premium-meta-item">🕒 ${slide.meta}</div>
-            ${slide.date ? `<div class="premium-meta-item">📅 ${formatDate(slide.date)}</div>` : ''}
+        <!-- Unified Meta Information (Date / Time Combined) -->
+        ${(slide.meta || slide.date) ? `
+          <div class="premium-meta animate-content-enter" style="animation-delay: 0.4s;">
+            <div class="premium-meta-item">📅 ${
+              (slide.date ? formatDate(slide.date) : '') + 
+              (slide.meta && slide.date ? ' • ' : '') + 
+              (slide.meta ? slide.meta.replace(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+/i, '') : '')
+            }</div>
           </div>
         ` : ''}
       </div>
@@ -556,6 +616,11 @@ function renderActiveSlide() {
   }
 
   container.appendChild(slideEl);
+  
+  // Apply dynamic font scaling to ensure the title fits perfectly without truncation or wrapping
+  setTimeout(() => {
+    fitText(slideEl.querySelector('.premium-title'));
+  }, 50);
   // Trigger the active class after a frame to allow CSS transition
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
@@ -587,7 +652,7 @@ function formatDate(dateStr) {
   try {
     const d = new Date(dateStr);
     if (isNaN(d)) return dateStr;
-    return d.toLocaleDateString('en-NZ', { weekday: 'short', day: 'numeric', month: 'short' });
+    return d.toLocaleDateString('en-NZ', { weekday: 'long', day: 'numeric', month: 'long' });
   } catch {
     return dateStr;
   }
