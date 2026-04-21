@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel | _ct-MATRIX</title>
+  <title>Master Admin | Matrix Ecosystem</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #030712;
@@ -17,491 +17,507 @@
       --border: rgba(255,255,255,0.08);
       --red: #ef4444;
       --green: #10b981;
+      --gold: #f59e0b;
     }
     body { 
-        background: radial-gradient(circle at top right, #1e1b4b, var(--bg) 80%); 
+        background: var(--bg); 
         color: var(--text); 
         font-family: 'Inter', sans-serif; 
-        padding: 2rem; 
         margin: 0; 
-        padding-bottom: 100px; 
-        min-height: 100vh;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
     }
-    .container { max-width: 900px; margin: 0 auto; }
     
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
-    h1 { font-weight: 900; color: var(--accent); margin: 0; letter-spacing: -1px; }
-
-    .tabs { display: flex; gap: 10px; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
-    .tab { padding: 10px 20px; border-radius: 10px; cursor: pointer; background: transparent; border: 1px solid transparent; font-weight: 600; opacity: 0.6; transition: 0.2s ease; }
-    .tab:hover { opacity: 1; background: rgba(255,255,255,0.05); }
-    .tab.active { background: var(--card); color: var(--accent); border: 1px solid var(--border); border-bottom: 1px solid var(--accent); opacity: 1; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-
-    .panel { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; animation: fadeIn 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
-    .setting-info { flex: 1; }
-    .setting-label { font-weight: 700; font-size: 1.1rem; }
-    .setting-desc { font-size: 0.85rem; opacity: 0.5; margin-top: 4px; }
-
-    input[type="text"], input[type="number"], select, textarea {
-      background: #000; border: 1px solid var(--border); color: #fff; padding: 8px 12px; border-radius: 8px; width: 100%; box-sizing: border-box;
+    .layout {
+        display: grid;
+        grid-template-columns: 400px 1fr;
+        height: 100vh;
     }
-    .setting-row input { width: 300px; }
 
-    .toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
-    .toggle-switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; inset: 0; background: #333; transition: .4s; border-radius: 34px; }
-    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background: white; transition: .4s; border-radius: 50%; }
-    input:checked + .slider { background: var(--accent); }
-    input:checked + .slider:before { transform: translateX(24px); }
-
-    .btn { background: var(--accent); color: #000; border: none; padding: 0.8rem 1.5rem; border-radius: 10px; font-weight: 800; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3); }
-    .btn:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4); }
-    .btn-red { background: var(--red); color: #fff; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
-    .btn-red:hover { background: #dc2626; box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4); }
-    .btn-green { background: var(--green); color: #000; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
-    .btn-green:hover { background: #059669; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); }
-    .btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; border-radius: 8px; }
-    .btn-outline { background: transparent; border: 1px solid var(--border); color: #fff; box-shadow: none; }
-    .btn-outline:hover { background: rgba(255,255,255,0.05); }
-
-    .slide-item { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02); margin-bottom: 8px; border-radius: 12px; }
-    .slide-title { font-weight: 700; font-size: 1.1rem; }
-    .slide-meta { font-size: 0.75rem; opacity: 0.5; margin-top: 4px; }
-    .manual-badge { font-size: 0.6rem; background: var(--purple); color: #fff; padding: 2px 6px; border-radius: 4px; margin-left: 10px; text-transform: uppercase; }
-
-    /* Navigation Hub */
-    .nav-hub { position: fixed; bottom: 0; left: 0; right: 0; background: #000; border-top: 1px solid var(--border); padding: 15px; display: flex; justify-content: center; gap: 20px; z-index: 1000; }
-    .nav-link { color: var(--text-dim); text-decoration: none; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; opacity: 0.5; transition: 0.2s; }
-    .nav-link:hover { opacity: 1; color: var(--accent); }
-    .nav-link.active { opacity: 1; color: var(--accent); border-bottom: 2px solid var(--accent); }
-
-    /* Modal */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 2000; }
-    .modal { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 2rem; width: 500px; max-width: 90%; }
-    .modal-header { font-size: 1.5rem; font-weight: 900; margin-bottom: 1.5rem; color: var(--accent); }
-    .form-group { margin-bottom: 1rem; }
-    .form-group label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 5px; opacity: 0.6; }
-
-    #status { position: fixed; top: 1rem; right: 1rem; background: var(--accent); color: #000; padding: 10px 20px; border-radius: 10px; font-weight: 700; opacity: 0; transform: translateY(-20px); transition: 0.3s; z-index: 3000; }
-    #status.show { opacity: 1; transform: translateY(0); }
-
-    /* PiP Styling */
-    .pip-toggle {
-        position: fixed; bottom: 30px; left: 30px; z-index: 5000;
-        background: var(--accent); color: #000; border: none;
-        padding: 12px 24px; border-radius: 50px; font-weight: 800; cursor: pointer;
-        box-shadow: 0 10px 25px rgba(6, 182, 212, 0.3); font-size: 0.8rem;
-        display: flex; align-items: center; gap: 8px; transition: 0.2s;
+    /* Sidebar Area */
+    /* Sidebar Area */
+    .sidebar {
+        background: #0f172a;
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        padding: 1.5rem;
+        overflow-y: auto;
     }
-    .pip-toggle:hover { transform: scale(1.05); }
-    .pip-window {
-        position: fixed; bottom: 90px; left: 30px; width: 355px; height: 200px;
-        background: #000; border: 2px solid var(--accent); border-radius: 15px;
-        z-index: 5000; overflow: hidden; display: none; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-        animation: pipIn 0.3s ease;
+
+    .shortcut-card:hover { transform: translateX(5px); }
+
+    /* Auth Overlay */
+    .auth-overlay {
+        position: fixed; inset: 0; background: #030712; z-index: 10000;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        backdrop-filter: blur(20px);
     }
-    @keyframes pipIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    .pip-window iframe { 
-        width: 1920px; 
-        height: 1080px; 
-        border: none; 
-        transform: scale(0.18489); 
+    .pin-pad {
+        background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+        padding: 3rem; border-radius: 30px; box-shadow: 0 20px 80px rgba(0,0,0,0.5);
+        text-align: center;
+    }
+    .pin-display {
+        font-family: 'JetBrains Mono', monospace; font-size: 2.5rem; letter-spacing: 15px;
+        margin-bottom: 2rem; color: var(--accent); min-height: 4rem;
+    }
+    .keypad {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;
+    }
+    .key {
+        width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,0.05);
+        border: 1px solid var(--border); color: #fff; font-size: 1.5rem; font-weight: 700;
+        display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;
+    }
+    .key:hover { background: var(--accent); color: #000; }
+    .key:active { transform: scale(0.9); }
+
+    /* Main Content Area */
+    .viewport {
+        display: grid;
+        grid-template-rows: 300px 1fr;
+        background: #000;
+        position: relative;
+    }
+
+    /* Top Right Controls + PIP Area */
+    .viewport-header {
+        display: grid;
+        grid-template-columns: 1fr 450px;
+        padding: 1.5rem;
+        background: linear-gradient(to bottom, #111827, #000);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .pip-container {
+        width: 444px;
+        height: 250px;
+        background: #000;
+        border: 2px solid var(--accent);
+        border-radius: 12px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        flex-shrink: 0;
+    }
+    .pip-container iframe {
+        width: 1920px;
+        height: 1080px;
+        transform: scale(0.23125);
         transform-origin: top left;
+        border: none;
         pointer-events: none;
     }
-    
-    .integration-notice {
-        background: rgba(16, 185, 129, 0.1);
-        border: 1px solid var(--green);
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin-bottom: 2rem;
-        color: #fff;
+
+    /* Module Frame */
+    .module-viewer {
+        width: 100%;
+        height: 100%;
+        border: none;
     }
-    .integration-notice h3 { margin-top: 0; color: var(--green); }
+
+    /* Common Components */
+    h1 { font-weight: 900; color: var(--accent); margin: 0 0 1rem 0; font-size: 1.4rem; letter-spacing: -1px; }
+    h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.5; margin-bottom: 1rem; }
+
+    .btn { background: var(--accent); color: #000; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.2s; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px; }
+    .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .btn-red { background: var(--red); color: #fff; }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: #fff; }
+    .btn-outline:hover { background: rgba(255,255,255,0.05); }
+
+    .slide-list { display: flex; flex-direction: column; gap: 8px; }
+    .slide-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 12px; border-radius: 10px; display: flex; flex-direction: column; gap: 10px; position: relative; }
+    .slide-card.disabled { opacity: 0.3; filter: grayscale(1); }
+    .slide-card:hover { background: rgba(255,255,255,0.05); }
     
-    .shortcut-card {
-        background: rgba(0,0,0,0.5);
-        border: 1px solid var(--border);
-        padding: 1rem;
-        border-radius: 10px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.5rem;
-    }
+    .slide-main { display: flex; justify-content: space-between; align-items: flex-start; }
+    .slide-title { font-weight: 700; font-size: 0.95rem; line-height: 1.2; max-width: 70%; }
+    .slide-priority { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--gold); background: rgba(245, 158, 11, 0.1); padding: 2px 6px; border-radius: 4px; }
+    
+    .slide-actions { display: flex; gap: 5px; margin-top: 5px; }
+    .action-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1rem; }
+    .action-btn:hover { background: var(--accent); color: #000; }
+    .action-btn.del:hover { background: var(--red); color: #fff; }
+
+    .tabs { display: flex; gap: 5px; background: #000; padding: 5px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 1.5rem; }
+    .tab { flex: 1; text-align: center; padding: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; border-radius: 6px; }
+    .tab.active { background: var(--card); color: var(--accent); }
+
+    .nav-hub { background: #000; border-top: 1px solid var(--border); padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000; height: 50px; }
+    .nav-group { display: flex; gap: 15px; }
+    .nav-item { color: #fff; text-decoration: none; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; opacity: 0.5; }
+    .nav-item.active { opacity: 1; color: var(--accent); }
+
+    /* Modal Styling */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 5000; }
+    .modal { background: #1f2937; border: 1px solid var(--border); padding: 2rem; border-radius: 20px; width: 450px; }
+    input, textarea, select { width: 100%; background: #000; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; margin-top: 5px; box-sizing: border-box; font-family: inherit; }
+    label { font-size: 0.75rem; font-weight: 700; opacity: 0.6; margin-top: 15px; display: block; }
+
+    #status { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 10px 25px; border-radius: 50px; font-weight: 900; z-index: 6000; opacity: 0; pointer-events: none; transition: 0.3s; }
+    #status.show { opacity: 1; transform: translateX(-50%) translateY(10px); }
+
+    .module-info { border-left: 3px solid var(--accent); padding-left: 15px; }
+    .module-info p { font-size: 0.8rem; opacity: 0.6; margin: 5px 0 15px 0; line-height: 1.4; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
   </style>
 </head>
 <body>
-  <div id="status">Action Completed</div>
 
-  <div class="container">
-    <header>
-      <h1>_ct-MATRIX <span style="font-size: 0.8rem; font-weight: 400; opacity: 0.5;">v1.2 Admin</span></h1>
-      <div style="display: flex; gap: 10px;">
-        <button class="btn btn-green" onclick="openModal()">+ ADD SLIDE</button>
-        <button class="btn" onclick="applySettings()">SAVE SETTINGS</button>
-      </div>
-    </header>
+<div id="auth-screen" class="auth-overlay">
+    <div class="pin-pad">
+        <h1 style="color:#fff; margin-bottom: 0.5rem;">Admin Access</h1>
+        <p style="opacity:0.5; margin-bottom: 2rem; font-size:0.8rem;">ENTERING SECURE ZONE</p>
+        <div class="pin-display" id="pin-display"></div>
+        <div class="keypad">
+            <div class="key" onclick="pressKey('1')">1</div>
+            <div class="key" onclick="pressKey('2')">2</div>
+            <div class="key" onclick="pressKey('3')">3</div>
+            <div class="key" onclick="pressKey('4')">4</div>
+            <div class="key" onclick="pressKey('5')">5</div>
+            <div class="key" onclick="pressKey('6')">6</div>
+            <div class="key" onclick="pressKey('7')">7</div>
+            <div class="key" onclick="pressKey('8')">8</div>
+            <div class="key" onclick="pressKey('9')">9</div>
+            <div class="key btn-red" style="font-size: 1rem; border-radius: 15px;" onclick="pressKey('C')">CLR</div>
+            <div class="key" onclick="pressKey('0')">0</div>
+            <div class="key btn-green" style="font-size: 1rem; border-radius: 15px;" onclick="pressKey('E')">OK</div>
+        </div>
+    </div>
+</div>
 
-    <div class="tabs">
-      <div class="tab active" id="tab-btn-slides" onclick="setTab('slides')">Slide Management</div>
-      <div class="tab" id="tab-btn-images" onclick="setTab('images')">Image Uploads</div>
-      <div class="tab" id="tab-btn-settings" onclick="setTab('settings')">Display Settings</div>
+<div id="status">Syncing...</div>
+
+<div class="layout">
+    <!-- Sidebar: Slide Lineup -->
+    <div class="sidebar">
+        <h1>Matrix Admin</h1>
+        <div class="tabs">
+            <div class="tab active" onclick="switchSidebar('queue')">Queue</div>
+            <div class="tab" onclick="switchSidebar('settings')">Config</div>
+        </div>
+
+        <div id="side-queue">
+            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Current Lineup</h2>
+                <button class="btn btn-sm btn-outline" onclick="openAddModal()">+</button>
+            </div>
+            <div class="slide-list" id="slide-list">
+                <!-- Slides injected here -->
+            </div>
+        </div>
+
+        <div id="side-settings" style="display:none;">
+            <h2>System Preferences</h2>
+            <label>Auto-Sync Interval (min)</label>
+            <input type="number" id="cfg-sync" value="15">
+            
+            <label>Matrix Display Banner</label>
+            <select id="cfg-banner">
+                <option value="true">Visible</option>
+                <option value="false">Hidden</option>
+            </select>
+
+            <label>Master GSheet Public CSV</label>
+            <input type="text" id="cfg-url" placeholder="Paste .csv URL">
+
+            <div style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                <h2>Security Settings</h2>
+                <label>Admin Access PIN</label>
+                <input type="password" id="cfg-pin" placeholder="Current: 1234">
+            </div>
+
+            <button class="btn" style="width: 100%; margin-top: 2rem;" onclick="saveConfig()">Save All Settings</button>
+        </div>
     </div>
 
-    <!-- Slides Tab -->
-    <div id="tab-slides" class="panel">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-        <h2 style="margin:0">Active Queue</h2>
-        <button class="btn btn-sm" onclick="syncNow()">🔄 RELOAD DATA</button>
-      </div>
-      <div id="slide-list">
-        <!-- Slides will load here -->
-      </div>
-    </div>
-
-    <!-- Images Tab -->
-    <div id="tab-images" class="panel" style="display: none;">
-      <h2>Local Image Upload Manager</h2>
-      <div class="integration-notice">
-        <h3>📂 Auto-Generate Image Slides</h3>
-        <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 1rem;">
-            Because the Matrix runs inside a secure web browser sandbox, you cannot upload files directly through this web remote. Instead, follow these steps to deploy local images:
-        </p>
-        <ol style="margin-left: 2rem; color: #fff; font-size: 0.95rem; line-height: 1.6;">
-            <li>Navigate to the Matrix folder: <code>D:\__GITHUB\_ct-MATRIX\</code></li>
-            <li>Drop your <code>.png</code> or <code>.jpg</code> files into either the <strong>product-slides</strong> or <strong>extra-slides</strong> folder.</li>
-            <li>Double click the <strong>Update-ImageSlides.ps1</strong> script to automatically generate the database.</li>
-            <li>The Matrix display will automatically detect the changes within 15 minutes, or you can force a reload.</li>
-        </ol>
-      </div>
-    </div>
-
-    <!-- Settings Tab -->
-    <div id="tab-settings" class="panel" style="display: none;">
+    <!-- Main Viewport: PiP + Nested Module -->
+    <div class="viewport">
+        <div class="viewport-header">
+            <div class="module-info" id="module-info">
+                <h2 style="margin:0; opacity: 1; color: var(--accent);">Active Module: <span id="module-title">Matrix Overview</span></h2>
+                <p id="module-desc">Monitoring the master signage queue. Select a module below to control its specific content.</p>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-sm" onclick="forceReload()">Reload Live</button>
+                    <button class="btn btn-sm btn-outline" onclick="openGuide()">CSV Guide</button>
+                </div>
+            </div>
+            <div class="pip-container">
+                <iframe id="pip-frame" src="index.html"></iframe>
+            </div>
+        </div>
         
-      <div class="integration-notice">
-        <h3>📅 Automatic Scheduling System</h3>
-        <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 0;">
-            The MATRIX uses a smart automation system for scheduling. Events are sequenced directly from the dates inside your Google Sheets. As soon as a date has passed, it is automatically filtered out. There is no need for a manual calendar UI — just update the Sheet!
-        </p>
-      </div>
-
-      <div class="integration-notice" style="background: rgba(6, 182, 212, 0.05); border-color: var(--accent);">
-        <h3>🛡️ System Backup & Integrity</h3>
-        <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 1rem;">
-            A local backup of all module Google Sheets has been saved to the <code>/gsheet_backups/</code> folder. 
-        </p>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-            <div style="font-size: 0.75rem; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">✅ _ct-MOM (Detected)</div>
-            <div style="font-size: 0.75rem; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">✅ _ct-MMR (Detected)</div>
-            <div style="font-size: 0.75rem; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">✅ _ct-WEA (Detected)</div>
-            <div style="font-size: 0.75rem; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">✅ _ct-ACE (Detected)</div>
-            <div style="font-size: 0.75rem; border: 1px solid var(--border); padding: 8px; border-radius: 8px;">✅ _ct-FIR (Detected)</div>
-        </div>
-      </div>
-
-      <h2>Cloud Integration & Shortcuts</h2>
-      <div class="setting-row" style="display:block;">
-        <div style="margin-bottom: 1rem;">
-          <div class="setting-label">System Dashboards & Google Sheets</div>
-          <div class="setting-desc">Direct links to edit your system databases and module dashboards. Changes take effect on the next reload.</div>
-        </div>
-        <div class="shortcut-card">
-            <div>
-                <strong>MATRIX Main Schedule</strong>
-                <div style="font-size: 0.8rem; opacity: 0.5;">Core events list</div>
-            </div>
-            <div>
-                <a href="https://docs.google.com/spreadsheets/d/1vScH_c43zVyW-WEOMQCQWXG_aCjYOg73NFl6Ni1damBOQEEVPSq89wtv4nXyIDmPxvvPTPge3EbQhIg/edit" target="_blank" class="btn btn-sm btn-outline">Edit Sheet ↗</a>
-            </div>
-        </div>
-        <div class="shortcut-card">
-            <div>
-                <strong>Mother's Day (MOM)</strong>
-                <div style="font-size: 0.8rem; opacity: 0.5;">Seasonal display configuration</div>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <a href="../_ct-MOM/admin.html" class="btn btn-sm btn-outline" style="border-color: var(--accent); color: var(--accent);">Admin Panel ↗</a>
-                <a href="https://docs.google.com/spreadsheets/d/1vQG9Gt_6Wi1rVS6DFjBpsOCXFzUDUD-nsgSLAZBIKb-D9KV6JUiW7XzWNAj34A_hpdvA4wmIRLhegXo/edit" target="_blank" class="btn btn-sm btn-outline">Edit Sheet ↗</a>
-            </div>
-        </div>
-        <div class="shortcut-card">
-            <div>
-                <strong>Monster Meat Raffle (MMR)</strong>
-                <div style="font-size: 0.8rem; opacity: 0.5;">Raffle slides and configuration</div>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <a href="../_ct-MMR/admin.html" class="btn btn-sm btn-outline" style="border-color: var(--accent); color: var(--accent);">Admin Panel ↗</a>
-                <a href="https://docs.google.com/spreadsheets/d/1vQMXn3GlWIeGLKc3XqYXFSi_ofevUW4JZtptUoDoyzapOQCmoDSdC96QRZf0EXpWQ8CYoJ7YJ5h5Boy/edit" target="_blank" class="btn btn-sm btn-outline">Edit Sheet ↗</a>
-            </div>
-        </div>
-        <div class="shortcut-card">
-            <div>
-                <strong>Weather Info (WEA)</strong>
-                <div style="font-size: 0.8rem; opacity: 0.5;">Local weather radar overlay</div>
-            </div>
-            <div>
-                <a href="../_ct-WEA/admin.html" class="btn btn-sm btn-outline" style="border-color: var(--accent); color: var(--accent);">Admin Panel ↗</a>
-            </div>
-        </div>
-        <div class="shortcut-card">
-            <div>
-                <strong>Chase the Ace (ACE)</strong>
-                <div style="font-size: 0.8rem; opacity: 0.5;">Jackpot and draw countdowns</div>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <a href="../_ct-ACE/admin.html" class="btn btn-sm btn-outline" style="border-color: var(--accent); color: var(--accent);">Admin Panel ↗</a>
-                <a href="https://docs.google.com/spreadsheets/d/1vKQ868KUAuJv03Z4ULML1XtCTp7aJ8066j17W5pAYpT9yTj0foQt-PMa3aJCViFC6pzKX3jZU8pnk/edit" target="_blank" class="btn btn-sm btn-outline">Edit Sheet ↗</a>
-            </div>
-        </div>
-        <div class="shortcut-card">
-            <div>
-                <strong>Fireplace Ambiance (FIR)</strong>
-                <div style="font-size: 0.8rem; opacity: 0.5;">Digital fireplace loop</div>
-            </div>
-            <div>
-                <a href="../_ct-FIR/index.html" target="_blank" class="btn btn-sm btn-outline">View Ambiance ↗</a>
-            </div>
-        </div>
-      </div>
-
-      <div class="setting-row">
-        <div class="setting-info">
-          <div class="setting-label">Local Matrix CSV Fallback</div>
-          <div class="setting-desc">Advanced: Published CSV URL for Matrix (Must be set to "Publish to Web -> CSV").</div>
-        </div>
-        <input type="text" id="cfg-gsheet-url" placeholder="https://docs.google.com/spreadsheets/d/e/2PACX.../pub?output=csv">
-      </div>
-
-      <h2 style="margin-top: 3rem;">Visual Controls</h2>
-      <div class="setting-row">
-        <div class="setting-info">
-          <div class="setting-label">TV Header Banner</div>
-          <div class="setting-desc">Toggle the matrix logo and clock overlay.</div>
-        </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="cfg-show-banner">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="setting-row">
-        <div class="setting-info">
-          <div class="setting-label">Weekly Lookahead</div>
-          <div class="setting-desc">Number of weeks to show from local JSON.</div>
-        </div>
-        <input type="number" id="cfg-lookahead">
-      </div>
+        <iframe id="module-viewer" class="module-viewer" src="about:blank"></iframe>
     </div>
-  </div>
+</div>
 
-  <!-- Navigation Hub -->
-  <nav class="nav-hub">
-    <a href="index.html" class="nav-link">📺 Display</a>
-    <a href="masteradmin.html" class="nav-link active">🛠 Admin</a>
-    <a href="remote.html" class="nav-link">📱 Remote</a>
-    <span style="color: #333">|</span>
-    <a href="../_ct-MOM/admin.html" class="nav-link">MOM Dash</a>
-    <a href="../_ct-MMR/admin.html" class="nav-link">MMR Dash</a>
-    <a href="../_ct-WEA/admin.html" class="nav-link">WEA Dash</a>
-  </nav>
+<nav class="nav-hub">
+    <div class="nav-group">
+        <a href="#" class="nav-item active" data-mod="HOME" onclick="loadModule('HOME')">🏠 Home</a>
+        <a href="#" class="nav-item" data-mod="MOM" onclick="loadModule('MOM')">🌸 MOM</a>
+        <a href="#" class="nav-item" data-mod="MMR" onclick="loadModule('MMR')">🥩 MMR</a>
+        <a href="#" class="nav-item" data-mod="ACE" onclick="loadModule('ACE')">🃏 ACE</a>
+        <a href="#" class="nav-item" data-mod="WEA" onclick="loadModule('WEA')">⛅ WEA</a>
+        <a href="#" class="nav-item" data-mod="FIR" onclick="loadModule('FIR')">🔥 FIR</a>
+        <a href="#" class="nav-item" data-mod="TV" onclick="loadModule('TV')">📺 TV</a>
+        <a href="#" class="nav-item" data-mod="LOGO" onclick="loadModule('LOGO')">💎 LOGO</a>
+    </div>
+    <div class="nav-group">
+        <a href="index.html" target="_blank" class="btn btn-sm btn-outline">Preview ↗</a>
+        <a href="remote.html" target="_blank" class="btn btn-sm btn-outline">Mobile ↗</a>
+    </div>
+</nav>
 
-  <!-- PiP Elements -->
-  <div id="pip-window" class="pip-window">
-      <iframe id="pip-frame" src=""></iframe>
-  </div>
-  <button class="pip-toggle" onclick="togglePip()">
-      <span style="font-size: 1.2rem;">🖼️</span> 
-      <span>LIVE PREVIEW</span>
-  </button>
-
-  <!-- Edit Modal -->
-  <div class="modal-overlay" id="edit-modal">
+<!-- Modals -->
+<div class="modal-overlay" id="slide-modal">
     <div class="modal">
-      <div class="modal-header" id="modal-title">Add New Slide</div>
-      <form id="slide-form">
+        <h2 id="modal-heading" style="color:var(--accent); font-weight:900;">Add Slide</h2>
         <input type="hidden" id="edit-id">
-        <div class="form-group">
-          <label>Slide Title</label>
-          <input type="text" id="edit-title" required>
+        <label>Slide Title</label>
+        <input type="text" id="edit-title" required>
+        
+        <label>Priority (1-99, Lower = First)</label>
+        <input type="number" id="edit-priority" value="10">
+
+        <label>Subtitle / Description</label>
+        <textarea id="edit-subtitle" rows="3"></textarea>
+
+        <label>Type / Meta</label>
+        <input type="text" id="edit-type" placeholder="e.g. Dining, Promotion">
+
+        <div style="display:flex; gap:10px; margin-top:2rem;">
+            <button class="btn btn-red" style="flex:1" onclick="closeModal()">Cancel</button>
+            <button class="btn" style="flex:2" onclick="handleSlideSubmit()">Save Content</button>
         </div>
-        <div class="form-group">
-          <label>Category (e.g. Karaoke, Live Music)</label>
-          <input type="text" id="edit-type" required>
-        </div>
-        <div class="form-group">
-          <label>Subtitle / Details</label>
-          <textarea id="edit-subtitle" rows="3"></textarea>
-        </div>
-        <div class="form-group">
-          <label>Date/Meta Info</label>
-          <input type="text" id="edit-meta" placeholder="e.g. Saturday 8:00 PM">
-        </div>
-        <div style="display: flex; gap: 10px; margin-top: 2rem;">
-          <button type="button" class="btn btn-red" onclick="closeModal()">CANCEL</button>
-          <button type="submit" class="btn btn-green" style="flex:1">SAVE SLIDE</button>
-        </div>
-      </form>
     </div>
-  </div>
+</div>
 
-  <script src="matrix-core.js"></script>
-  <script>
-    const bc_admin = new BroadcastChannel('ct_matrix_sync');
+<script src="matrix-core.js"></script>
+<script>
+    const bc = new BroadcastChannel('ct_matrix_sync');
+    let currentModule = 'HOME';
+    let currentPinInput = '';
 
-    function setTab(name) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      event.target.classList.add('active');
-      document.getElementById('tab-slides').style.display = name === 'slides' ? 'block' : 'none';
-      document.getElementById('tab-images').style.display = name === 'images' ? 'block' : 'none';
-      document.getElementById('tab-settings').style.display = name === 'settings' ? 'block' : 'none';
+    // Auth Logic
+    function pressKey(k) {
+        if (k === 'C') {
+            currentPinInput = '';
+        } else if (k === 'E') {
+            checkPin();
+            return;
+        } else {
+            if (currentPinInput.length < 8) currentPinInput += k;
+        }
+        updatePinDisplay();
     }
 
-    async function initAdmin() {
-      await initMatrix();
-      
-      const cfg = window.MATRIX.CONFIG;
-      document.getElementById('cfg-show-banner').checked = cfg.SHOW_BANNER;
-      document.getElementById('cfg-gsheet-url').value = cfg.GSHEETS_URL || '';
-      document.getElementById('cfg-lookahead').value = cfg.WEEKS_LOOKAHEAD;
-
-      renderList();
+    function updatePinDisplay() {
+        document.getElementById('pin-display').innerText = '*'.repeat(currentPinInput.length);
     }
 
-    function renderList() {
-      const container = document.getElementById('slide-list');
-      container.innerHTML = window.MATRIX.STATE.slides.map((s, i) => `
-        <div class="slide-item">
-          <div class="slide-info">
-            <div class="slide-title">
-                ${s.title}
-                ${s.isManual ? '<span class="manual-badge">Local Edit</span>' : ''}
+    function checkPin() {
+        const correct = window.MATRIX.CONFIG.ADMIN_PIN || '1234';
+        if (currentPinInput === correct) {
+            document.getElementById('auth-screen').style.display = 'none';
+            sessionStorage.setItem('matrix_authed', 'true');
+        } else {
+            currentPinInput = '';
+            updatePinDisplay();
+            showStatus('Incorrect PIN');
+        }
+    }
+
+    if (sessionStorage.getItem('matrix_authed') === 'true') {
+        document.getElementById('auth-screen').style.display = 'none';
+    }
+
+    const MODULES = {
+        'HOME': { title: 'Matrix Dashboard', desc: 'Main infrastructure controls and event management.', url: '' },
+        'MOM': { title: 'Mother\'s Day Dash', desc: 'Manage floral slides, countdowns and NowBookIt integrations.', url: '../_ct-MOM/admin.html' },
+        'MMR': { title: 'Meat Raffle Dash', desc: 'Control the raffle character, speech bubbles and winner photos.', url: '../_ct-MMR/admin.html' },
+        'ACE': { title: 'Chase the Ace Dash', desc: 'Manage jackpot values and countdown timers.', url: '../_ct-ACE/admin.html' },
+        'WEA': { title: 'Weather Control', desc: 'Overlay configuration for local area radar.', url: '../_ct-WEA/admin.html' },
+        'FIR': { title: 'Fireplace Dash', desc: 'Control ambiance loop and background sounds.', url: '../_ct-FIR/index.html' },
+        'TV': { title: 'TV Slides Dash', desc: 'Manage central television slideshow loops.', url: '../_ct-tv-slides/admin.html' },
+        'LOGO': { title: 'Logo Slides Dash', desc: 'Primary venue branding and logo rotation.', url: '../_ct-slides-logo/admin.html' }
+    };
+
+    function loadModule(key) {
+        currentModule = key;
+        const mod = MODULES[key];
+        document.getElementById('module-title').innerText = mod.title;
+        document.getElementById('module-desc').innerText = mod.desc;
+        document.getElementById('module-viewer').src = mod.url || 'about:blank';
+        
+        document.querySelectorAll('.nav-item').forEach(el => {
+            el.classList.toggle('active', el.getAttribute('data-mod') === key);
+        });
+    }
+
+    function switchSidebar(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.innerText.toLowerCase().includes(tab)));
+        document.getElementById('side-queue').style.display = tab === 'queue' ? 'block' : 'none';
+        document.getElementById('side-settings').style.display = tab === 'settings' ? 'block' : 'none';
+    }
+
+    async function refreshData() {
+        showStatus('Refreshing System Data...');
+        await initMatrix();
+        renderQueue();
+    }
+
+    function renderQueue() {
+        const list = document.getElementById('slide-list');
+        const slides = window.MATRIX.STATE.slides || [];
+        
+        // Sorting by priority (if exist) or using current order
+        const sorted = [...slides].sort((a,b) => (a.priority || 50) - (b.priority || 50));
+
+        list.innerHTML = sorted.map((s, idx) => `
+            <div class="slide-card ${s.disabled ? 'disabled' : ''}">
+                <div class="slide-main">
+                    <div>
+                        <div class="slide-title">${s.title}</div>
+                        <div style="font-size: 0.65rem; opacity: 0.5; margin-top: 5px;">${s.type} • ID: ${s.id.slice(0,8)}</div>
+                    </div>
+                    <div class="slide-priority">P:${s.priority || 50}</div>
+                </div>
+                <div class="slide-actions">
+                    <button class="action-btn" onclick="moveSlide('${s.id}', -1)" title="Raise Priority">↑</button>
+                    <button class="action-btn" onclick="moveSlide('${s.id}', 1)" title="Lower Priority">↓</button>
+                    <button class="action-btn" onclick="toggleSlide('${s.id}')" title="${s.disabled ? 'Enable' : 'Disable'}">👁</button>
+                    <button class="action-btn" onclick="editSlide('${s.id}')" title="Edit">✎</button>
+                    <button class="action-btn del" onclick="deleteSlide('${s.id}')" title="Delete">✕</button>
+                </div>
             </div>
-            <div class="slide-meta">${s.subType || s.type} • ${s.meta || s.url || ''}</div>
-          </div>
-          <div style="display: flex; gap: 10px;">
-            ${s.isManual ? `<button class="btn btn-sm" style="background: #333; color: #fff;" onclick="editSlide('${s.id}')">EDIT</button>` : ''}
-            ${s.isManual ? `<button class="btn btn-sm btn-red" onclick="deleteSlide('${s.id}')">DEL</button>` : ''}
-            <button class="btn btn-sm" onclick="jumpTo('${s.id}')">JUMP</button>
-          </div>
-        </div>
-      `).join('');
+        `).join('');
     }
 
-    function jumpTo(id) {
-      bc_admin.postMessage({ type: 'PROJECT', id });
-      showNotify('Direct Jump Sent');
+    // Slide Operations
+    function openAddModal() {
+        document.getElementById('modal-heading').innerText = 'Add New Slide';
+        document.getElementById('edit-id').value = '';
+        document.getElementById('edit-title').value = '';
+        document.getElementById('edit-subtitle').value = '';
+        document.getElementById('edit-type').value = '';
+        document.getElementById('edit-priority').value = '10';
+        document.getElementById('slide-modal').style.display = 'flex';
     }
 
-    // Modal & CMS Logic
-    function openModal() {
-        document.getElementById('edit-modal').style.display = 'flex';
-    }
     function closeModal() {
-        document.getElementById('edit-modal').style.display = 'none';
-        document.getElementById('slide-form').reset();
+        document.getElementById('slide-modal').style.display = 'none';
     }
 
     function editSlide(id) {
-        const slide = window.MATRIX.STATE.manualSlides.find(s => s.id === id);
-        if (!slide) return;
-        document.getElementById('edit-id').value = slide.id;
-        document.getElementById('edit-title').value = slide.title;
-        document.getElementById('edit-type').value = slide.subType;
-        document.getElementById('edit-subtitle').value = slide.subtitle;
-        document.getElementById('edit-meta').value = slide.meta;
-        document.getElementById('modal-title').innerText = 'Edit Slide';
-        openModal();
+        const s = window.MATRIX.STATE.slides.find(x => x.id === id);
+        if (!s) return;
+        document.getElementById('modal-heading').innerText = 'Edit Slide';
+        document.getElementById('edit-id').value = s.id;
+        document.getElementById('edit-title').value = s.title;
+        document.getElementById('edit-subtitle').value = s.subtitle;
+        document.getElementById('edit-type').value = s.type;
+        document.getElementById('edit-priority').value = s.priority || 50;
+        document.getElementById('slide-modal').style.display = 'flex';
+    }
+
+    function handleSlideSubmit() {
+        const id = document.getElementById('edit-id').value || 'man-' + Date.now();
+        const slide = {
+            id,
+            title: document.getElementById('edit-title').value,
+            subtitle: document.getElementById('edit-subtitle').value,
+            type: document.getElementById('edit-type').value,
+            priority: parseInt(document.getElementById('edit-priority').value),
+            isManual: true,
+            disabled: false
+        };
+
+        let manual = JSON.parse(localStorage.getItem('matrix_manual_slides') || '[]');
+        const idx = manual.findIndex(x => x.id === id);
+        if (idx > -1) manual[idx] = slide;
+        else manual.push(slide);
+
+        localStorage.setItem('matrix_manual_slides', JSON.stringify(manual));
+        closeModal();
+        broadcastSync();
     }
 
     function deleteSlide(id) {
-        if (!confirm('Remove this local slide?')) return;
-        window.MATRIX.STATE.manualSlides = window.MATRIX.STATE.manualSlides.filter(s => s.id !== id);
-        localStorage.setItem('matrix_manual_slides', JSON.stringify(window.MATRIX.STATE.manualSlides));
-        bc_admin.postMessage({ type: 'SYNC_DATA' });
-        initAdmin();
-        showNotify('Slide Deleted');
+        if (!confirm('Permanent delete?')) return;
+        let manual = JSON.parse(localStorage.getItem('matrix_manual_slides') || '[]');
+        manual = manual.filter(x => x.id !== id);
+        localStorage.setItem('matrix_manual_slides', JSON.stringify(manual));
+        broadcastSync();
     }
 
-    document.getElementById('slide-form').onsubmit = (e) => {
-        e.preventDefault();
-        const id = document.getElementById('edit-id').value || 'man-' + Date.now();
-        const newSlide = {
-            id,
-            type: 'EVENT',
-            subType: document.getElementById('edit-type').value,
-            title: document.getElementById('edit-title').value,
-            subtitle: document.getElementById('edit-subtitle').value,
-            meta: document.getElementById('edit-meta').value,
-            isManual: true
+    function toggleSlide(id) {
+        let manual = JSON.parse(localStorage.getItem('matrix_manual_slides') || '[]');
+        const idx = manual.findIndex(x => x.id === id);
+        if (idx > -1) {
+            manual[idx].disabled = !manual[idx].disabled;
+        } else {
+            // Find in current system slides to create a manual override toggle
+            const s = window.MATRIX.STATE.slides.find(x => x.id === id);
+            if (s) manual.push({ ...s, disabled: true, isManual: true });
+        }
+        localStorage.setItem('matrix_manual_slides', JSON.stringify(manual));
+        broadcastSync();
+    }
+
+    function moveSlide(id, direction) {
+        let manual = JSON.parse(localStorage.getItem('matrix_manual_slides') || '[]');
+        const sIdx = manual.findIndex(x => x.id === id);
+        if (sIdx > -1) {
+            manual[sIdx].priority = (manual[sIdx].priority || 50) + direction;
+        } else {
+            const s = window.MATRIX.STATE.slides.find(x => x.id === id);
+            if (s) manual.push({ ...s, priority: (s.priority || 50) + direction, isManual: true });
+        }
+        localStorage.setItem('matrix_manual_slides', JSON.stringify(manual));
+        broadcastSync();
+    }
+
+    function broadcastSync() {
+        bc.postMessage({ type: 'SYNC_DATA' });
+        refreshData();
+        showStatus('Changes Propagated');
+    }
+
+    function forceReload() {
+        document.getElementById('pip-frame').src = 'index.html?t=' + Date.now();
+        broadcastSync();
+    }
+
+    function openGuide() {
+        window.open('CSV_GUIDE.md', '_blank');
+    }
+
+    function showStatus(msg) {
+        const el = document.getElementById('status');
+        el.innerText = msg;
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 2000);
+    }
+
+    function saveConfig() {
+        const cfg = {
+            SHOW_BANNER: document.getElementById('cfg-banner').value === 'true',
+            GSHEETS_URL: document.getElementById('cfg-url').value,
+            WEEKS_LOOKAHEAD: parseInt(document.getElementById('cfg-sync').value),
+            ADMIN_PIN: document.getElementById('cfg-pin').value || window.MATRIX.CONFIG.ADMIN_PIN
         };
-
-        const existingIdx = window.MATRIX.STATE.manualSlides.findIndex(s => s.id === id);
-        if (existingIdx !== -1) {
-            window.MATRIX.STATE.manualSlides[existingIdx] = newSlide;
-        } else {
-            window.MATRIX.STATE.manualSlides.push(newSlide);
-        }
-
-        localStorage.setItem('matrix_manual_slides', JSON.stringify(window.MATRIX.STATE.manualSlides));
-        bc_admin.postMessage({ type: 'SYNC_DATA' });
-        closeModal();
-        initAdmin();
-        showNotify('Slide Saved');
-    };
-
-    function applySettings() {
-      const payload = {
-        SHOW_BANNER: document.getElementById('cfg-show-banner').checked,
-        GSHEETS_URL: document.getElementById('cfg-gsheet-url').value,
-        WEEKS_LOOKAHEAD: parseInt(document.getElementById('cfg-lookahead').value)
-      };
-      bc_admin.postMessage({ type: 'SETTINGS_UPDATE', payload });
-      localStorage.setItem('matrix_config', JSON.stringify(payload));
-      showNotify('Settings Applied Globally');
-      initAdmin();
+        localStorage.setItem('matrix_config', JSON.stringify(cfg));
+        broadcastSync();
     }
 
-    function syncNow() {
-      bc_admin.postMessage({ type: 'SYNC_DATA' });
-      initAdmin();
-      showNotify('Manual Sync Triggered');
-    }
+    window.onload = refreshData;
+</script>
 
-    function showNotify(msg) {
-      const el = document.getElementById('status');
-      el.innerText = msg;
-      el.classList.add('show');
-      setTimeout(() => el.classList.remove('show'), 2500);
-    }
-
-    // PiP Controller
-    function togglePip(forceState) {
-        const win = document.getElementById('pip-window');
-        const frame = document.getElementById('pip-frame');
-        const isOpen = forceState !== undefined ? !forceState : win.style.display === 'block';
-
-        if (isOpen) {
-            win.style.display = 'none';
-            frame.src = '';
-            localStorage.setItem('matrix_pip_open', 'false');
-        } else {
-            win.style.display = 'block';
-            frame.src = 'index.html';
-            localStorage.setItem('matrix_pip_open', 'true');
-        }
-    }
-
-    if (localStorage.getItem('matrix_pip_open') === 'true') {
-        togglePip(true);
-    }
-
-    window.onload = initAdmin;
-  </script>
 </body>
 </html>

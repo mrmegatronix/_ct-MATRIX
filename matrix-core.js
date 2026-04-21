@@ -12,6 +12,7 @@ window.MATRIX = {
     SYNC_CHANNEL: 'ct_matrix_sync',
     WEEKS_LOOKAHEAD: 4,
     SHOW_BANNER: true,
+    ADMIN_PIN: '1234',
     GSHEETS_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vScH_c43zVyW-WEOMQCQWXG_aCjYOg73NFl6Ni1damBOQEEVPSq89wtv4nXyIDmPxvvPTPge3EbQhIg/pub?output=csv'
   },
   STATE: {
@@ -160,24 +161,24 @@ async function initMatrix() {
     window.MATRIX.STATE.lastModifiedTags = {};
     window.MATRIX.STATE.watchdog = setInterval(async () => {
       try {
-        const files = ['matrix-data.json', 'local-images.json'];
+        const files = ['matrix-data.json', 'local-images.json', 'local-backup.csv'];
         let changed = false;
         
         for (let file of files) {
-           // Use HEAD to save bandwidth
            const res = await fetch(file + '?t=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
            if (res.ok) {
-             const modified = res.headers.get('Last-Modified') || res.headers.get('Content-Length'); // Content-length fallback
-             if (window.MATRIX.STATE.lastModifiedTags[file] && window.MATRIX.STATE.lastModifiedTags[file] !== modified) {
+             // Combine Length and Date for a robust fingerprint
+             const fingerprint = (res.headers.get('Content-Length') || '') + (res.headers.get('Last-Modified') || '');
+             if (window.MATRIX.STATE.lastModifiedTags[file] && window.MATRIX.STATE.lastModifiedTags[file] !== fingerprint) {
                 console.log(`[MATRIX Watchdog] Detected changes in ${file}`);
                 changed = true;
              }
-             window.MATRIX.STATE.lastModifiedTags[file] = modified;
+             window.MATRIX.STATE.lastModifiedTags[file] = fingerprint;
            }
         }
 
         if (changed) {
-           console.log('[MATRIX Watchdog] Hot-Reloading Data...');
+           console.log('[MATRIX Watchdog] Hot-Reloading All Data Sources...');
            const freshData = await loadAllDataSources();
            buildSlideQueue(freshData);
            
@@ -233,6 +234,7 @@ async function loadAllDataSources() {
   const results = await Promise.allSettled([
     fetchLocalJSON(),
     fetchCloudCSV(),
+    fetchLocalCSV(),
     fetchLocalImages()
   ]);
 
@@ -265,6 +267,18 @@ async function fetchLocalImages() {
     
     return []; // Handled via manualSlides injection so it bypasses standard event parsing
   } catch(e) {
+    return [];
+  }
+}
+
+async function fetchLocalCSV() {
+  try {
+    const res = await fetch('local-backup.csv?t=' + Date.now());
+    if (!res.ok) return [];
+    const csv = await res.text();
+    return parseCSVToEvents(csv);
+  } catch (e) {
+    console.error('[MATRIX] Local CSV backup failed', e);
     return [];
   }
 }
@@ -395,22 +409,32 @@ function buildSlideQueue(data) {
     queue.push({ 
         ...s, 
         id: s.id || 'man-' + Math.random().toString(36).substr(2, 9),
-        isManual: true 
+        isManual: true,
+        priority: s.priority || 10 // Manual slides default higher
     });
   });
 
   // 4. Add Project Modules
-  queue.push({ type: 'MODULE', id: 'ct-mom', url: '../_ct-MOM/index.html', title: "Mother's Day Celebration", pinned: true });
-  queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true });
-  queue.push({ type: 'MODULE', id: 'ct-wea', url: '../_ct-WEA/index.html', title: "Christchurch Weather" });
-  queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true });
-  queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false });
+  queue.push({ type: 'MODULE', id: 'ct-mom', url: '../_ct-MOM/index.html', title: "Mother's Day Celebration", pinned: true, priority: 5 });
+  queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5 });
+  queue.push({ type: 'MODULE', id: 'ct-wea', url: '../_ct-WEA/index.html', title: "Christchurch Weather", priority: 80 });
+  queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5 });
+  queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90 });
 
-  // 5. Sort by Priority/Pinned
-  queue.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+  // 5. Filter & Sort
+  // Remove disabled slides
+  let filteredQueue = queue.filter(s => !s.disabled);
 
-  window.MATRIX.STATE.slides = queue;
-  console.log(`[MATRIX v2] Queue built with ${queue.length} slides.`);
+  // Sort by Priority (Ascending) then Pinned (Descending)
+  filteredQueue.sort((a, b) => {
+    const priA = a.priority || 50;
+    const priB = b.priority || 50;
+    if (priA !== priB) return priA - priB;
+    return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0);
+  });
+
+  window.MATRIX.STATE.slides = filteredQueue;
+  console.log(`[MATRIX v2] Queue built with ${filteredQueue.length} slides.`);
 }
 
 /**

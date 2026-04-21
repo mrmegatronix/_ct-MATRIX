@@ -13,29 +13,22 @@
 			"path": "."
 		},
 		{
-			"path": "../_ct-weather-final"
-		},
-		{
 			"path": "../_ct-WEA"
 		},
 		{
 			"path": "../__sec-DASH"
 		},
 		{
-			"path": "../_ct-slides-logo"
-		},
-		{
-			"path": "../_ct-tv-slides"
-		},
-		{
 			"path": "../___ct-stuff"
 		},
-
 		{
 			"path": "../_ct-ACE"
 		},
 		{
 			"path": "../_ct-NIM"
+		},
+		{
+			"path": "../_ct-FIR"
 		}
 	],
 	"settings": {}
