@@ -160,7 +160,7 @@ async function initMatrix() {
     window.MATRIX.STATE.lastModifiedTags = {};
     window.MATRIX.STATE.watchdog = setInterval(async () => {
       try {
-        const files = ['matrix data.json', 'local-images.json'];
+        const files = ['matrix-data.json', 'local-images.json'];
         let changed = false;
         
         for (let file of files) {
