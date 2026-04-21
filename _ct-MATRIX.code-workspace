@@ -32,6 +32,12 @@
 		},
 		{
 			"path": "../_ace-chase"
+		},
+		{
+			"path": "../_ct-ACE"
+		},
+		{
+			"path": "../_ct-NIM"
 		}
 	],
 	"settings": {}
