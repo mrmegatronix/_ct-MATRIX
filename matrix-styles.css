@@ -161,9 +161,7 @@ body {
   filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.9));
   letter-spacing: -0.02em;
   max-width: 95%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-wrap: balance;
 }
 
 /* --- Accent Divider Bar --- */
