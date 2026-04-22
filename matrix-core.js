@@ -710,4 +710,7 @@ function showStatus(msg) {
     console.log('[MATRIX]', msg);
 }
 
+// Initial Sync
+loadPersistedState();
+
 window.initMatrix = initMatrix;

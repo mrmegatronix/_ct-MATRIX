@@ -31,5 +31,7 @@
 			"path": "../_ct-FIR"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"git.autofetch": true
+	}
 }
