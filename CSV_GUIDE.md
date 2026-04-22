@@ -1,20 +1,27 @@
 # Matrix Ecosystem CSV Reference Guide
 
-This document lists the required CSV headers and data structures for all modules in the Matrix ecosystem.
+This document lists the required CSV headers and data structures for all modules in the Matrix ecosystem. 
+
+> [!IMPORTANT]
+> **Headers are COMPULSORY**. The first row of every CSV file must contain the exact headers listed below.
+
+---
 
 ## 1. CT-MATRIX (Main Events)
 **File Path**: `D:\__GITHUB\_ct-MATRIX\local-backup.csv`
-**Headers**: `Date, Day, Time, Type, Title, Notes, Price`
+**Headers**: `Date,Day,Time,Event Type,Title,Description,Price,QR Code URL`
 
-- **Date**: Preferred format `DD/MM/YYYY`.
-- **Type**: Categorization (e.g., Dining, Raffle, Promo).
-- **Notes**: Supports multi-line input (Shift+Enter in GSheets).
+- **Date**: Preferred format `YYYY-MM-DD` or `DD/MM/YYYY`.
+- **Event Type**: Categorization (e.g., Dining, Raffle, Sport, Promo, Karaoke).
+- **Description**: Supports multi-line input (Shift+Enter in GSheets).
+- **Price**: Displayed in the pulse-glow badge.
+- **QR Code URL**: If provided, a QR code will be automatically generated on the slide.
 
 ---
 
 ## 2. CT-MMR (Monster Meat Raffle)
 **File Path**: `D:\__GITHUB\_ct-MMR\local-backup.csv`
-**Headers**: `Title, Subtitle, Type, Duration, BackgroundImage, OverlayImage, BubbleText, WinnerPhotos`
+**Headers**: `Title,Subtitle,Type,Duration,BackgroundImage,OverlayImage,QR Code URL,WinnerPhotos`
 
 - **Type**: `normal`, `countdown`, `avatar`, `winners`.
 - **Duration**: Milliseconds (e.g., `30000`).
@@ -24,23 +31,27 @@ This document lists the required CSV headers and data structures for all modules
 
 ## 3. CT-MOM (Mother's Day)
 **File Path**: `D:\__GITHUB\_ct-MOM\local-backup.csv`
-**Headers**: `Title, Subtitle, Type, Duration, BackgroundImage, OverlayImage, BubbleText`
+**Headers**: `Title,Subtitle,Type,Duration,BackgroundImage,OverlayImage,QR Code URL`
 
 - **Type**: `normal`, `countdown`, `qr`.
-- **BubbleText**: Used as the destination URL for the QR code when type is `qr`.
+- **QR Code URL**: The destination URL for the QR code.
 
 ---
 
 ## 4. CT-WEA (Weather)
 **File Path**: `D:\__GITHUB\_ct-WEA\local-backup.csv`
-**Headers**: `Date, Day, Time, Type, Title, Notes, Price` (Shared structure with MATRIX)
+**Headers**: `Date,Day,Time,Event Type,Title,Description,Price,QR Code URL`
 
 ---
 
 ## 5. CT-ACE (Chase the Ace)
-**Note**: Primarily managed via the Admin Panel local storage, but can import from a standard `Title, Subtitle, Type` format if needed.
+**File Path**: `D:\__GITHUB\_ct-ACE\local-backup.csv`
+**Headers**: `Title,Subtitle,Type,Jackpot,CurrentCard,QR Code URL`
 
 ---
 
-### Pro-Tip: Multi-line Support
-All `Notes`, `Title`, `Subtitle`, and `BubbleText` fields across all modules support **Shift+Enter** from Google Sheets. The system automatically converts these into `<br>` tags for display.
+### 💡 Pro-Tip: Multi-line Support
+All `Description`, `Title`, and `Subtitle` fields support **Shift+Enter** from Google Sheets. The system automatically converts these into `<br>` tags for display.
+
+### 🔗 Google Sheets Integration
+To use Google Sheets, publish your sheet as a CSV (`File > Share > Publish to web > CSV`) and paste the link into the Admin Panel "Sync" field. Ensure your sheet columns match the headers above EXACTLY.

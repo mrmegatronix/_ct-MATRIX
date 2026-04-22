@@ -132,12 +132,12 @@ async function initMatrix() {
   // 4. Global Broadcast Listeners
   bc.onmessage = (e) => {
     switch(e.data.type) {
-      case 'NEXT': nextSlide(); break;
-      case 'PREV': prevSlide(); break;
-      case 'TOGGLE': togglePause(); break;
-      case 'PROJECT': jumpToProject(e.data.id); break;
+      case 'NEXT': window.nextSlide(); break;
+      case 'PREV': window.prevSlide(); break;
+      case 'TOGGLE': window.togglePause(); break;
+      case 'PROJECT': window.jumpToProject(e.data.id); break;
       case 'SETTINGS_UPDATE': updateConfig(e.data.payload); break;
-      case 'SYNC_DATA': initMatrix(); break; // Reload everything
+      case 'SYNC_DATA': window.initMatrix(); break; // Reload everything
     }
   };
 
@@ -357,7 +357,8 @@ function parseCSVToEvents(text) {
       event_type: clean[3] || 'Event',
       title: (clean[4] || '').replace(/\n/g, '<br>'),
       notes: (clean[5] || '').replace(/\n/g, '<br>'),
-      price: clean[6]
+      price: clean[6],
+      qr: clean[7] // New QR Code column
     };
   }).filter(e => e.title);
 
@@ -383,6 +384,7 @@ function buildSlideQueue(data) {
             title: ev.title,
             subtitle: ev.notes,
             price: ev.price,
+            qr: ev.qr,
             meta: `${ev.day || ''} ${ev.time || ''}`,
             date: ev.date
           });
@@ -435,6 +437,11 @@ function buildSlideQueue(data) {
 
   window.MATRIX.STATE.slides = filteredQueue;
   console.log(`[MATRIX v2] Queue built with ${filteredQueue.length} slides.`);
+  
+  // If we are already running and the queue changed, we might need to re-render
+  if (window.MATRIX.STATE.currentIndex === -1 && filteredQueue.length > 0) {
+    window.nextSlide();
+  }
 }
 
 /**
@@ -460,18 +467,27 @@ function getSmartTag(slide) {
     return typeLabel;
 }
 
-function fitText(el) {
+function fitText(el, minSize = 40) {
     if (!el) return;
     const parent = el.parentElement;
     if (!parent) return;
+    
+    // Reset to base size first to measure correctly
+    el.style.fontSize = '';
+    el.style.whiteSpace = 'nowrap';
     
     let fontSize = parseInt(window.getComputedStyle(el).fontSize);
     const maxWidth = parent.offsetWidth * 0.95;
 
     // Fast reduction loop
-    while (el.scrollWidth > maxWidth && fontSize > 20) {
+    while (el.scrollWidth > maxWidth && fontSize > minSize) {
         fontSize -= 2;
         el.style.fontSize = fontSize + 'px';
+    }
+
+    // If still too wide, allow wrapping at the minimum size
+    if (el.scrollWidth > maxWidth) {
+        el.style.whiteSpace = 'normal';
     }
 }
 
@@ -569,6 +585,11 @@ function jumpToProject(id) {
   }
 }
 
+window.nextSlide = nextSlide;
+window.prevSlide = prevSlide;
+window.togglePause = togglePause;
+window.jumpToProject = jumpToProject;
+
 /**
  * Premium Slide Renderer
  * Generates the premium TV-quality DOM structure for each slide.
@@ -589,6 +610,11 @@ function renderActiveSlide() {
   slideEl.id = 'slide-target';
   slideEl.className = 'slide';
 
+  // Apply dynamic theme variables
+  const themeColor = slide.type === 'PROMO' ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide.subType);
+  document.documentElement.style.setProperty('--theme-color', themeColor);
+  document.documentElement.style.setProperty('--theme-glow', `${themeColor}60`);
+
   if (slide.type === 'MODULE') {
     // Module slides (MOM, MMR, WEA) get a full iframe
     slideEl.innerHTML = `<iframe src="${slide.url}" class="module-frame"></iframe>`;
@@ -598,6 +624,7 @@ function renderActiveSlide() {
     const bgImg = isPromo ? (slide.bgImage || getBackgroundForSlide(slide)) : getBackgroundForSlide(slide);
     const color = isPromo ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide.subType);
     const smartTag = getSmartTag(slide);
+    const typeKey = (slide.subType || slide.type || 'Event').toLowerCase();
 
     slideEl.innerHTML = `
       <!-- Cycling Background Wallpaper -->
@@ -632,7 +659,16 @@ function renderActiveSlide() {
 
         <!-- Description / Notes -->
         ${slide.subtitle ? `
-          <p class="premium-desc animate-content-enter">${String(slide.subtitle).replace(/\n/g, '<br>')}</p>
+          <div class="premium-desc animate-content-enter">${String(slide.subtitle).replace(/\n/g, '<br>')}</div>
+        ` : ''}
+
+        <!-- QR Code (New) -->
+        ${(slide.qr || slide.qrUrl) ? `
+          <div class="animate-content-enter" style="margin-top: 2rem;">
+            <div style="background:#fff; padding: 10px; border-radius: 10px; display:inline-block; box-shadow: 0 0 30px var(--theme-glow);">
+               <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.qr || slide.qrUrl)}" style="width: 150px; height: 150px; display:block;">
+            </div>
+          </div>
         ` : ''}
 
         <!-- Price Badge (PROMO slides only) -->
@@ -667,8 +703,8 @@ function renderActiveSlide() {
   
   // Apply dynamic font scaling to ensure the title fits perfectly without truncation or wrapping
   setTimeout(() => {
-    fitText(slideEl.querySelector('.premium-title'));
-  }, 50);
+    fitText(slideEl.querySelector('.premium-title'), 48);
+  }, 150);
   // Trigger the active class after a frame to allow CSS transition
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {

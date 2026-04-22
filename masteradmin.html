@@ -263,9 +263,8 @@
         <a href="#" class="nav-item" data-mod="MOM" onclick="loadModule('MOM')">🌸 MOM</a>
         <a href="#" class="nav-item" data-mod="MMR" onclick="loadModule('MMR')">🥩 MMR</a>
         <a href="#" class="nav-item" data-mod="ACE" onclick="loadModule('ACE')">🃏 ACE</a>
-        <a href="#" class="nav-item" data-mod="WEA" onclick="loadModule('WEA')">⛅ WEA</a>
+        <a href="#" class="nav-item" data-mod="WEA" onclick="loadModule('WEA')">🌦 WEA</a>
         <a href="#" class="nav-item" data-mod="FIR" onclick="loadModule('FIR')">🔥 FIR</a>
-        <a href="#" class="nav-item" data-mod="TV" onclick="loadModule('TV')">📺 TV</a>
         <a href="#" class="nav-item" data-mod="LOGO" onclick="loadModule('LOGO')">💎 LOGO</a>
     </div>
     <div class="nav-group">
@@ -322,7 +321,7 @@
     }
 
     function checkPin() {
-        const correct = window.MATRIX.CONFIG.ADMIN_PIN || '1234';
+        const correct = (window.MATRIX && window.MATRIX.CONFIG) ? window.MATRIX.CONFIG.ADMIN_PIN : '1234';
         if (currentPinInput === correct) {
             document.getElementById('auth-screen').style.display = 'none';
             sessionStorage.setItem('matrix_authed', 'true');
@@ -342,18 +341,26 @@
         'MOM': { title: 'Mother\'s Day Dash', desc: 'Manage floral slides, countdowns and NowBookIt integrations.', url: '../_ct-MOM/admin.html' },
         'MMR': { title: 'Meat Raffle Dash', desc: 'Control the raffle character, speech bubbles and winner photos.', url: '../_ct-MMR/admin.html' },
         'ACE': { title: 'Chase the Ace Dash', desc: 'Manage jackpot values and countdown timers.', url: '../_ct-ACE/admin.html' },
-        'WEA': { title: 'Weather Control', desc: 'Overlay configuration for local area radar.', url: '../_ct-WEA/admin.html' },
-        'FIR': { title: 'Fireplace Dash', desc: 'Control ambiance loop and background sounds.', url: '../_ct-FIR/index.html' },
-        'TV': { title: 'TV Slides Dash', desc: 'Manage central television slideshow loops.', url: '../_ct-tv-slides/admin.html' },
-        'LOGO': { title: 'Logo Slides Dash', desc: 'Primary venue branding and logo rotation.', url: '../_ct-slides-logo/admin.html' }
+        'WEA': { title: 'Christchurch Weather', desc: 'Real-time weather updates and local conditions.', url: '../_ct-WEA/index.html' },
+        'FIR': { title: 'Fireplace Ambiance', desc: 'Control ambiance loop and background sounds.', url: '../_ct-FIR/index.html' },
+        'LOGO': { title: 'Logo Slides Dash', desc: 'Primary venue branding and logo rotation.', url: '../_ct-slides-logo/index.html' }
     };
 
     function loadModule(key) {
         currentModule = key;
         const mod = MODULES[key];
+        if (!mod) return;
+        
         document.getElementById('module-title').innerText = mod.title;
         document.getElementById('module-desc').innerText = mod.desc;
-        document.getElementById('module-viewer').src = mod.url || 'about:blank';
+        
+        const viewer = document.getElementById('module-viewer');
+        if (key === 'HOME') {
+            viewer.style.display = 'none';
+        } else {
+            viewer.style.display = 'block';
+            viewer.src = mod.url || 'about:blank';
+        }
         
         document.querySelectorAll('.nav-item').forEach(el => {
             el.classList.toggle('active', el.getAttribute('data-mod') === key);
@@ -516,7 +523,10 @@
         broadcastSync();
     }
 
-    window.onload = refreshData;
+    window.onload = () => {
+        refreshData();
+        loadModule('HOME');
+    };
 </script>
 
 </body>
