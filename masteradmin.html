@@ -225,7 +225,10 @@
             </select>
 
             <label>Master GSheet Public CSV</label>
-            <input type="text" id="cfg-url" placeholder="Paste .csv URL">
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="cfg-url" placeholder="Paste .csv URL">
+                <button class="btn btn-sm" style="width: auto; margin-top: 5px; background: #34a853;" onclick="openMasterSheet()">Edit ↗</button>
+            </div>
 
             <div style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
                 <h2>Security Settings</h2>
@@ -305,6 +308,7 @@
 
     // Auth Logic
     function pressKey(k) {
+        console.log('[Admin Auth] Key pressed:', k);
         if (k === 'C') {
             currentPinInput = '';
         } else if (k === 'E') {
@@ -317,23 +321,45 @@
     }
 
     function updatePinDisplay() {
-        document.getElementById('pin-display').innerText = '*'.repeat(currentPinInput.length);
+        const display = document.getElementById('pin-display');
+        if (display) {
+            display.innerText = '*'.repeat(currentPinInput.length);
+        }
     }
 
     function checkPin() {
-        const correct = (window.MATRIX && window.MATRIX.CONFIG) ? window.MATRIX.CONFIG.ADMIN_PIN : '1234';
-        if (currentPinInput === correct) {
+        // Robust PIN check: check MATRIX config, then localStorage, then default
+        let correct = '1234';
+        if (window.MATRIX && window.MATRIX.CONFIG && window.MATRIX.CONFIG.ADMIN_PIN) {
+            correct = window.MATRIX.CONFIG.ADMIN_PIN;
+        } else {
+            const stored = localStorage.getItem('matrix_config');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    if (parsed.ADMIN_PIN) correct = parsed.ADMIN_PIN;
+                } catch(e) {}
+            }
+        }
+        
+        console.log('[Admin Auth] Checking PIN...');
+        if (currentPinInput === String(correct)) {
+            console.log('[Admin Auth] Access Granted');
             document.getElementById('auth-screen').style.display = 'none';
             sessionStorage.setItem('matrix_authed', 'true');
+            refreshData(); // Load data once authed
         } else {
+            console.warn('[Admin Auth] Access Denied');
             currentPinInput = '';
             updatePinDisplay();
             showStatus('Incorrect PIN');
         }
     }
 
+    // Auto-login if previously authed in this session
     if (sessionStorage.getItem('matrix_authed') === 'true') {
-        document.getElementById('auth-screen').style.display = 'none';
+        const authScreen = document.getElementById('auth-screen');
+        if (authScreen) authScreen.style.display = 'none';
     }
 
     const MODULES = {

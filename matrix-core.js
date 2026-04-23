@@ -96,12 +96,14 @@ window.MATRIX = {
     },
     {
       id: 'promo-flame',
-      day: 'Specials',
-      title: 'Flame Lantern',
-      description: 'Exclusive specials and atmosphere.',
+      day: '',
+      title: '',
+      description: '',
       price: '',
       highlightColor: '#f59e0b',
-      bgImage: 'images/GOLD-FLAME-LOGO-BLACK-CLEAN.png'
+      bgImage: 'images/GOLD-FLAME-LOGO-BLACK-CLEAN.png',
+      isLogo: true,
+      flamePosition: '35%'
     }
   ]
 };
@@ -616,87 +618,117 @@ function renderActiveSlide() {
   document.documentElement.style.setProperty('--theme-glow', `${themeColor}60`);
 
   if (slide.type === 'MODULE') {
-    // Module slides (MOM, MMR, WEA) get a full iframe
-    slideEl.innerHTML = `<iframe src="${slide.url}" class="module-frame"></iframe>`;
+    // Dynamic theme colors for specific modules
+    let moduleColor = '#f59e0b'; // Default Gold
+    if (slide.id === 'ct-mmr') moduleColor = '#ef4444'; // Red
+    if (slide.id === 'ct-mom') moduleColor = '#ec4899'; // Pink
+    if (slide.id === 'ct-fir') moduleColor = '#f97316'; // Orange/Fire
+    
+    document.documentElement.style.setProperty('--theme-color', moduleColor);
+    document.documentElement.style.setProperty('--theme-glow', `${moduleColor}60`);
+    
+    slideEl.innerHTML = `<iframe src="${slide.url}" class="module-frame" id="module-${slide.id}"></iframe>`;
   } else {
     // Premium event/promo slide with cycling wallpaper background
     const isPromo = slide.type === 'PROMO';
+    const isLogo = slide.isLogo || (!slide.title && !slide.subtitle && slide.bgImage && slide.bgImage.includes('LOGO'));
     const bgImg = isPromo ? (slide.bgImage || getBackgroundForSlide(slide)) : getBackgroundForSlide(slide);
     const color = isPromo ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide.subType);
     const smartTag = getSmartTag(slide);
     const typeKey = (slide.subType || slide.type || 'Event').toLowerCase();
 
-    slideEl.innerHTML = `
-      <!-- Cycling Background Wallpaper -->
-      <div class="slide-bg">
-        <img src="${bgImg}" alt="" loading="eager" />
-        <div class="slide-bg-overlay"></div>
-        <div class="slide-bg-gradient"></div>
-      </div>
-
-      <!-- Premium Content Card -->
-      <div class="premium-card">
-        <!-- Day / Event Type Tag -->
-        <div class="animate-tag-enter">
-          <span class="day-tag" data-type="${typeKey}" style="
-            background-color: ${color}40;
-            border-color: ${color};
-            box-shadow: 0 0 40px ${color}60;
-            font-size: 1.2rem;
-            letter-spacing: 2px;
-          ">
-            ${smartTag}
-          </span>
-        </div>
-
-        <!-- Main Event Title -->
-        <div class="animate-content-enter">
-          <h1 class="premium-title">${slide.title}</h1>
-        </div>
-
-        <!-- Accent Divider -->
-        <div class="accent-bar animate-content-enter" style="background: ${color}; box-shadow: 0 0 30px ${color}80;"></div>
-
-        <!-- Description / Notes -->
-        ${slide.subtitle ? `
-          <div class="premium-desc animate-content-enter">${String(slide.subtitle).replace(/\n/g, '<br>')}</div>
-        ` : ''}
-
-        <!-- QR Code (New) -->
-        ${(slide.qr || slide.qrUrl) ? `
-          <div class="animate-content-enter" style="margin-top: 2rem;">
-            <div style="background:#fff; padding: 10px; border-radius: 10px; display:inline-block; box-shadow: 0 0 30px var(--theme-glow);">
-               <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.qr || slide.qrUrl)}" style="width: 150px; height: 150px; display:block;">
+    if (isLogo) {
+      slideEl.innerHTML = `
+        <div class="slide-bg">
+          <img src="${bgImg}" alt="Flame Lantern" style="object-fit: contain; width: 60%; height: 60%; top: 20%; left: 20%; opacity: 1; filter: none; animation: none;" />
+          <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%);"></div>
+          
+          <!-- FLAME EFFECT ANCHOR -->
+          <div class="flame-anchor" style="position: absolute; left: 50%; top: ${slide.flamePosition || '35%'}; width: 0; height: 0;">
+            <div class="flame-container">
+                <div class="flame-glow"></div>
+                <div class="flame-core"></div>
+                <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
+                <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
+                <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
+                <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
             </div>
           </div>
-        ` : ''}
+        </div>
+      `;
+    } else {
+      slideEl.innerHTML = `
+        <!-- Cycling Background Wallpaper -->
+        <div class="slide-bg">
+          <img src="${bgImg}" alt="" loading="eager" />
+          <div class="slide-bg-overlay"></div>
+          <div class="slide-bg-gradient"></div>
+        </div>
 
-        <!-- Price Badge (PROMO slides only) -->
-        ${slide.price ? `
-          <div class="animate-content-enter" style="animation-delay: 0.5s;">
-            <div class="price-badge" style="
-              animation: pulse-glow 3s infinite;
-              box-shadow: 0 0 60px ${color}80;
+        <!-- Premium Content Card -->
+        <div class="premium-card">
+          <!-- Day / Event Type Tag -->
+          <div class="animate-tag-enter">
+            <span class="day-tag" data-type="${typeKey}" style="
+              background-color: ${color}40;
+              border-color: ${color};
+              box-shadow: 0 0 40px ${color}60;
+              font-size: 1.2rem;
+              letter-spacing: 2px;
             ">
-              <div class="price-badge-inner">
-                <span class="price-text">${slide.price}</span>
+              ${smartTag}
+            </span>
+          </div>
+
+          <!-- Main Event Title -->
+          <div class="animate-content-enter">
+            <h1 class="premium-title">${slide.title}</h1>
+          </div>
+
+          <!-- Accent Divider -->
+          <div class="accent-bar animate-content-enter" style="background: ${color}; box-shadow: 0 0 30px ${color}80;"></div>
+
+          <!-- Description / Notes -->
+          ${slide.subtitle ? `
+            <div class="premium-desc animate-content-enter">${String(slide.subtitle).replace(/\n/g, '<br>')}</div>
+          ` : ''}
+
+          <!-- QR Code (New) -->
+          ${(slide.qr || slide.qrUrl) ? `
+            <div class="animate-content-enter" style="margin-top: 2rem;">
+              <div style="background:#fff; padding: 10px; border-radius: 10px; display:inline-block; box-shadow: 0 0 30px var(--theme-glow);">
+                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.qr || slide.qrUrl)}" style="width: 150px; height: 150px; display:block;">
               </div>
             </div>
-          </div>
-        ` : ''}
+          ` : ''}
 
-        <!-- Unified Meta Information (Date / Time Combined) -->
-        ${(slide.meta || slide.date) ? `
-          <div class="premium-meta animate-content-enter" style="animation-delay: 0.4s;">
-            <div class="premium-meta-item">📅 ${
-              (slide.date ? formatDate(slide.date) : '') + 
-              (slide.meta && slide.date ? ' • ' : '') + 
-              (slide.meta ? slide.meta.replace(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+/i, '') : '')
-            }</div>
-          </div>
-        ` : ''}
-      </div>
-    `;
+          <!-- Price Badge (PROMO slides only) -->
+          ${slide.price ? `
+            <div class="animate-content-enter" style="animation-delay: 0.5s;">
+              <div class="price-badge" style="
+                animation: pulse-glow 3s infinite;
+                box-shadow: 0 0 60px ${color}80;
+              ">
+                <div class="price-badge-inner">
+                  <span class="price-text">${slide.price}</span>
+                </div>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Unified Meta Information (Date / Time Combined) -->
+          ${(slide.meta || slide.date) ? `
+            <div class="premium-meta animate-content-enter" style="animation-delay: 0.4s;">
+              <div class="premium-meta-item">📅 ${
+                (slide.date ? formatDate(slide.date) : '') + 
+                (slide.meta && slide.date ? ' • ' : '') + 
+                (slide.meta ? slide.meta.replace(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+/i, '') : '')
+              }</div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
   }
 
   container.appendChild(slideEl);
