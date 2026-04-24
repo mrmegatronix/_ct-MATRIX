@@ -721,18 +721,29 @@ function renderActiveSlide() {
     loader.style.transition = 'opacity 0.6s ease';
     loader.innerHTML = `
       <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: #000;">
-        <img src="images/GOLD-FLAME-LOGO-BLACK-CLEAN.png" alt="Flame Lantern" style="width: auto; height: 60vh; z-index: 2; position:relative;">
-        <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
-        <div class="flame-anchor" style="position: absolute; left: 50%; top: 40%; width: 0; height: 0; z-index: 3;">
-          <div class="flame-container">
-              <div class="flame-glow"></div>
-              <div class="flame-core"></div>
-              <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
-              <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
-              <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
-              <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
+        <div class="logo-wrapper" style="position:relative; height: 60vh; display: flex; justify-content: center;">
+          <img src="images/GOLD-FLAME-LOGO-BLACK-CLEAN.png" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative;">
+          <div class="flame-anchor" style="position: absolute; left: 50%; top: 32%; width: 0; height: 0; z-index: 3;">
+            <div class="flame-container">
+                <div class="flame-glow"></div>
+                <div class="flame-core"></div>
+                <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
+                <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
+                <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
+                <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
+            </div>
+            <!-- Reflection -->
+            <div class="flame-container reflection" style="transform: scaleY(-0.6) translateY(-40px); opacity: 0.3; filter: blur(4px);">
+                <div class="flame-glow" style="opacity:0.2;"></div>
+                <div class="flame-core"></div>
+                <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
+                <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
+                <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
+                <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
+            </div>
           </div>
         </div>
+        <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
       </div>
     `;
     document.body.appendChild(loader);
@@ -780,19 +791,29 @@ function renderActiveSlide() {
       if (isLogo) {
         slideEl.innerHTML = `
           <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: #000;">
-            <img src="${bgImg}" alt="Flame Lantern" style="width: auto; height: 60vh; z-index: 2; position:relative; opacity: 1; filter: none; animation: none;" />
-            <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
-            
-            <div class="flame-anchor" style="position: absolute; left: 50%; top: ${slide.flamePosition || '40%'}; width: 0; height: 0; z-index: 3;">
-              <div class="flame-container">
-                  <div class="flame-glow"></div>
-                  <div class="flame-core"></div>
-                  <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
-                  <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
-                  <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
-                  <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
+            <div class="logo-wrapper" style="position:relative; height: 60vh; display: flex; justify-content: center;">
+              <img src="${bgImg}" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative; opacity: 1; filter: none; animation: none;" />
+              <div class="flame-anchor" style="position: absolute; left: 50%; top: ${slide.flamePosition || '32%'}; width: 0; height: 0; z-index: 3;">
+                <div class="flame-container">
+                    <div class="flame-glow"></div>
+                    <div class="flame-core"></div>
+                    <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
+                    <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
+                    <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
+                    <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
+                </div>
+                <!-- Reflection -->
+                <div class="flame-container reflection" style="transform: scaleY(-0.6) translateY(-40px); opacity: 0.3; filter: blur(4px);">
+                    <div class="flame-glow" style="opacity:0.2;"></div>
+                    <div class="flame-core"></div>
+                    <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
+                    <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
+                    <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
+                    <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
+                </div>
               </div>
             </div>
+            <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
           </div>
         `;
       } else if (slide.isBand) {
