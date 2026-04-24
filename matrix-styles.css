@@ -139,32 +139,35 @@ body {
 /* --- Day Tag Badge --- */
 .day-tag {
   display: inline-block;
-  padding: 1.2rem 3.5rem;
+  padding: 0.8rem 2.5rem;
   border-radius: 100px;
-  font-size: clamp(1.5rem, 3vw, 3rem);
+  font-size: clamp(0.9rem, 1.5vw, 1.6rem);
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.15em;
   border: 2px solid rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   color: #fff;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
 }
 
 /* --- Title --- */
 .premium-title {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(3.5rem, 10vw, 8.5rem); /* Normalized size for TV displays */
+  font-size: clamp(3rem, 7vw, 6.5rem);
   font-weight: 900;
   line-height: 1;
   color: #fff;
   text-shadow: 0 0 50px var(--theme-glow);
   filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 1));
   letter-spacing: -0.04em;
-  max-width: 98%;
+  max-width: 95%;
   transition: all 0.5s ease;
-  word-wrap: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* --- Accent Divider Bar --- */
@@ -179,13 +182,13 @@ body {
 
 /* --- Description / Notes --- */
 .premium-desc {
-  font-size: clamp(1.1rem, 1.8vw, 2rem); /* Normalized for hierarchy */
+  font-size: clamp(1rem, 1.5vw, 1.6rem);
   color: rgba(243, 244, 246, 0.9);
   font-weight: 600;
   line-height: 1.5;
-  max-width: 80%;
+  max-width: 75%;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.8));
-  margin-top: 1rem;
+  margin-top: 0.8rem;
 }
 
 /* --- Meta Row (Time/Date) --- */
@@ -204,9 +207,9 @@ body {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 1rem 2rem;
+  padding: 0.7rem 1.5rem;
   border-radius: 1rem;
-  font-size: clamp(1.2rem, 2vw, 1.8rem);
+  font-size: clamp(0.9rem, 1.3vw, 1.3rem);
   font-weight: 600;
 }
 
@@ -375,7 +378,7 @@ body {
 
 .price-text {
   font-family: 'Inter', sans-serif;
-  font-size: clamp(2rem, 4vw, 4rem);
+  font-size: clamp(1.8rem, 3vw, 3rem);
   font-weight: 900;
   color: #fff;
   filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.8));

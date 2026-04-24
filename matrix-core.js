@@ -10,7 +10,7 @@ window.MATRIX = {
     SWAP_DELAY: 30000,
     MODULE_DELAY: 30000,
     SYNC_CHANNEL: 'ct_matrix_sync',
-    WEEKS_LOOKAHEAD: 4,
+    WEEKS_LOOKAHEAD: 2,
     SHOW_BANNER: true,
     ADMIN_PIN: '1234',
     GSHEETS_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vScH_c43zVyW-WEOMQCQWXG_aCjYOg73NFl6Ni1damBOQEEVPSq89wtv4nXyIDmPxvvPTPge3EbQhIg/pub?output=csv'
@@ -104,6 +104,43 @@ window.MATRIX = {
       bgImage: 'images/GOLD-FLAME-LOGO-BLACK-CLEAN.png',
       isLogo: true,
       flamePosition: '35%'
+    },
+    {
+      id: 'promo-karaoke',
+      day: 'Karaoke',
+      title: 'Karaoke Night',
+      description: 'Grab the mic and sing your heart out! Join us for a fun-filled night of music and entertainment.',
+      price: 'FREE ENTRY',
+      highlightColor: '#8b5cf6',
+      bgImage: 'images/bg2.jpg'
+    },
+    {
+      id: 'promo-band',
+      day: 'Live Music',
+      title: 'Live Band',
+      description: 'Enjoy the best live local bands right here. Great music and great vibes.',
+      price: '8 PM - 11 PM',
+      highlightColor: '#f59e0b',
+      bgImage: 'images/bg3.jpg',
+      isBand: true
+    },
+    {
+      id: 'promo-wed-prequiz',
+      day: 'Starting Soon!',
+      title: 'Quiz Night Buildup',
+      description: 'Get your teams ready! The quiz is about to begin. Grab a drink and settle in.',
+      price: 'Starts at 7 PM',
+      highlightColor: '#eab308',
+      bgImage: 'images/bg2.jpg'
+    },
+    {
+      id: 'promo-last-drinks',
+      day: 'Closing Time',
+      title: 'Last Drinks!',
+      description: 'The bar will be closing shortly. Please make your final orders now.',
+      price: 'Final Call',
+      highlightColor: '#ef4444',
+      bgImage: 'images/bg4.jpg'
     }
   ]
 };
@@ -514,6 +551,10 @@ function isWeekInRange(weekStr) {
  * Maps event types to specific backgrounds for visual variety.
  */
 function getBackgroundForSlide(slide) {
+  const title = (slide.title || '').toLowerCase();
+  if (title.includes('crusaders')) return 'images/crusaders.jpg';
+  if (title.includes('warriors')) return 'images/warriors.jpg';
+
   const bgs = window.MATRIX.BACKGROUNDS;
   if (!bgs.length) return bgs[0] || '';
   
@@ -555,19 +596,67 @@ function getHighlightColor(subType) {
 }
 
 /**
+ * Slide Scheduling Logic
+ */
+function isSlideActive(slide) {
+  const now = new Date();
+  const h = now.getHours();
+  const m = now.getMinutes();
+  const time = h + m / 60;
+  const day = now.getDay(); // 0=Sun, 1=Mon, ..., 3=Wed
+
+  // Pre-Quiz Buildup: Wed 6:30 PM - 7:00 PM
+  if (slide.id === 'promo-wed-prequiz') {
+    return day === 3 && time >= 18.5 && time < 19;
+  }
+  
+  // Last Drinks: 11:00 PM - 1:00 AM
+  if (slide.id === 'promo-last-drinks') {
+    return time >= 23 || time < 1;
+  }
+
+  // Band slide: only show 8 PM - 11 PM (can add day logic if needed)
+  if (slide.isBand || slide.type === 'BAND') {
+    return time >= 20 && time < 23;
+  }
+
+  // Generic custom scheduling if properties exist
+  if (slide.startTime !== undefined && slide.endTime !== undefined) {
+     if (time < slide.startTime || time >= slide.endTime) return false;
+  }
+  if (slide.days && slide.days.length && !slide.days.includes(day)) {
+     return false;
+  }
+
+  return true;
+}
+
+/**
  * Controller & Engine
  */
 function nextSlide() {
   const s = window.MATRIX.STATE;
   if (!s.slides.length) return;
-  s.currentIndex = (s.currentIndex + 1) % s.slides.length;
+  
+  let loopCount = 0;
+  do {
+    s.currentIndex = (s.currentIndex + 1) % s.slides.length;
+    loopCount++;
+  } while (!isSlideActive(s.slides[s.currentIndex]) && loopCount < s.slides.length);
+  
   renderActiveSlide();
 }
 
 function prevSlide() {
   const s = window.MATRIX.STATE;
   if (!s.slides.length) return;
-  s.currentIndex = (s.currentIndex - 1 + s.slides.length) % s.slides.length;
+  
+  let loopCount = 0;
+  do {
+    s.currentIndex = (s.currentIndex - 1 + s.slides.length) % s.slides.length;
+    loopCount++;
+  } while (!isSlideActive(s.slides[s.currentIndex]) && loopCount < s.slides.length);
+  
   renderActiveSlide();
 }
 
@@ -640,7 +729,7 @@ function renderActiveSlide() {
     if (isLogo) {
       slideEl.innerHTML = `
         <div class="slide-bg">
-          <img src="${bgImg}" alt="Flame Lantern" style="object-fit: contain; width: 60%; height: 60%; top: 20%; left: 20%; opacity: 1; filter: none; animation: none;" />
+          <img src="${bgImg}" alt="Flame Lantern" style="position:absolute; object-fit: contain; width: 60%; height: 60%; top: 20%; left: 20%; opacity: 1; filter: none; animation: none;" />
           <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%);"></div>
           
           <!-- FLAME EFFECT ANCHOR -->
@@ -653,6 +742,34 @@ function renderActiveSlide() {
                 <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
                 <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
             </div>
+          </div>
+        </div>
+      `;
+    } else if (slide.isBand) {
+      slideEl.innerHTML = `
+        <div class="slide-bg">
+          <img src="${bgImg}" alt="" loading="eager" />
+          <div class="slide-bg-overlay"></div>
+          <div class="slide-bg-gradient"></div>
+        </div>
+        <div class="premium-card">
+          <div class="animate-tag-enter">
+            <span class="day-tag" style="background-color: ${color}40; border-color: ${color}; box-shadow: 0 0 40px ${color}60;">
+              ${smartTag}
+            </span>
+          </div>
+          <div class="animate-content-enter" style="animation: pop-in 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: 0.2s;">
+            <h1 class="premium-title" style="font-size: clamp(5rem, 12vw, 10rem); transform: skew(-5deg); text-transform: uppercase;">
+               ${slide.title}
+            </h1>
+          </div>
+          <div class="accent-bar animate-content-enter" style="background: ${color}; box-shadow: 0 0 30px ${color}80; width: 500px; max-width: 60%;"></div>
+          <div class="animate-content-enter" style="animation-delay: 0.4s;">
+             <div class="price-badge" style="animation: pulse-glow 2s infinite; margin-top: 2rem;">
+               <div class="price-badge-inner" style="padding: 1.5rem 3rem;">
+                 <span class="price-text" style="color: #fff; font-size: 3rem;">8 PM - 11 PM</span>
+               </div>
+             </div>
           </div>
         </div>
       `;
@@ -673,8 +790,6 @@ function renderActiveSlide() {
               background-color: ${color}40;
               border-color: ${color};
               box-shadow: 0 0 40px ${color}60;
-              font-size: 1.2rem;
-              letter-spacing: 2px;
             ">
               ${smartTag}
             </span>
@@ -733,10 +848,6 @@ function renderActiveSlide() {
 
   container.appendChild(slideEl);
   
-  // Apply dynamic font scaling to ensure the title fits perfectly without truncation or wrapping
-  setTimeout(() => {
-    fitText(slideEl.querySelector('.premium-title'), 48);
-  }, 150);
   // Trigger the active class after a frame to allow CSS transition
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
