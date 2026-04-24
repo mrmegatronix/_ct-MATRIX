@@ -552,8 +552,8 @@ function isWeekInRange(weekStr) {
  */
 function getBackgroundForSlide(slide) {
   const title = (slide.title || '').toLowerCase();
-  if (title.includes('crusaders')) return 'images/crusaders.jpg';
-  if (title.includes('warriors')) return 'images/warriors.jpg';
+  if (title.includes('crusaders')) return '_backgrounds/crusaders.jpg';
+  if (title.includes('warriors')) return '_backgrounds/warriors.jpg';
 
   const bgs = window.MATRIX.BACKGROUNDS;
   if (!bgs.length) return bgs[0] || '';
