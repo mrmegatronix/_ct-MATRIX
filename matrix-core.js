@@ -605,6 +605,29 @@ function isSlideActive(slide) {
   const time = h + m / 60;
   const day = now.getDay(); // 0=Sun, 1=Mon, ..., 3=Wed
 
+  // 14-day lookahead filter
+  if (slide.date && !slide.isManual && slide.type !== 'PROMO') {
+    const slideDate = new Date(slide.date);
+    if (!isNaN(slideDate)) {
+      const diffDays = (slideDate.getTime() - now.getTime()) / (1000 * 3600 * 24);
+      if (diffDays > 14) return false; // More than 2 weeks away
+      if (diffDays < -1) return false; // Past event
+    }
+  }
+
+  // Filter out TBC bands and enforce time rule
+  if (slide.isBand || slide.type === 'BAND') {
+    const t = String(slide.title || '').toLowerCase();
+    const s = String(slide.subtitle || '').toLowerCase();
+    if (t.includes('tbc') || s.includes('tbc') || t.includes('to be confirmed') || s.includes('to be confirmed')) {
+      return false; // Skip unconfirmed bands
+    }
+    // Only show bands from 8 PM to 11 PM
+    if (time < 20 || time >= 23) {
+      return false;
+    }
+  }
+
   // Pre-Quiz Buildup: Wed 6:30 PM - 7:00 PM
   if (slide.id === 'promo-wed-prequiz') {
     return day === 3 && time >= 18.5 && time < 19;
@@ -613,11 +636,6 @@ function isSlideActive(slide) {
   // Last Drinks: 11:00 PM - 1:00 AM
   if (slide.id === 'promo-last-drinks') {
     return time >= 23 || time < 1;
-  }
-
-  // Band slide: only show 8 PM - 11 PM (can add day logic if needed)
-  if (slide.isBand || slide.type === 'BAND') {
-    return time >= 20 && time < 23;
   }
 
   // Generic custom scheduling if properties exist

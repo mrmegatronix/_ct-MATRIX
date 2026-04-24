@@ -139,9 +139,9 @@ body {
 /* --- Day Tag Badge --- */
 .day-tag {
   display: inline-block;
-  padding: 0.8rem 2.5rem;
+  padding: 1.5rem 4rem;
   border-radius: 100px;
-  font-size: clamp(0.9rem, 1.5vw, 1.6rem);
+  font-size: clamp(3.5rem, 6vw, 5rem);
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.15em;
@@ -156,7 +156,7 @@ body {
 /* --- Title --- */
 .premium-title {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(3rem, 7vw, 6.5rem);
+  font-size: clamp(7rem, 14vw, 12rem);
   font-weight: 900;
   line-height: 1;
   color: #fff;
@@ -182,13 +182,13 @@ body {
 
 /* --- Description / Notes --- */
 .premium-desc {
-  font-size: clamp(1rem, 1.5vw, 1.6rem);
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
   color: rgba(243, 244, 246, 0.9);
   font-weight: 600;
   line-height: 1.5;
-  max-width: 75%;
+  max-width: 80%;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.8));
-  margin-top: 0.8rem;
+  margin-top: 1.5rem;
 }
 
 /* --- Meta Row (Time/Date) --- */
@@ -207,9 +207,9 @@ body {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0.7rem 1.5rem;
-  border-radius: 1rem;
-  font-size: clamp(0.9rem, 1.3vw, 1.3rem);
+  padding: 1.5rem 3rem;
+  border-radius: 1.5rem;
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
   font-weight: 600;
 }
 
@@ -378,7 +378,7 @@ body {
 
 .price-text {
   font-family: 'Inter', sans-serif;
-  font-size: clamp(1.8rem, 3vw, 3rem);
+  font-size: clamp(4rem, 6vw, 6rem);
   font-weight: 900;
   color: #fff;
   filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.8));

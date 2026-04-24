@@ -15,20 +15,20 @@
       color: var(--accent);
       text-shadow: 0 0 10px var(--accent-glow);
     }
-    /* Hidden nav hub for TV - hover top to see or use shortcuts */
-    .nav-hub { 
-      position: fixed; bottom: 0; left: 0; right: 0; 
-      background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
-      border-top: 1px solid var(--border); padding: 10px; 
-      display: flex; justify-content: center; gap: 20px; 
-      z-index: 5000; transform: translateY(100%); transition: 0.3s;
+    /* Nav Hub - Fixed at Bottom */
+    .nav-hub {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border); padding: 12px 20px;
+      display: flex; justify-content: center; align-items: center; gap: 20px;
+      z-index: 5000;
+      transition: opacity 0.5s ease;
     }
-    body:hover .nav-hub { transform: translateY(0); }
     .nav-link { color: #888; text-decoration: none; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
     .nav-link:hover { color: var(--accent); }
 
-    /* Auto-hide header */
-    .matrix-header.hidden { opacity: 0; pointer-events: none; }
+    /* Auto-hide classes */
+    .matrix-header.hidden, .nav-hub.hidden { opacity: 0; pointer-events: none; }
 
     /* Slide Controls - hover to reveal */
     .slide-controls {
@@ -119,13 +119,26 @@
 
     // Init Logic
     window.onload = () => {
-      // Auto-hide header after 5 seconds
+      // Auto-hide header and nav after 5 seconds
       const header = document.querySelector('.matrix-header');
-      if (header) {
-        setTimeout(() => {
-          header.classList.add('hidden');
+      const navHub = document.querySelector('.nav-hub');
+      
+      setTimeout(() => {
+        if (header) header.classList.add('hidden');
+        if (navHub) navHub.classList.add('hidden');
+      }, 5000);
+
+      // Re-show on mouse movement for 5 seconds
+      let hideTimer;
+      document.addEventListener('mousemove', () => {
+        if (header) header.classList.remove('hidden');
+        if (navHub) navHub.classList.remove('hidden');
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => {
+          if (header) header.classList.add('hidden');
+          if (navHub) navHub.classList.add('hidden');
         }, 5000);
-      }
+      });
 
       setTimeout(() => {
         window.initMatrix();
