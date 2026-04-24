@@ -723,7 +723,7 @@ function renderActiveSlide() {
       <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: #000;">
         <div class="logo-wrapper" style="position:relative; height: 60vh; display: flex; justify-content: center;">
           <img src="images/GOLD-FLAME-LOGO-BLACK-CLEAN.png" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative;">
-          <div class="flame-anchor" style="position: absolute; left: 50%; top: 32%; width: 0; height: 0; z-index: 3;">
+          <div class="flame-anchor" style="position: absolute; left: 50%; top: 60%; width: 0; height: 0; z-index: 3; transform: scale(1.5);">
             <div class="flame-container">
                 <div class="flame-glow"></div>
                 <div class="flame-core"></div>
@@ -793,7 +793,7 @@ function renderActiveSlide() {
           <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: #000;">
             <div class="logo-wrapper" style="position:relative; height: 60vh; display: flex; justify-content: center;">
               <img src="${bgImg}" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative; opacity: 1; filter: none; animation: none;" />
-              <div class="flame-anchor" style="position: absolute; left: 50%; top: ${slide.flamePosition || '32%'}; width: 0; height: 0; z-index: 3;">
+              <div class="flame-anchor" style="position: absolute; left: 50%; top: ${slide.flamePosition || '60%'}; width: 0; height: 0; z-index: 3; transform: scale(1.5);">
                 <div class="flame-container">
                     <div class="flame-glow"></div>
                     <div class="flame-core"></div>
@@ -819,7 +819,7 @@ function renderActiveSlide() {
       } else if (slide.isBand) {
         slideEl.innerHTML = `
           <div class="slide-bg">
-            <img src="${bgImg}" alt="" loading="eager" />
+            <img src="${bgImg}" alt="" loading="eager" style="object-position: ${bgImg.includes('crusaders') ? 'left center' : (bgImg.includes('warriors') ? 'right center' : 'center center')};" />
             <div class="slide-bg-overlay" style="background: rgba(0,0,0,0.85);"></div>
           </div>
           <div class="band-gig-overlay animate-band">
@@ -831,7 +831,7 @@ function renderActiveSlide() {
       } else {
         slideEl.innerHTML = `
           <div class="slide-bg">
-            <img src="${bgImg}" alt="" loading="eager" />
+            <img src="${bgImg}" alt="" loading="eager" style="object-position: ${bgImg.includes('crusaders') ? 'left center' : (bgImg.includes('warriors') ? 'right center' : 'center center')};" />
             <div class="slide-bg-overlay" style="background: rgba(0,0,0,0.85);"></div>
           </div>
           <div class="premium-card">
