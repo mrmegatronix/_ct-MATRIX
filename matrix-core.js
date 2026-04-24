@@ -692,184 +692,178 @@ function renderActiveSlide() {
 
   clearTimeout(window.MATRIX.STATE.timer);
 
-  // Remove old slide
-  const existing = document.getElementById('slide-target');
-  if (existing) existing.remove();
-
-  // Create fresh slide element
-  const slideEl = document.createElement('div');
-  slideEl.id = 'slide-target';
-  slideEl.className = 'slide';
-
-  // Apply dynamic theme variables
-  const themeColor = slide.type === 'PROMO' ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide.subType);
-  document.documentElement.style.setProperty('--theme-color', themeColor);
-  document.documentElement.style.setProperty('--theme-glow', `${themeColor}60`);
-
-  if (slide.type === 'MODULE') {
-    // Dynamic theme colors for specific modules
-    let moduleColor = '#f59e0b'; // Default Gold
-    if (slide.id === 'ct-mmr') moduleColor = '#ef4444'; // Red
-    if (slide.id === 'ct-mom') moduleColor = '#ec4899'; // Pink
-    if (slide.id === 'ct-fir') moduleColor = '#f97316'; // Orange/Fire
-    
-    document.documentElement.style.setProperty('--theme-color', moduleColor);
-    document.documentElement.style.setProperty('--theme-glow', `${moduleColor}60`);
-    
-    slideEl.innerHTML = `<iframe src="${slide.url}" class="module-frame" id="module-${slide.id}"></iframe>`;
-  } else {
-    // Premium event/promo slide with cycling wallpaper background
-    const isPromo = slide.type === 'PROMO';
-    const isLogo = slide.isLogo || (!slide.title && !slide.subtitle && slide.bgImage && slide.bgImage.includes('LOGO'));
-    const bgImg = isPromo ? (slide.bgImage || getBackgroundForSlide(slide)) : getBackgroundForSlide(slide);
-    const color = isPromo ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide.subType);
-    const smartTag = getSmartTag(slide);
-    const typeKey = (slide.subType || slide.type || 'Event').toLowerCase();
-
-    if (isLogo) {
-      slideEl.innerHTML = `
-        <div class="slide-bg">
-          <img src="${bgImg}" alt="Flame Lantern" style="position:absolute; object-fit: contain; width: 60%; height: 60%; top: 20%; left: 20%; opacity: 1; filter: none; animation: none;" />
-          <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%);"></div>
-          
-          <!-- FLAME EFFECT ANCHOR -->
-          <div class="flame-anchor" style="position: absolute; left: 50%; top: ${slide.flamePosition || '35%'}; width: 0; height: 0;">
-            <div class="flame-container">
-                <div class="flame-glow"></div>
-                <div class="flame-core"></div>
-                <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
-                <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
-                <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
-                <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
-            </div>
+  // 1. Show interstitial loader transition
+  let loader = document.getElementById('transition-loader');
+  if (!loader) {
+    loader = document.createElement('div');
+    loader.id = 'transition-loader';
+    loader.className = 'slide fade-in';
+    loader.style.zIndex = '5000'; // above everything
+    loader.style.backgroundColor = '#000';
+    loader.style.transition = 'opacity 0.6s ease';
+    loader.innerHTML = `
+      <div class="slide-bg" style="display:flex; justify-content:center; align-items:center;">
+        <img src="images/GOLD-FLAME-LOGO-BLACK-CLEAN.png" alt="Flame Lantern" style="width: auto; height: 60vh; z-index: 2; position:relative;">
+        <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
+        <div class="flame-anchor" style="position: absolute; left: 50%; top: 40%; width: 0; height: 0; z-index: 3;">
+          <div class="flame-container">
+              <div class="flame-glow"></div>
+              <div class="flame-core"></div>
+              <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
+              <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
+              <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
+              <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
           </div>
         </div>
-      `;
-    } else if (slide.isBand) {
-      slideEl.innerHTML = `
-        <div class="slide-bg">
-          <img src="${bgImg}" alt="" loading="eager" />
-          <div class="slide-bg-overlay"></div>
-          <div class="slide-bg-gradient"></div>
-        </div>
-        <div class="premium-card">
-          <div class="animate-tag-enter">
-            <span class="day-tag" style="background-color: ${color}40; border-color: ${color}; box-shadow: 0 0 40px ${color}60;">
-              ${smartTag}
-            </span>
-          </div>
-          <div class="animate-content-enter" style="animation: pop-in 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: 0.2s;">
-            <h1 class="premium-title" style="font-size: clamp(5rem, 12vw, 10rem); transform: skew(-5deg); text-transform: uppercase;">
-               ${slide.title}
-            </h1>
-          </div>
-          <div class="accent-bar animate-content-enter" style="background: ${color}; box-shadow: 0 0 30px ${color}80; width: 500px; max-width: 60%;"></div>
-          <div class="animate-content-enter" style="animation-delay: 0.4s;">
-             <div class="price-badge" style="animation: pulse-glow 2s infinite; margin-top: 2rem;">
-               <div class="price-badge-inner" style="padding: 1.5rem 3rem;">
-                 <span class="price-text" style="color: #fff; font-size: 3rem;">8 PM - 11 PM</span>
-               </div>
-             </div>
-          </div>
-        </div>
-      `;
+      </div>
+    `;
+    document.body.appendChild(loader);
+  }
+
+  // Fade in loader
+  loader.style.opacity = '1';
+  loader.style.visibility = 'visible';
+  loader.classList.add('active');
+
+  // Wait for fade in before swapping content
+  setTimeout(() => {
+    // Remove old slide
+    const existing = document.getElementById('slide-target');
+    if (existing) existing.remove();
+
+    // Create fresh slide element
+    const slideEl = document.createElement('div');
+    slideEl.id = 'slide-target';
+    slideEl.className = 'slide';
+
+    // Apply dynamic theme variables
+    const themeColor = slide.type === 'PROMO' ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide.subType);
+    document.documentElement.style.setProperty('--theme-color', themeColor);
+    document.documentElement.style.setProperty('--theme-glow', `${themeColor}60`);
+
+    if (slide.type === 'MODULE') {
+      let moduleColor = '#f59e0b';
+      if (slide.id === 'ct-mmr') moduleColor = '#ef4444';
+      if (slide.id === 'ct-mom') moduleColor = '#ec4899';
+      if (slide.id === 'ct-fir') moduleColor = '#f97316';
+      
+      document.documentElement.style.setProperty('--theme-color', moduleColor);
+      document.documentElement.style.setProperty('--theme-glow', `${moduleColor}60`);
+      
+      slideEl.innerHTML = `<iframe src="${slide.url}" class="module-frame" id="module-${slide.id}"></iframe>`;
     } else {
-      slideEl.innerHTML = `
-        <!-- Cycling Background Wallpaper -->
-        <div class="slide-bg">
-          <img src="${bgImg}" alt="" loading="eager" />
-          <div class="slide-bg-overlay"></div>
-          <div class="slide-bg-gradient"></div>
-        </div>
+      const isPromo = slide.type === 'PROMO';
+      const isLogo = slide.isLogo || (!slide.title && !slide.subtitle && slide.bgImage && slide.bgImage.includes('LOGO'));
+      const bgImg = isPromo ? (slide.bgImage || getBackgroundForSlide(slide)) : getBackgroundForSlide(slide);
+      const color = isPromo ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide.subType);
+      const smartTag = getSmartTag(slide);
+      const typeKey = (slide.subType || slide.type || 'Event').toLowerCase();
 
-        <!-- Premium Content Card -->
-        <div class="premium-card">
-          <!-- Day / Event Type Tag -->
-          <div class="animate-tag-enter">
-            <span class="day-tag" data-type="${typeKey}" style="
-              background-color: ${color}40;
-              border-color: ${color};
-              box-shadow: 0 0 40px ${color}60;
-            ">
-              ${smartTag}
-            </span>
-          </div>
-
-          <!-- Main Event Title -->
-          <div class="animate-content-enter">
-            <h1 class="premium-title">${slide.title}</h1>
-          </div>
-
-          <!-- Accent Divider -->
-          <div class="accent-bar animate-content-enter" style="background: ${color}; box-shadow: 0 0 30px ${color}80;"></div>
-
-          <!-- Description / Notes -->
-          ${slide.subtitle ? `
-            <div class="premium-desc animate-content-enter">${String(slide.subtitle).replace(/\n/g, '<br>')}</div>
-          ` : ''}
-
-          <!-- QR Code (New) -->
-          ${(slide.qr || slide.qrUrl) ? `
-            <div class="animate-content-enter" style="margin-top: 2rem;">
-              <div style="background:#fff; padding: 10px; border-radius: 10px; display:inline-block; box-shadow: 0 0 30px var(--theme-glow);">
-                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.qr || slide.qrUrl)}" style="width: 150px; height: 150px; display:block;">
+      if (isLogo) {
+        slideEl.innerHTML = `
+          <div class="slide-bg" style="display:flex; justify-content:center; align-items:center;">
+            <img src="${bgImg}" alt="Flame Lantern" style="width: auto; height: 60vh; z-index: 2; position:relative; opacity: 1; filter: none; animation: none;" />
+            <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
+            
+            <div class="flame-anchor" style="position: absolute; left: 50%; top: ${slide.flamePosition || '40%'}; width: 0; height: 0; z-index: 3;">
+              <div class="flame-container">
+                  <div class="flame-glow"></div>
+                  <div class="flame-core"></div>
+                  <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
+                  <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
+                  <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
+                  <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
               </div>
             </div>
-          ` : ''}
-
-          <!-- Price Badge (PROMO slides only) -->
-          ${slide.price ? `
-            <div class="animate-content-enter" style="animation-delay: 0.5s;">
-              <div class="price-badge" style="
-                animation: pulse-glow 3s infinite;
-                box-shadow: 0 0 60px ${color}80;
-              ">
-                <div class="price-badge-inner">
-                  <span class="price-text">${slide.price}</span>
+          </div>
+        `;
+      } else if (slide.isBand) {
+        slideEl.innerHTML = `
+          <div class="slide-bg">
+            <img src="${bgImg}" alt="" loading="eager" />
+            <div class="slide-bg-overlay"></div>
+          </div>
+          <div class="band-gig-overlay animate-band">
+            <div class="band-gig-title">${slide.title}</div>
+            ${slide.subtitle ? `<div class="band-gig-subtitle">${slide.subtitle}</div>` : ''}
+            <div class="band-gig-time">PLAYING TONIGHT: 8PM - 11PM</div>
+          </div>
+        `;
+      } else {
+        slideEl.innerHTML = `
+          <div class="slide-bg">
+            <img src="${bgImg}" alt="" loading="eager" />
+            <div class="slide-bg-overlay"></div>
+          </div>
+          <div class="premium-card">
+            <div class="animate-tag-enter">
+              <span class="day-tag" data-type="${typeKey}" style="background-color: ${color}40; border-color: ${color}; box-shadow: 0 0 40px ${color}60;">${smartTag}</span>
+            </div>
+            <div class="animate-content-enter">
+              <h1 class="premium-title">${slide.title}</h1>
+            </div>
+            <div class="accent-bar animate-content-enter" style="background: ${color}; box-shadow: 0 0 30px ${color}80;"></div>
+            ${slide.subtitle ? `<div class="premium-desc animate-content-enter">${String(slide.subtitle).replace(/\n/g, '<br>')}</div>` : ''}
+            ${(slide.qr || slide.qrUrl) ? `
+              <div class="animate-content-enter" style="margin-top: 2rem;">
+                <div style="background:#fff; padding: 10px; border-radius: 10px; display:inline-block; box-shadow: 0 0 30px var(--theme-glow);">
+                   <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.qr || slide.qrUrl)}" style="width: 150px; height: 150px; display:block;">
                 </div>
               </div>
-            </div>
-          ` : ''}
-
-          <!-- Unified Meta Information (Date / Time Combined) -->
-          ${(slide.meta || slide.date) ? `
-            <div class="premium-meta animate-content-enter" style="animation-delay: 0.4s;">
-              <div class="premium-meta-item">📅 ${
-                (slide.date ? formatDate(slide.date) : '') + 
-                (slide.meta && slide.date ? ' • ' : '') + 
-                (slide.meta ? slide.meta.replace(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+/i, '') : '')
-              }</div>
-            </div>
-          ` : ''}
-        </div>
-      `;
+            ` : ''}
+            ${slide.price ? `
+              <div class="animate-content-enter" style="animation-delay: 0.5s;">
+                <div class="price-badge" style="animation: pulse-glow 3s infinite; box-shadow: 0 0 60px ${color}80;">
+                  <div class="price-badge-inner"><span class="price-text">${slide.price}</span></div>
+                </div>
+              </div>
+            ` : ''}
+            ${(slide.meta || slide.date) ? `
+              <div class="premium-meta animate-content-enter" style="animation-delay: 0.4s;">
+                <div class="premium-meta-item">📅 ${
+                  (slide.date ? formatDate(slide.date) : '') + 
+                  (slide.meta && slide.date ? ' • ' : '') + 
+                  (slide.meta ? slide.meta.replace(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+/i, '') : '')
+                }</div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
     }
-  }
 
-  container.appendChild(slideEl);
-  
-  // Trigger the active class after a frame to allow CSS transition
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      slideEl.classList.add('active');
-    });
-  });
-
-  if (!window.MATRIX.STATE.isPaused) {
-    const delay = slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY;
-    window.MATRIX.STATE.timer = setTimeout(nextSlide, delay);
+    container.appendChild(slideEl);
     
-    // Progress Bar
-    const bar = document.getElementById('progress-bar');
-    if (bar) {
-      bar.style.transition = 'none';
-      bar.style.width = '0%';
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        bar.style.transition = `width ${delay}ms linear`;
-        bar.style.width = '100%';
+        slideEl.classList.add('active');
       });
+    });
+
+    if (!window.MATRIX.STATE.isPaused) {
+      const delay = slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY;
+      window.MATRIX.STATE.timer = setTimeout(nextSlide, delay);
+      
+      const bar = document.getElementById('progress-bar');
+      if (bar) {
+        bar.style.transition = 'none';
+        bar.style.width = '0%';
+        requestAnimationFrame(() => {
+          bar.style.transition = `width ${delay}ms linear`;
+          bar.style.width = '100%';
+        });
+      }
     }
-  }
+
+    // Fade out loader after content has initialized
+    setTimeout(() => {
+      loader.style.opacity = '0';
+      loader.style.visibility = 'hidden';
+      setTimeout(() => {
+        loader.classList.remove('active');
+      }, 600); // Wait for CSS transition
+    }, 1000); // 1-second hold to ensure modules/images load behind it
+  }, 600); // 600ms transition-in delay
 }
 
 /**

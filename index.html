@@ -64,12 +64,12 @@
     <main class="slide-viewport" id="slide-viewport">
       <!-- Slides are injected here by matrix-core.js -->
        <div class="slide active" id="loader-slide">
-          <div class="slide-bg">
-            <img src="images/GOLD-FLAME-LOGO-BLACK-CLEAN.png" alt="Flame Lantern" style="position:absolute; object-fit: contain; width: 60%; height: 60%; top: 20%; left: 20%; opacity: 1; filter: none; animation: none;">
-            <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%);"></div>
+          <div class="slide-bg" style="display:flex; justify-content:center; align-items:center;">
+            <img src="images/GOLD-FLAME-LOGO-BLACK-CLEAN.png" alt="Flame Lantern" style="width: auto; height: 60vh; z-index: 2; position:relative;">
+            <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
             
             <!-- FLAME EFFECT ANCHOR -->
-            <div class="flame-anchor" style="position: absolute; left: 50%; top: 35%; width: 0; height: 0;">
+            <div class="flame-anchor" style="position: absolute; left: 50%; top: 40%; width: 0; height: 0; z-index: 3;">
               <div class="flame-container">
                   <div class="flame-glow"></div>
                   <div class="flame-core"></div>
