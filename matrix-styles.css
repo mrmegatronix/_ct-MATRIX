@@ -165,9 +165,7 @@ body {
   letter-spacing: -0.04em;
   max-width: 95%;
   transition: all 0.5s ease;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  word-wrap: break-word;
 }
 
 /* --- Accent Divider Bar --- */

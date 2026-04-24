@@ -720,7 +720,7 @@ function renderActiveSlide() {
     loader.style.backgroundColor = '#000';
     loader.style.transition = 'opacity 0.6s ease';
     loader.innerHTML = `
-      <div class="slide-bg" style="display:flex; justify-content:center; align-items:center;">
+      <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: #000;">
         <img src="images/GOLD-FLAME-LOGO-BLACK-CLEAN.png" alt="Flame Lantern" style="width: auto; height: 60vh; z-index: 2; position:relative;">
         <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
         <div class="flame-anchor" style="position: absolute; left: 50%; top: 40%; width: 0; height: 0; z-index: 3;">
@@ -779,7 +779,7 @@ function renderActiveSlide() {
 
       if (isLogo) {
         slideEl.innerHTML = `
-          <div class="slide-bg" style="display:flex; justify-content:center; align-items:center;">
+          <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: #000;">
             <img src="${bgImg}" alt="Flame Lantern" style="width: auto; height: 60vh; z-index: 2; position:relative; opacity: 1; filter: none; animation: none;" />
             <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
             
@@ -799,7 +799,7 @@ function renderActiveSlide() {
         slideEl.innerHTML = `
           <div class="slide-bg">
             <img src="${bgImg}" alt="" loading="eager" />
-            <div class="slide-bg-overlay"></div>
+            <div class="slide-bg-overlay" style="background: rgba(0,0,0,0.85);"></div>
           </div>
           <div class="band-gig-overlay animate-band">
             <div class="band-gig-title">${slide.title}</div>
@@ -811,7 +811,7 @@ function renderActiveSlide() {
         slideEl.innerHTML = `
           <div class="slide-bg">
             <img src="${bgImg}" alt="" loading="eager" />
-            <div class="slide-bg-overlay"></div>
+            <div class="slide-bg-overlay" style="background: rgba(0,0,0,0.85);"></div>
           </div>
           <div class="premium-card">
             <div class="animate-tag-enter">
