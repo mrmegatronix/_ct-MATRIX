@@ -103,7 +103,8 @@ window.MATRIX = {
       highlightColor: '#f59e0b',
       bgImage: 'images/GOLD-FLAME-LOGO-BLACK-CLEAN.png',
       isLogo: true,
-      flamePosition: '35%'
+      flamePosition: '63%',
+      flameLeft: '48.5%'
     },
     {
       id: 'promo-karaoke',
@@ -723,7 +724,7 @@ function renderActiveSlide() {
       <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: #000;">
         <div class="logo-wrapper" style="position:relative; height: 60vh; display: flex; justify-content: center;">
           <img src="images/GOLD-FLAME-LOGO-BLACK-CLEAN.png" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative;">
-          <div class="flame-anchor" style="position: absolute; left: 50%; top: 32%; width: 0; height: 0; z-index: 3;">
+          <div class="flame-anchor" style="position: absolute; left: 48.5%; top: 63%; width: 0; height: 0; z-index: 3;">
             <div class="flame-container">
                 <div class="flame-glow"></div>
                 <div class="flame-core"></div>
@@ -793,7 +794,7 @@ function renderActiveSlide() {
           <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: #000;">
             <div class="logo-wrapper" style="position:relative; height: 60vh; display: flex; justify-content: center;">
               <img src="${bgImg}" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative; opacity: 1; filter: none; animation: none;" />
-              <div class="flame-anchor" style="position: absolute; left: 50%; top: ${slide.flamePosition || '32%'}; width: 0; height: 0; z-index: 3;">
+              <div class="flame-anchor" style="position: absolute; left: ${slide.flameLeft || '48.5%'}; top: ${slide.flamePosition || '63%'}; width: 0; height: 0; z-index: 3;">
                 <div class="flame-container">
                     <div class="flame-glow"></div>
                     <div class="flame-core"></div>
