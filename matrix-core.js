@@ -7,8 +7,8 @@
 window.MATRIX = {
   VERSION: '2.0.0',
   CONFIG: {
-    SWAP_DELAY: 30000,
-    MODULE_DELAY: 30000,
+    SWAP_DELAY: 60000,
+    MODULE_DELAY: 60000,
     SYNC_CHANNEL: 'ct_matrix_sync',
     WEEKS_LOOKAHEAD: 2,
     SHOW_BANNER: true,
@@ -191,9 +191,9 @@ async function initMatrix() {
     }, 15 * 60 * 1000);
   }
 
-  // 6. Hard-lock all active slide durations to 30s (override any internal module timers if needed)
-  window.MATRIX.CONFIG.SWAP_DELAY = 30000;
-  window.MATRIX.CONFIG.MODULE_DELAY = 30000;
+  // 6. Hard-lock all active slide durations to 60s (override any internal module timers if needed)
+  window.MATRIX.CONFIG.SWAP_DELAY = 60000;
+  window.MATRIX.CONFIG.MODULE_DELAY = 60000;
 
   // 6. Local File Hot-Reload Watchdog
   if (!window.MATRIX.STATE.watchdog) {
