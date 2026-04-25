@@ -108,9 +108,9 @@ window.MATRIX = {
     {
       id: 'promo-karaoke',
       day: 'Karaoke',
-      title: 'Karaoke Night',
+      title: 'KARAOKE TONIGHT',
       description: 'Grab the mic and sing your heart out! Join us for a fun-filled night of music and entertainment.',
-      price: 'FREE ENTRY',
+      price: '8 PM - 11 PM',
       highlightColor: '#8b5cf6',
       bgImage: '_backgrounds/music.jpg'
     },
@@ -642,6 +642,21 @@ function isSlideActive(slide) {
     if (time < 20 || time >= 23) {
       return false;
     }
+  }
+
+  // Karaoke Promo Slide - Only show on days with Karaoke scheduled
+  if (slide.id === 'promo-karaoke') {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const hasKaraokeToday = window.MATRIX.STATE.slides.some(s => {
+       if (s.subType && s.subType.toLowerCase() === 'karaoke' && s.date) {
+          const sDate = new Date(s.date);
+          sDate.setHours(0,0,0,0);
+          return sDate.getTime() === today.getTime();
+       }
+       return false;
+    });
+    if (!hasKaraokeToday) return false;
   }
 
   // Pre-Quiz Buildup: Wed 6:30 PM - 7:00 PM
