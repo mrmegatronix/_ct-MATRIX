@@ -130,7 +130,7 @@ window.MATRIX = {
       title: 'Quiz Night Buildup',
       description: 'Get your teams ready! The quiz is about to begin. Grab a drink and settle in.',
       price: 'Starts at 7 PM',
-      highlightColor: '#eab308',
+      highlightColor: '#3b82f6',
       bgImage: 'images/bg2.jpg'
     },
     {
@@ -456,7 +456,7 @@ function buildSlideQueue(data) {
   });
 
   // 4. Add Project Modules
-  queue.push({ type: 'MODULE', id: 'ct-mom', url: '../_ct-MOM/index.html', title: "Mother's Day Celebration", pinned: true, priority: 5 });
+  queue.push({ type: 'MODULE', id: 'ct-mom', url: '../_ct-MOM/index.html', title: "Mother's Day Celebration", pinned: false, priority: 5, disabled: true });
   queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5 });
   queue.push({ type: 'MODULE', id: 'ct-wea', url: '../_ct-WEA/index.html', title: "Christchurch Weather", priority: 80 });
   queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5 });
@@ -597,18 +597,29 @@ function getBackgroundForSlide(slide) {
 /**
  * Get the highlight color for event type badges
  */
-function getHighlightColor(subType) {
+function getHighlightColor(slide) {
+  const subType = (slide.subType || '').toLowerCase();
+  const title = (slide.title || '').toLowerCase();
+
+  if (title.includes('crusaders')) return '#ef4444'; // Red
+  if (title.includes('warriors')) return '#10b981'; // Green
+
   const map = {
     'super rugby': '#ef4444',
     'rugby': '#ef4444',
     'nrl': '#10b981',
     'league': '#10b981',
-    'karaoke': '#8b5cf6',
-    'live music': '#f59e0b',
+    'karaoke': '#8b5cf6', // Purple
+    'live music': '#f59e0b', // Orange
+    'band': '#f59e0b', // Orange
+    'food': '#10b981', // Green
+    'dining': '#10b981', // Green
+    'quiz': '#3b82f6', // Blue
+    'trivia': '#3b82f6', // Blue
     'entertainment': '#06b6d4',
     'event': '#ffffff'
   };
-  return map[(subType || '').toLowerCase()] || '#f59e0b';
+  return map[subType] || '#f59e0b';
 }
 
 /**
@@ -802,7 +813,7 @@ function renderActiveSlide() {
     slideEl.className = 'slide';
 
     // Apply dynamic theme variables
-    const themeColor = slide.type === 'PROMO' ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide.subType);
+    const themeColor = slide.type === 'PROMO' ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide);
     document.documentElement.style.setProperty('--theme-color', themeColor);
     document.documentElement.style.setProperty('--theme-glow', `${themeColor}60`);
 
@@ -820,7 +831,7 @@ function renderActiveSlide() {
       const isPromo = slide.type === 'PROMO';
       const isLogo = slide.isLogo || (!slide.title && !slide.subtitle && slide.bgImage && slide.bgImage.includes('LOGO'));
       const bgImg = isPromo ? (slide.bgImage || getBackgroundForSlide(slide)) : getBackgroundForSlide(slide);
-      const color = isPromo ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide.subType);
+      const color = isPromo ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide);
       const smartTag = getSmartTag(slide);
       const typeKey = (slide.subType || slide.type || 'Event').toLowerCase();
 
