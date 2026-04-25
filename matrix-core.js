@@ -103,7 +103,8 @@ window.MATRIX = {
       highlightColor: '#f59e0b',
       bgImage: 'images/GOLD-FLAME-LOGO-BLACK-CLEAN.png',
       isLogo: true,
-      flamePosition: '35%'
+      flamePosition: '35%',
+      disabled: true
     },
     {
       id: 'promo-karaoke',
@@ -112,7 +113,8 @@ window.MATRIX = {
       description: 'Grab the mic and sing your heart out! Join us for a fun-filled night of music and entertainment.',
       price: '8 PM - 11 PM',
       highlightColor: '#8b5cf6',
-      bgImage: '_backgrounds/music.jpg'
+      bgImage: '_backgrounds/music.jpg',
+      disabled: true
     },
     {
       id: 'promo-band',
@@ -122,7 +124,8 @@ window.MATRIX = {
       price: '8 PM - 11 PM',
       highlightColor: '#f59e0b',
       bgImage: '_backgrounds/music.jpg',
-      isBand: true
+      isBand: true,
+      disabled: true
     },
     {
       id: 'promo-wed-prequiz',
@@ -131,7 +134,8 @@ window.MATRIX = {
       description: 'Get your teams ready! The quiz is about to begin. Grab a drink and settle in.',
       price: 'Starts at 7 PM',
       highlightColor: '#3b82f6',
-      bgImage: 'images/bg2.jpg'
+      bgImage: 'images/bg2.jpg',
+      disabled: true
     },
     {
       id: 'promo-last-drinks',
@@ -140,7 +144,8 @@ window.MATRIX = {
       description: 'The bar will be closing shortly. Please make your final orders now.',
       price: 'Final Call',
       highlightColor: '#ef4444',
-      bgImage: 'images/bg4.jpg'
+      bgImage: 'images/bg4.jpg',
+      disabled: true
     }
   ]
 };
@@ -433,6 +438,7 @@ function buildSlideQueue(data) {
 
   // 2. Add Weekly Specials (permanent advertising from _ct-slides-logo)
   window.MATRIX.WEEKLY_SPECIALS.forEach(promo => {
+    if (promo.disabled) return;
     queue.push({
       id: promo.id,
       type: 'PROMO',
