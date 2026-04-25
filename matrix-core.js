@@ -780,12 +780,17 @@ function renderActiveSlide() {
     document.body.appendChild(loader);
   }
 
-  // Fade in loader
-  loader.style.opacity = '1';
-  loader.style.visibility = 'visible';
-  loader.classList.add('active');
+  // Show loader sporadically (20% of the time)
+  const showLoader = Math.random() < 0.2;
+
+  if (showLoader) {
+    loader.style.opacity = '1';
+    loader.style.visibility = 'visible';
+    loader.classList.add('active');
+  }
 
   // Wait for fade in before swapping content
+  const transitionDelay = showLoader ? 600 : 0;
   setTimeout(() => {
     // Remove old slide
     const existing = document.getElementById('slide-target');
@@ -926,14 +931,16 @@ function renderActiveSlide() {
     }
 
     // Fade out loader after content has initialized
-    setTimeout(() => {
-      loader.style.opacity = '0';
-      loader.style.visibility = 'hidden';
+    if (showLoader) {
       setTimeout(() => {
-        loader.classList.remove('active');
-      }, 600); // Wait for CSS transition
-    }, 1000); // 1-second hold to ensure modules/images load behind it
-  }, 600); // 600ms transition-in delay
+        loader.style.opacity = '0';
+        loader.style.visibility = 'hidden';
+        setTimeout(() => {
+          loader.classList.remove('active');
+        }, 600); // Wait for CSS transition
+      }, 1000); // 1-second hold to ensure modules/images load behind it
+    }
+  }, transitionDelay);
 }
 
 /**
