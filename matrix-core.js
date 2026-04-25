@@ -737,7 +737,7 @@ function renderActiveSlide() {
     loader.style.transition = 'opacity 0.6s ease';
     loader.innerHTML = `
       <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: #000;">
-        <div class="logo-wrapper" style="position:relative; height: 60vh; display: flex; justify-content: center;">
+        <div class="logo-wrapper" style="position:relative; height: 90vh; display: flex; justify-content: center; animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
           <img src="images/GOLD-FLAME-LOGO-BLACK-CLEAN.png" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative;">
           <div class="flame-anchor" style="position: absolute; left: 50%; top: 60%; width: 0; height: 0; z-index: 3; transform: scale(1.5);">
             <div class="flame-container">
@@ -807,7 +807,7 @@ function renderActiveSlide() {
       if (isLogo) {
         slideEl.innerHTML = `
           <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: #000;">
-            <div class="logo-wrapper" style="position:relative; height: 60vh; display: flex; justify-content: center;">
+            <div class="logo-wrapper" style="position:relative; height: 90vh; display: flex; justify-content: center; animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
               <img src="${bgImg}" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative; opacity: 1; filter: none; animation: none;" />
               <div class="flame-anchor" style="position: absolute; left: 50%; top: ${slide.flamePosition || '60%'}; width: 0; height: 0; z-index: 3; transform: scale(1.5);">
                 <div class="flame-container">
@@ -892,9 +892,6 @@ function renderActiveSlide() {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         slideEl.classList.add('active');
-        // Auto-fit the title to the viewport width
-        const titleEl = slideEl.querySelector('.premium-title');
-        if (titleEl) fitText(titleEl, 28);
       });
     });
 

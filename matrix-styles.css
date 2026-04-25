@@ -130,19 +130,18 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 5vh 8vw;
+  padding: 5% 6%;
   text-align: center;
-  gap: clamp(0.8rem, 1.5vh, 1.5rem);
+  gap: 1.8rem;
   animation: slide-in-epic 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  overflow: hidden;
 }
 
 /* --- Day Tag Badge --- */
 .day-tag {
   display: inline-block;
-  padding: 0.6rem 2.5rem;
+  padding: 0.8rem 2.5rem;
   border-radius: 100px;
-  font-size: clamp(1rem, 2.5vmin, 2rem);
+  font-size: clamp(1.5rem, 1.8vw, 2.2rem);
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.15em;
@@ -157,7 +156,7 @@ body {
 /* --- Title --- */
 .premium-title {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(3rem, 8vmin, 7rem);
+  font-size: clamp(4rem, 6vw, 7rem);
   font-weight: 900;
   line-height: 1.1;
   color: #fff;
@@ -165,28 +164,30 @@ body {
   filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 1));
   letter-spacing: -0.04em;
   max-width: 90%;
+  margin: 0 auto;
   transition: all 0.5s ease;
-  white-space: nowrap;
+  word-break: keep-all;
   text-align: center;
 }
 
 /* --- Accent Divider Bar --- */
 .accent-bar {
+  width: 150px;
   height: 6px;
-  width: 320px;
-  max-width: 40%;
-  border-radius: 100px;
+  border-radius: 3px;
+  margin: 0 auto;
   background: var(--neon-gold);
   box-shadow: 0 0 30px rgba(245, 158, 11, 0.8);
 }
 
 /* --- Description / Notes --- */
 .premium-desc {
-  font-size: clamp(1.2rem, 2.5vmin, 2.2rem);
+  font-size: clamp(2rem, 2.5vw, 3rem);
   color: rgba(243, 244, 246, 0.9);
   font-weight: 600;
   line-height: 1.4;
-  max-width: 75%;
+  max-width: 80%;
+  margin: 0 auto;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.8));
   text-wrap: balance;
   text-align: center;
@@ -203,14 +204,14 @@ body {
 .premium-meta-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0.6rem 1.5rem;
+  padding: 0.8rem 2rem;
   border-radius: 1.5rem;
-  font-size: clamp(1rem, 2vmin, 1.8rem);
+  font-size: clamp(1.5rem, 1.8vw, 2.2rem);
   font-weight: 600;
 }
 
@@ -361,8 +362,9 @@ body {
   position: relative;
   border-radius: 1.5rem;
   padding: 3px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(245,158,11,0.5));
+  background: linear-gradient(135deg, rgba(255,255,255,0.8), var(--theme-color));
   overflow: hidden;
+  margin: 0 auto;
 }
 
 .price-badge-inner {
@@ -381,7 +383,7 @@ body {
 
 .price-text {
   font-family: 'Inter', sans-serif;
-  font-size: clamp(1.8rem, 3.5vmin, 3rem);
+  font-size: clamp(2.5rem, 3vw, 3.5rem);
   font-weight: 900;
   color: #fff;
   filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.8));
@@ -570,4 +572,10 @@ body {
   filter: blur(2px);
   opacity: 0.8;
   animation: flame-flicker 0.2s infinite ease-in-out;
+}
+
+@keyframes cinematicZoom {
+  0% { transform: scale(0.6); opacity: 0; filter: blur(10px); }
+  20% { opacity: 1; filter: blur(0px); }
+  100% { transform: scale(1.1); opacity: 1; filter: blur(0px); }
 }
