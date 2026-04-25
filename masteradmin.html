@@ -236,6 +236,15 @@
                 <input type="password" id="cfg-pin" placeholder="Current: 1234">
             </div>
 
+            <div style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                <h2>Module Controls</h2>
+                <label>🔥 Fireplace Ambiance Module</label>
+                <select id="cfg-fireplace">
+                    <option value="false">Disabled (Default)</option>
+                    <option value="true">Enabled</option>
+                </select>
+            </div>
+
             <button class="btn" style="width: 100%; margin-top: 2rem;" onclick="saveConfig()">Save All Settings</button>
         </div>
     </div>
@@ -545,13 +554,38 @@
             SHOW_BANNER: document.getElementById('cfg-banner').value === 'true',
             GSHEETS_URL: document.getElementById('cfg-url').value,
             WEEKS_LOOKAHEAD: parseInt(document.getElementById('cfg-sync').value),
-            ADMIN_PIN: document.getElementById('cfg-pin').value || window.MATRIX.CONFIG.ADMIN_PIN
+            ADMIN_PIN: document.getElementById('cfg-pin').value || window.MATRIX.CONFIG.ADMIN_PIN,
+            FIREPLACE_ENABLED: document.getElementById('cfg-fireplace').value === 'true'
         };
         localStorage.setItem('matrix_config', JSON.stringify(cfg));
+
+        // Apply fireplace toggle to manual slides
+        let manual = JSON.parse(localStorage.getItem('matrix_manual_slides') || '[]');
+        const firIdx = manual.findIndex(x => x.id === 'ct-fir');
+        if (firIdx > -1) {
+            manual[firIdx].disabled = !cfg.FIREPLACE_ENABLED;
+        } else {
+            manual.push({ id: 'ct-fir', type: 'MODULE', url: '../_ct-FIR/index.html', title: 'Fireplace Ambiance', disabled: !cfg.FIREPLACE_ENABLED, isManual: true, priority: 90 });
+        }
+        localStorage.setItem('matrix_manual_slides', JSON.stringify(manual));
+
         broadcastSync();
     }
 
     window.onload = () => {
+        // Load saved fireplace state into the dropdown
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            if (stored) {
+                const cfg = JSON.parse(stored);
+                if (cfg.FIREPLACE_ENABLED !== undefined) {
+                    document.getElementById('cfg-fireplace').value = String(cfg.FIREPLACE_ENABLED);
+                }
+                if (cfg.GSHEETS_URL) document.getElementById('cfg-url').value = cfg.GSHEETS_URL;
+                if (cfg.SHOW_BANNER !== undefined) document.getElementById('cfg-banner').value = String(cfg.SHOW_BANNER);
+            }
+        } catch(e) {}
+
         refreshData();
         loadModule('HOME');
     };

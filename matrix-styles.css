@@ -130,18 +130,19 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 2% 5%;
+  padding: 5vh 8vw;
   text-align: center;
-  gap: 2rem;
+  gap: clamp(0.8rem, 1.5vh, 1.5rem);
   animation: slide-in-epic 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  overflow: hidden;
 }
 
 /* --- Day Tag Badge --- */
 .day-tag {
   display: inline-block;
-  padding: 1rem 3rem;
+  padding: 0.6rem 2.5rem;
   border-radius: 100px;
-  font-size: clamp(1.8rem, 2.5vw, 2.5rem);
+  font-size: clamp(1rem, 2.5vmin, 2rem);
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.15em;
@@ -156,17 +157,16 @@ body {
 /* --- Title --- */
 .premium-title {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(6rem, 10vw, 9rem);
+  font-size: clamp(3rem, 8vmin, 7rem);
   font-weight: 900;
   line-height: 1.1;
   color: #fff;
   text-shadow: 0 0 50px var(--theme-glow);
   filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 1));
   letter-spacing: -0.04em;
-  max-width: 95%;
+  max-width: 90%;
   transition: all 0.5s ease;
-  word-wrap: break-word;
-  text-wrap: balance;
+  white-space: nowrap;
   text-align: center;
 }
 
@@ -182,13 +182,12 @@ body {
 
 /* --- Description / Notes --- */
 .premium-desc {
-  font-size: clamp(2rem, 3vw, 3rem);
+  font-size: clamp(1.2rem, 2.5vmin, 2.2rem);
   color: rgba(243, 244, 246, 0.9);
   font-weight: 600;
-  line-height: 1.5;
-  max-width: 80%;
+  line-height: 1.4;
+  max-width: 75%;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.8));
-  margin-top: 1.5rem;
   text-wrap: balance;
   text-align: center;
 }
@@ -204,14 +203,14 @@ body {
 .premium-meta-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 1rem 2rem;
+  padding: 0.6rem 1.5rem;
   border-radius: 1.5rem;
-  font-size: clamp(2rem, 3vw, 3rem);
+  font-size: clamp(1rem, 2vmin, 1.8rem);
   font-weight: 600;
 }
 
@@ -349,6 +348,8 @@ body {
 .animate-content-enter {
   animation: content-enter 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
   opacity: 0;
+  width: 100%;
+  text-align: center;
 }
 
 /* ==========================================================================
@@ -366,7 +367,7 @@ body {
 
 .price-badge-inner {
   position: relative;
-  padding: 1.5rem 3rem;
+  padding: 1rem 2.5rem;
   border-radius: calc(1.5rem - 3px);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -380,7 +381,7 @@ body {
 
 .price-text {
   font-family: 'Inter', sans-serif;
-  font-size: clamp(2.5rem, 4vw, 4rem);
+  font-size: clamp(1.8rem, 3.5vmin, 3rem);
   font-weight: 900;
   color: #fff;
   filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.8));

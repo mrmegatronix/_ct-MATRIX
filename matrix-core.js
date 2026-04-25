@@ -7,8 +7,8 @@
 window.MATRIX = {
   VERSION: '2.0.0',
   CONFIG: {
-    SWAP_DELAY: 60000,
-    MODULE_DELAY: 60000,
+    SWAP_DELAY: 30000,
+    MODULE_DELAY: 30000,
     SYNC_CHANNEL: 'ct_matrix_sync',
     WEEKS_LOOKAHEAD: 2,
     SHOW_BANNER: true,
@@ -112,7 +112,7 @@ window.MATRIX = {
       description: 'Grab the mic and sing your heart out! Join us for a fun-filled night of music and entertainment.',
       price: 'FREE ENTRY',
       highlightColor: '#8b5cf6',
-      bgImage: 'images/bg2.jpg'
+      bgImage: '_backgrounds/music.jpg'
     },
     {
       id: 'promo-band',
@@ -121,7 +121,7 @@ window.MATRIX = {
       description: 'Enjoy the best live local bands right here. Great music and great vibes.',
       price: '8 PM - 11 PM',
       highlightColor: '#f59e0b',
-      bgImage: 'images/bg3.jpg',
+      bgImage: '_backgrounds/music.jpg',
       isBand: true
     },
     {
@@ -191,9 +191,9 @@ async function initMatrix() {
     }, 15 * 60 * 1000);
   }
 
-  // 6. Hard-lock all active slide durations to 60s (override any internal module timers if needed)
-  window.MATRIX.CONFIG.SWAP_DELAY = 60000;
-  window.MATRIX.CONFIG.MODULE_DELAY = 60000;
+  // 6. Hard-lock all active slide durations to 30s (override any internal module timers if needed)
+  window.MATRIX.CONFIG.SWAP_DELAY = 30000;
+  window.MATRIX.CONFIG.MODULE_DELAY = 30000;
 
   // 6. Local File Hot-Reload Watchdog
   if (!window.MATRIX.STATE.watchdog) {
@@ -460,7 +460,7 @@ function buildSlideQueue(data) {
   queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5 });
   queue.push({ type: 'MODULE', id: 'ct-wea', url: '../_ct-WEA/index.html', title: "Christchurch Weather", priority: 80 });
   queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5 });
-  queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90 });
+  queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, disabled: true });
 
   // 5. Filter & Sort
   // Remove disabled slides
@@ -493,10 +493,23 @@ function getSmartTag(slide) {
     
     if (!eventDate) return typeLabel;
 
-    const diffDays = Math.ceil((eventDate - now) / (1000 * 60 * 60 * 24));
-    const isSport = ['nrl', 'super rugby', 'rugby', 'league'].includes((slide.subType || '').toLowerCase());
+    // Compare dates (day-level, not time-level)
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const evDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+    const diffDays = Math.round((evDay - today) / (1000 * 60 * 60 * 24));
 
-    if (diffDays >= 0 && diffDays <= 7) {
+    const isSport = ['nrl', 'super rugby', 'rugby', 'league'].includes((slide.subType || '').toLowerCase());
+    const isMusic = ['live music', 'karaoke', 'entertainment'].includes((slide.subType || '').toLowerCase());
+
+    if (diffDays === 0) {
+        if (isMusic) return 'TONIGHT: LIVE MUSIC';
+        if (isSport) return 'TONIGHT: LIVE SPORT';
+        return `TONIGHT: ${typeLabel}`;
+    } else if (diffDays === 1) {
+        if (isMusic) return 'TOMORROW: LIVE MUSIC';
+        if (isSport) return 'TOMORROW: LIVE SPORT';
+        return `TOMORROW: ${typeLabel}`;
+    } else if (diffDays >= 2 && diffDays <= 7) {
         if (isSport) return "THIS WEEK'S LIVE SPORT";
         return `THIS WEEK: ${typeLabel}`;
     } else if (diffDays > 7 && diffDays <= 14) {
@@ -552,8 +565,8 @@ function isWeekInRange(weekStr) {
  */
 function getBackgroundForSlide(slide) {
   const title = (slide.title || '').toLowerCase();
-  if (title.includes('crusaders')) return '_backgrounds/crusaders.jpg';
-  if (title.includes('warriors')) return '_backgrounds/warriors.jpg';
+  if (title.includes('crusaders')) return '_backgrounds/stadium.png';
+  if (title.includes('warriors')) return '_backgrounds/stadium.png';
 
   const bgs = window.MATRIX.BACKGROUNDS;
   if (!bgs.length) return bgs[0] || '';
@@ -563,12 +576,15 @@ function getBackgroundForSlide(slide) {
     'rugby': 0,
     'nrl': 1,
     'league': 1,
-    'karaoke': 2,
-    'live music': 3,
-    'entertainment': 2
+    'karaoke': '_backgrounds/music.jpg',
+    'live music': '_backgrounds/music.jpg',
+    'entertainment': '_backgrounds/music.jpg'
   };
 
   const typeKey = (slide.subType || '').toLowerCase();
+  if (typeof typeMap[typeKey] === 'string') {
+    return typeMap[typeKey];
+  }
   if (typeMap[typeKey] !== undefined) {
     return bgs[typeMap[typeKey] % bgs.length];
   }
@@ -876,6 +892,9 @@ function renderActiveSlide() {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         slideEl.classList.add('active');
+        // Auto-fit the title to the viewport width
+        const titleEl = slideEl.querySelector('.premium-title');
+        if (titleEl) fitText(titleEl, 28);
       });
     });
 
@@ -912,6 +931,15 @@ function formatDate(dateStr) {
   try {
     const d = new Date(dateStr);
     if (isNaN(d)) return dateStr;
+    
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const evDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const diffDays = Math.round((evDay - today) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Tonight';
+    if (diffDays === 1) return 'Tomorrow';
+    
     return d.toLocaleDateString('en-NZ', { weekday: 'long', day: 'numeric', month: 'long' });
   } catch {
     return dateStr;
