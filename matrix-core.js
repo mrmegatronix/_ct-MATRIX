@@ -421,8 +421,9 @@ function buildSlideQueue(data) {
     events.forEach(ev => {
         // More lenient check or Cloud override
         if (week.week_starting === 'Cloud Data' || isEventCurrent(ev.date) || isWeekInRange(week.week_starting)) {
+          const detId = 'ev-' + (ev.title + ev.date + ev.time).replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20);
           queue.push({
-            id: 'ev-' + Math.random().toString(36).substr(2, 9),
+            id: detId,
             type: 'EVENT',
             subType: ev.event_type || 'Event',
             title: ev.title,
@@ -451,18 +452,23 @@ function buildSlideQueue(data) {
     });
   });
 
-  // 3. Add Manual (Local) Slides
+  // 3. Apply Manual (Local) Slides (Overrides and Additions)
   window.MATRIX.STATE.manualSlides.forEach(s => {
-    queue.push({ 
-        ...s, 
+    const existingIdx = queue.findIndex(q => q.id === s.id);
+    const manualData = {
+        ...s,
         id: s.id || 'man-' + Math.random().toString(36).substr(2, 9),
         isManual: true,
-        priority: s.priority || 10 // Manual slides default higher
-    });
+        priority: s.priority || 10
+    };
+    if (existingIdx > -1) {
+        queue[existingIdx] = { ...queue[existingIdx], ...manualData };
+    } else {
+        queue.push(manualData);
+    }
   });
 
   // 4. Add Project Modules
-  queue.push({ type: 'MODULE', id: 'ct-mom', url: '../_ct-MOM/index.html', title: "Mother's Day Celebration", pinned: false, priority: 5, disabled: true });
   queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5 });
   queue.push({ type: 'MODULE', id: 'ct-wea', url: '../_ct-WEA/index.html', title: "Christchurch Weather", priority: 80 });
   queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5 });
@@ -618,8 +624,8 @@ function getHighlightColor(slide) {
     'karaoke': '#8b5cf6', // Purple
     'live music': '#f59e0b', // Orange
     'band': '#f59e0b', // Orange
-    'food': '#10b981', // Green
-    'dining': '#10b981', // Green
+    'food': '#1013b9ff', 
+    'dining': '#1013b9ff',
     'quiz': '#3b82f6', // Blue
     'trivia': '#3b82f6', // Blue
     'entertainment': '#06b6d4',

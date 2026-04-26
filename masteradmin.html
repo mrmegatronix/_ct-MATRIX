@@ -301,7 +301,28 @@
         <textarea id="edit-subtitle" rows="3"></textarea>
 
         <label>Type / Meta</label>
-        <input type="text" id="edit-type" placeholder="e.g. Dining, Promotion">
+        <select id="edit-type">
+            <option value="Event">Standard Event</option>
+            <option value="Promotion">Promotion</option>
+            <option value="Live Music">Live Music</option>
+            <option value="NRL">Sport (NRL)</option>
+            <option value="Super Rugby">Sport (Rugby)</option>
+            <option value="Dining">Dining</option>
+        </select>
+        
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1;">
+                <label>Price / Info</label>
+                <input type="text" id="edit-price" placeholder="e.g. $10 or FREE">
+            </div>
+            <div style="flex:1;">
+                <label>QR Code URL</label>
+                <input type="text" id="edit-qr" placeholder="https://...">
+            </div>
+        </div>
+
+        <label>Background Image URL</label>
+        <input type="text" id="edit-bgimage" placeholder="images/my-bg.jpg">
 
         <div style="display:flex; gap:10px; margin-top:2rem;">
             <button class="btn btn-red" style="flex:1" onclick="closeModal()">Cancel</button>
@@ -449,7 +470,10 @@
         document.getElementById('edit-id').value = '';
         document.getElementById('edit-title').value = '';
         document.getElementById('edit-subtitle').value = '';
-        document.getElementById('edit-type').value = '';
+        document.getElementById('edit-type').value = 'Event';
+        document.getElementById('edit-price').value = '';
+        document.getElementById('edit-qr').value = '';
+        document.getElementById('edit-bgimage').value = '';
         document.getElementById('edit-priority').value = '10';
         document.getElementById('slide-modal').style.display = 'flex';
     }
@@ -463,9 +487,12 @@
         if (!s) return;
         document.getElementById('modal-heading').innerText = 'Edit Slide';
         document.getElementById('edit-id').value = s.id;
-        document.getElementById('edit-title').value = s.title;
-        document.getElementById('edit-subtitle').value = s.subtitle;
-        document.getElementById('edit-type').value = s.type;
+        document.getElementById('edit-title').value = s.title || '';
+        document.getElementById('edit-subtitle').value = s.subtitle || '';
+        document.getElementById('edit-type').value = s.subType || s.type || 'Event';
+        document.getElementById('edit-price').value = s.price || '';
+        document.getElementById('edit-qr').value = s.qr || '';
+        document.getElementById('edit-bgimage').value = s.bgImage || '';
         document.getElementById('edit-priority').value = s.priority || 50;
         document.getElementById('slide-modal').style.display = 'flex';
     }
@@ -476,7 +503,11 @@
             id,
             title: document.getElementById('edit-title').value,
             subtitle: document.getElementById('edit-subtitle').value,
-            type: document.getElementById('edit-type').value,
+            type: 'EVENT', // Default manual slides to EVENT rendering style
+            subType: document.getElementById('edit-type').value,
+            price: document.getElementById('edit-price').value,
+            qr: document.getElementById('edit-qr').value,
+            bgImage: document.getElementById('edit-bgimage').value,
             priority: parseInt(document.getElementById('edit-priority').value),
             isManual: true,
             disabled: false
