@@ -32,12 +32,22 @@ This document lists the required CSV headers and data structures for all modules
 
 ## 3. CT-MOM (Mother's Day)
 **File Path**: `D:\__GITHUB\_ct-MOM\local-backup.csv`
-**Headers**: `Title,Subtitle,Type,Duration,BackgroundImg,OverlayImg,BubbleText`
+**Headers**: `Title,Subtitle,Type,Duration,BackgroundImage,OverlayImage,QR Code URL`
 
 - **Type**: `normal`, `countdown`, `qr`.
-- **BackgroundImg**: URL or path to the background image.
-- **OverlayImg**: URL or path to the overlay image.
-- **BubbleText**: Contains the destination URL for the QR code when `Type` is `qr`.
+- **QR Code URL**: The destination URL for the QR code.
+
+---
+
+## 4. CT-WEA (Weather)
+**File Path**: `D:\__GITHUB\_ct-WEA\local-backup.csv`
+**Headers**: `Date,Day,Time,Event Type,Title,Description,Price,QR Code URL`
+
+---
+
+## 5. CT-ACE (Chase the Ace)
+**File Path**: `D:\__GITHUB\_ct-ACE\local-backup.csv`
+**Headers**: `Title,Subtitle,Type,Jackpot,CurrentCard,QR Code URL`
 
 ---
 
