@@ -1,5 +1,13 @@
 # Matrix Ecosystem CSV Reference Guide
 
+> [!CAUTION]
+> ### 🛑 CRITICAL AI OPERATIONAL RULES
+> 1. **NO FAKE DATA:** This is a live, real-world advertising system. You MUST NEVER use hallucinated, placeholder, or "AI-generated" data (e.g., fake events like "Mother's Day" or "Meat Raffles"). Only data explicitly provided by the user is authorized. **False advertising is a serious legal/business risk.**
+> 2. **BACKUP AUTHORIZATION REQUIRED:** You are prohibited from implementing, activating, or modifying local backup/fallback logic without explicit authorization from the user. Local backups may contain inconsistent data and must not be used as a primary source unless authorized.
+> 3. **NO UNSANCTIONED EDITS:** Never wipe or "clean up" data files or logic paths unless specifically instructed to do so for a verified task.
+
+---
+
 This document lists the required CSV headers and data structures for all modules in the Matrix ecosystem. 
 
 > [!IMPORTANT]
