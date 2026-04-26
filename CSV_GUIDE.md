@@ -21,10 +21,11 @@ This document lists the required CSV headers and data structures for all modules
 
 ## 2. CT-MMR (Monster Meat Raffle)
 **File Path**: `D:\__GITHUB\_ct-MMR\local-backup.csv`
-**Headers**: `Title,Subtitle,Type,Duration,BackgroundImage,OverlayImage,QR Code URL,WinnerPhotos`
+**Headers**: `Title,Subtitle,Type,Duration,BackgroundImg,OverlayImg,BubbleText,WinnerPhotos`
 
 - **Type**: `normal`, `countdown`, `avatar`, `winners`.
 - **Duration**: Milliseconds (e.g., `30000`).
+- **BubbleText**: The text that appears in the speech bubble on 'avatar' slides.
 - **WinnerPhotos**: Comma-separated list of image URLs.
 
 ---
