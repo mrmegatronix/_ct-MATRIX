@@ -13,7 +13,7 @@ window.MATRIX = {
     WEEKS_LOOKAHEAD: 2,
     SHOW_BANNER: true,
     ADMIN_PIN: '1234',
-    GSHEETS_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vScH_c43zVyW-WEOMQCQWXG_aCjYOg73NFl6Ni1damBOQEEVPSq89wtv4nXyIDmPxvvPTPge3EbQhIg/pub?output=csv'
+    GSHEETS_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjplY4qgdlDPmFO4sKUoWHnBPoeqf-rY3Tc0Y50wgDbDutbTn4j_hXhW3aXhYVjvfbIlwcIOF07250/pub?gid=1948723750&single=true&output=csv'
   },
   STATE: {
     slides: [],
@@ -272,26 +272,22 @@ function applyUISettings() {
 }
 
 /**
- * Data Loading (Parallel & Fault-Tolerant)
+ * Data Loading — SINGLE SOURCE OF TRUTH: Google Sheet ONLY
+ * No local JSON, no local CSV, no local images.
+ * All slide data comes from the published Google Sheet.
  */
 async function loadAllDataSources() {
-  const results = await Promise.allSettled([
-    fetchLocalJSON(),
-    fetchCloudCSV(),
-    fetchLocalCSV(),
-    fetchLocalImages()
-  ]);
-
-  const allDataSets = [];
-  results.forEach((res, i) => {
-    if (res.status === 'fulfilled' && res.value) {
-      allDataSets.push(...res.value);
-    } else {
-      console.warn(`[MATRIX] Data source failed or was empty.`);
+  try {
+    const events = await fetchCloudCSV();
+    if (events && events.length > 0) {
+      console.log(`[MATRIX] Loaded ${events[0].events.length} events from Google Sheet (single source of truth).`);
+      return events;
     }
-  });
-
-  return allDataSets;
+  } catch (e) {
+    console.error('[MATRIX] Google Sheet fetch failed:', e);
+  }
+  console.warn('[MATRIX] No data loaded from Google Sheet.');
+  return [];
 }
 
 async function fetchLocalImages() {
@@ -393,18 +389,38 @@ function parseCSVToEvents(text) {
   }
 
   // Map to events, handle newlines
+  // New 22-column schema:
+  // 0:Date, 1:Day, 2:Event Type, 3:Event Name, 4:Details, 5:Time/Price,
+  // 6:Location, 7:Slide Footer, 8:Slide Type, 9:Hidden Notes,
+  // 10:Accent Hex Colour, 11:Countdown Finish, 12:Feature QR, 13:Footer QR,
+  // 14:Footer Hyperlink, 15:Slide Duration, 16:Slide Background,
+  // 17:Foreground Image, 18:Bubble Text, 19:Lock Slide, 20:Lock Day, 21:Lock Time
   const events = result.slice(1).map(clean => {
     return {
       date: clean[0],
       day: clean[1],
-      time: clean[2],
-      event_type: clean[3] || 'Event',
-      title: (clean[4] || '').replace(/\n/g, '<br>'),
-      notes: (clean[5] || '').replace(/\n/g, '<br>'),
-      price: clean[6],
-      qr: clean[7] // New QR Code column
+      event_type: clean[2] || 'Event',
+      title: (clean[3] || '').replace(/\n/g, '<br>'),
+      notes: (clean[4] || '').replace(/\n/g, '<br>'),
+      time: clean[5],
+      location: clean[6],
+      footer: clean[7],
+      slideType: clean[8],
+      hiddenNotes: clean[9],
+      accentColor: clean[10],
+      countdownFinish: clean[11],
+      qr: clean[12],
+      footerQR: clean[13],
+      footerLink: clean[14],
+      duration: clean[15] ? parseInt(clean[15]) : null,
+      bgImage: clean[16],
+      fgImage: clean[17],
+      bubbleText: clean[18],
+      lockSlide: clean[19],
+      lockDay: clean[20],
+      lockTime: clean[21]
     };
-  }).filter(e => e.title);
+  }).filter(e => e.title || e.date);
 
   return [{ week_starting: 'Cloud Data', events }];
 }
@@ -428,29 +444,25 @@ function buildSlideQueue(data) {
             subType: ev.event_type || 'Event',
             title: ev.title,
             subtitle: ev.notes,
-            price: ev.price,
+            price: ev.time,
             qr: ev.qr,
             meta: `${ev.day || ''} ${ev.time || ''}`,
-            date: ev.date
+            date: ev.date,
+            location: ev.location,
+            footer: ev.footer,
+            accentColor: ev.accentColor,
+            bgImage: ev.bgImage,
+            fgImage: ev.fgImage,
+            bubbleText: ev.bubbleText,
+            duration: ev.duration,
+            footerQR: ev.footerQR,
+            footerLink: ev.footerLink
           });
         }
     });
   });
 
-  // 2. Add Weekly Specials (permanent advertising from _ct-slides-logo)
-  window.MATRIX.WEEKLY_SPECIALS.forEach(promo => {
-    if (promo.disabled) return;
-    queue.push({
-      id: promo.id,
-      type: 'PROMO',
-      subType: promo.day,
-      title: promo.title,
-      subtitle: promo.description,
-      price: promo.price,
-      highlightColor: promo.highlightColor,
-      bgImage: promo.bgImage
-    });
-  });
+  // 2. Weekly Specials are now in the Google Sheet — no hardcoded injection needed.
 
   // 3. Apply Manual (Local) Slides (Overrides and Additions)
   window.MATRIX.STATE.manualSlides.forEach(s => {
