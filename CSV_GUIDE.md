@@ -51,6 +51,17 @@ This document lists the required CSV headers and data structures for all modules
 
 ---
 
+## 🗓️ Scheduling & Visibility Rules
+To ensure relevant content, the system applies the following logic based on the **Event Type** (Column 2):
+
+- **Food Specials / Promos**: Only visible for the **Current Week** (7 days ahead).
+- **Bands / Sport / Karaoke**: Visible up to **2 Weeks** in advance (14 days ahead).
+- **Everything Else**: Defaults to the **Current Week** filter.
+- **Past Events**: Automatically hidden.
+- **TBC Events**: Any slide with "TBC" or "To Be Confirmed" in the Title or Subtitle is automatically skipped.
+
+---
+
 ## 🎨 Automated Visual Logic
 The system automatically assigns premium background assets based on the **Event Type** column if no specific "Slide Background" is provided:
 

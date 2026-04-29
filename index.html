@@ -132,16 +132,9 @@
       const header = document.querySelector('.matrix-header');
       const navHub = document.querySelector('.nav-hub');
 
-      // Re-show on mouse movement for 5 seconds
-      let hideTimer;
       document.addEventListener('mousemove', () => {
         if (header) header.classList.remove('hidden');
         if (navHub) navHub.classList.remove('hidden');
-        clearTimeout(hideTimer);
-        hideTimer = setTimeout(() => {
-          if (header) header.classList.add('hidden');
-          if (navHub) navHub.classList.add('hidden');
-        }, 5000);
       });
 
       setTimeout(() => {
