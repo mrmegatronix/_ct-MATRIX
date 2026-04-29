@@ -499,13 +499,28 @@ function isSlideActive(slide) {
   const time = h + m / 60;
   const day = now.getDay(); // 0=Sun, 1=Mon, ..., 3=Wed
 
-  // 14-day lookahead filter
-  if (slide.date && !slide.isManual && slide.type !== 'PROMO') {
+  // Advanced Scheduling Logic (Based on user request)
+  if (slide.date && !slide.isManual) {
     const slideDate = new Date(slide.date);
     if (!isNaN(slideDate)) {
-      const diffDays = (slideDate.getTime() - now.getTime()) / (1000 * 3600 * 24);
-      if (diffDays > 14) return false; // More than 2 weeks away
-      if (diffDays < -1) return false; // Past event
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const diffTime = slideDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 3600 * 24));
+
+      const subType = (slide.subType || '').toLowerCase();
+      const isFood = subType.includes('food') || subType.includes('promo') || subType.includes('special') || slide.type === 'PROMO';
+      const isPriority = subType.includes('band') || subType.includes('music') || subType.includes('karaoke') || 
+                         subType.includes('nrl') || subType.includes('rugby') || subType.includes('league') || subType.includes('sport');
+
+      if (diffDays < 0) return false; // Past event
+
+      if (isPriority) {
+        if (diffDays > 14) return false; // Priority items (Bands/Sport/Karaoke) show 2 weeks ahead
+      } else {
+        // Food Specials and all other generic events only show 7 days ahead (current week)
+        if (diffDays > 7) return false; 
+      }
     }
   }
 

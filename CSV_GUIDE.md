@@ -19,6 +19,9 @@ This document lists the required CSV headers and data structures for all modules
 **Source of Truth**: Google Sheet (Published CSV URL)
 **Schema**: 24 Columns (Mandatory)
 
+### 📋 Copy-Paste Master Headers
+`Date,Day,Event Type,Event Name,Details,Time / Price,Location,Slide Footer,Slide Type,Hidden Notes,Accent Hex Colour,Countdown Finish,Feature QR,Footer QR,Footer Hyperlink,Slide Duration,Slide Background,Foreground Image,Bubble Text,Lock Slide,Lock Day,Lock Time,Transition,Zoom`
+
 | Index | Column Name | Description |
 |---|---|---|
 | 0 | **Date** | Event date (YYYY-MM-DD or DD/MM/YYYY) |
