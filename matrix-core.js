@@ -29,125 +29,14 @@ window.MATRIX = {
     'images/bg3.jpg',
     'images/bg4.jpg'
   ],
-  // Weekly specials (ported from _ct-slides-logo constants.ts)
-  WEEKLY_SPECIALS: [
-    {
-      id: 'promo-mon',
-      day: 'Monday',
-      title: "Steak Day Monday's",
-      description: 'Start your week off with a 200g Succulent Rump Steak, cooked to your liking, served with golden fries and a green garden salad.',
-      price: '$20',
-      highlightColor: '#f59e0b',
-      bgImage: 'images/bg1.jpg'
-    },
-    {
-      id: 'promo-wed',
-      day: 'Wednesday',
-      title: 'Quiz Night',
-      description: 'Every Wednesday Night from 7.00pm, $190 in prizes up for grabs. Bookings Essential.',
-      price: 'FREE ENTRY',
-      highlightColor: '#eab308',
-      bgImage: 'images/bg2.jpg'
-    },
-    {
-      id: 'promo-thu-burger',
-      day: 'Thursday',
-      title: 'Burger Day Thursdays',
-      description: 'Your choice of Chicken, Beer Battered Fish, Pork Belly or Coasters Beef Burger, all served with Golden Fries & Onion Rings.',
-      price: '$19 each or 2 for $35!',
-      highlightColor: '#f97316',
-      bgImage: 'images/bg3.jpg'
-    },
-    {
-      id: 'promo-thu-fri-happy',
-      day: 'Thursday & Friday',
-      title: 'Happy Hours!',
-      description: 'Enjoy 10% discount on selected beverages between 4.30pm & 6.30pm.',
-      price: '10% Off!',
-      highlightColor: '#3b82f6',
-      bgImage: 'images/bg4.jpg'
-    },
-    {
-      id: 'promo-thu-pool',
-      day: 'Thursday',
-      title: 'Free Pool Thursdays',
-      description: 'Our Pool Table is Free all day and night on Thursdays! Grab a cue and challenge your mates.',
-      price: 'FREE',
-      highlightColor: '#f97316',
-      bgImage: 'images/bg1.jpg'
-    },
-    {
-      id: 'promo-sun',
-      day: 'Sunday',
-      title: 'Two Course Sunday Roast',
-      description: 'Traditional roast of the day with roasted vegetables, seasonal greens and rich gravy, with an Ice Cream Sundae to finish.',
-      price: '$28',
-      highlightColor: '#84cc16',
-      bgImage: 'images/bg2.jpg'
-    },
-    {
-      id: 'promo-loyalty',
-      day: 'Membership',
-      title: 'Loyalty App',
-      description: 'Join our loyalty program! Earn points with every purchase and redeem them for food and drinks.',
-      price: 'Join Today',
-      highlightColor: '#8b5cf6',
-      bgImage: 'images/bg3.jpg'
-    },
-    {
-      id: 'promo-flame',
-      day: '',
-      title: '',
-      description: '',
-      price: '',
-      highlightColor: '#f59e0b',
-      bgImage: 'images/GOLD-FLAME-LOGO-BLACK-CLEAN.png',
-      isLogo: true,
-      flamePosition: '35%',
-      disabled: true
-    },
-    {
-      id: 'promo-karaoke',
-      day: 'Karaoke',
-      title: 'KARAOKE TONIGHT',
-      description: 'Grab the mic and sing your heart out! Join us for a fun-filled night of music and entertainment.',
-      price: '8 PM - 11 PM',
-      highlightColor: '#8b5cf6',
-      bgImage: '_backgrounds/music.jpg',
-      disabled: true
-    },
-    {
-      id: 'promo-band',
-      day: 'Live Music',
-      title: 'Live Band',
-      description: 'Enjoy the best live local bands right here. Great music and great vibes.',
-      price: '8 PM - 11 PM',
-      highlightColor: '#f59e0b',
-      bgImage: '_backgrounds/music.jpg',
-      isBand: true,
-      disabled: true
-    },
-    {
-      id: 'promo-wed-prequiz',
-      day: 'Starting Soon!',
-      title: 'Quiz Night Buildup',
-      description: 'Get your teams ready! The quiz is about to begin. Grab a drink and settle in.',
-      price: 'Starts at 7 PM',
-      highlightColor: '#3b82f6',
-      bgImage: 'images/bg2.jpg',
-      disabled: true
-    },
-    {
-      id: 'promo-last-drinks',
-      day: 'Closing Time',
-      title: 'Last Drinks!',
-      description: 'The bar will be closing shortly. Please make your final orders now.',
-      price: 'Final Call',
-      highlightColor: '#ef4444',
-      bgImage: 'images/bg4.jpg',
-      disabled: true
-    }
-  ]
+  // State management
+  STATE: {
+    slides: [],
+    currentIndex: -1,
+    isPaused: false,
+    timer: null,
+    manualSlides: [] // Local edits saved here
+  }
 };
 
 const bc = new BroadcastChannel(window.MATRIX.CONFIG.SYNC_CHANNEL);
@@ -200,37 +89,26 @@ async function initMatrix() {
   window.MATRIX.CONFIG.SWAP_DELAY = 30000;
   window.MATRIX.CONFIG.MODULE_DELAY = 30000;
 
-  // 6. Local File Hot-Reload Watchdog
+  // 6. GSheet Watchdog (optional but keeping for consistency)
   if (!window.MATRIX.STATE.watchdog) {
     window.MATRIX.STATE.lastModifiedTags = {};
     window.MATRIX.STATE.watchdog = setInterval(async () => {
       try {
-        const files = ['matrix-data.json', 'local-images.json', 'local-backup.csv'];
-        let changed = false;
-        
-        for (let file of files) {
-           const res = await fetch(file + '?t=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
-           if (res.ok) {
-             // Combine Length and Date for a robust fingerprint
-             const fingerprint = (res.headers.get('Content-Length') || '') + (res.headers.get('Last-Modified') || '');
-             if (window.MATRIX.STATE.lastModifiedTags[file] && window.MATRIX.STATE.lastModifiedTags[file] !== fingerprint) {
-                console.log(`[MATRIX Watchdog] Detected changes in ${file}`);
-                changed = true;
-             }
-             window.MATRIX.STATE.lastModifiedTags[file] = fingerprint;
-           }
-        }
-
-        if (changed) {
-           console.log('[MATRIX Watchdog] Hot-Reloading All Data Sources...');
-           const freshData = await loadAllDataSources();
-           buildSlideQueue(freshData);
-           
-           // Notify UI admin panels if open
-           if (bc) bc.postMessage({ type: 'DATA_HOT_RELOADED' });
+        const url = window.MATRIX.CONFIG.GSHEETS_URL;
+        if (!url) return;
+        const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
+        if (res.ok) {
+          const fingerprint = (res.headers.get('Content-Length') || '') + (res.headers.get('Last-Modified') || '');
+          if (window.MATRIX.STATE.lastModifiedTags['gsheet'] && window.MATRIX.STATE.lastModifiedTags['gsheet'] !== fingerprint) {
+              console.log(`[MATRIX Watchdog] Detected changes in GSheet`);
+              const freshData = await loadAllDataSources();
+              buildSlideQueue(freshData);
+              if (bc) bc.postMessage({ type: 'DATA_HOT_RELOADED' });
+          }
+          window.MATRIX.STATE.lastModifiedTags['gsheet'] = fingerprint;
         }
       } catch (e) {}
-    }, 3000);
+    }, 60000); // Check GSheet every minute instead of every 3 seconds
   }
 }
 
@@ -290,49 +168,7 @@ async function loadAllDataSources() {
   return [];
 }
 
-async function fetchLocalImages() {
-  try {
-    const res = await fetch('local-images.json?t=' + Date.now());
-    if (!res.ok) return [];
-    
-    // We wrap it in a pseudo-event structure so buildSlideQueue can process it easily.
-    const images = await res.json();
-    if (!images || !images.length) return [];
-    
-    // Convert directly to standard queue items
-    window.MATRIX.STATE.manualSlides = [
-      ...window.MATRIX.STATE.manualSlides.filter(m => !m.isGenerated),
-      ...images.map(img => ({ ...img, isGenerated: true }))
-    ];
-    
-    return []; // Handled via manualSlides injection so it bypasses standard event parsing
-  } catch(e) {
-    return [];
-  }
-}
 
-async function fetchLocalCSV() {
-  try {
-    const res = await fetch('local-backup.csv?t=' + Date.now());
-    if (!res.ok) return [];
-    const csv = await res.text();
-    return parseCSVToEvents(csv);
-  } catch (e) {
-    console.error('[MATRIX] Local CSV backup failed', e);
-    return [];
-  }
-}
-
-async function fetchLocalJSON() {
-  try {
-    const res = await fetch('matrix-data.json?t=' + Date.now());
-    if (!res.ok) return [];
-    return await res.json();
-  } catch (e) {
-    console.error('[MATRIX] Local JSON failed', e);
-    return [];
-  }
-}
 
 async function fetchCloudCSV() {
   const url = window.MATRIX.CONFIG.GSHEETS_URL;
