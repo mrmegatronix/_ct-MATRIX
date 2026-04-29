@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>_ct-MATRIX | TEST SANDBOX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../matrix-styles.css">
+  <style>
+    body { background: #050505; color: #fff; overflow: hidden; }
+    .test-badge {
+        position: fixed; top: 1rem; right: 1rem;
+        background: #ef4444; color: white;
+        padding: 5px 15px; border-radius: 5px;
+        font-family: 'Inter', sans-serif; font-weight: 900;
+        z-index: 9999; letter-spacing: 2px;
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+    }
+    .slide-viewport { width: 100vw; height: 100vh; position: relative; }
+    
+    /* Simplified controls for testing */
+    .test-controls {
+        position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+        display: flex; gap: 1rem; z-index: 10000;
+        opacity: 0.3; transition: opacity 0.3s;
+    }
+    .test-controls:hover { opacity: 1; }
+    .btn {
+        background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+        color: white; padding: 10px 20px; border-radius: 30px; cursor: pointer;
+        font-family: 'Inter', sans-serif; font-weight: 700; backdrop-filter: blur(10px);
+    }
+    .btn:hover { background: #fff; color: #000; }
+  </style>
+</head>
+<body>
+  <div class="test-badge">TEST SANDBOX</div>
+  
+  <main class="slide-viewport" id="slide-viewport">
+    <div style="display:flex; justify-content:center; align-items:center; height:100vh;">
+        <h2 style="font-family:'Inter'; color:#444;">INITIALIZING TEST DATA...</h2>
+    </div>
+  </main>
+
+  <div class="test-controls">
+    <button class="btn" onclick="window.location.href='../index.html'">BACK TO LIVE</button>
+    <button class="btn" onclick="window.nextSlide()">NEXT SLIDE</button>
+    <button class="btn" onclick="location.reload()">RELOAD SHEET</button>
+  </div>
+
+  <script src="matrix-test-core.js"></script>
+  <script>
+    window.onload = () => {
+        setTimeout(() => {
+            window.initMatrix();
+        }, 500);
+    };
+  </script>
+</body>
+</html>
