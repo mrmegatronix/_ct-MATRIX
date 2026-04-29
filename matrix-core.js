@@ -426,6 +426,28 @@ function parseCSVToEvents(text) {
 }
 
 /**
+ * Default Background Assignment by Event Type
+ * Sheet's 'Slide Background' column takes priority; this is the fallback.
+ */
+function getDefaultBackground(eventType) {
+  if (!eventType) return '';
+  const t = eventType.toLowerCase();
+  // Sport: Crusaders, NRL, Warriors, Rugby, Finals
+  if (t.includes('rugby') || t.includes('nrl') || t.includes('warriors') || t.includes('crusaders')) {
+    return '_backgrounds/stadium.png';
+  }
+  // Music: Karaoke, Band
+  if (t.includes('karaoke') || t.includes('band') || t.includes('🟠') || t.includes('🟣')) {
+    return '_backgrounds/music.jpg';
+  }
+  // Quiz
+  if (t.includes('quiz')) {
+    return '_backgrounds/quiz.png';
+  }
+  return '';
+}
+
+/**
  * Queue Construction
  */
 function buildSlideQueue(data) {
@@ -451,7 +473,7 @@ function buildSlideQueue(data) {
             location: ev.location,
             footer: ev.footer,
             accentColor: ev.accentColor,
-            bgImage: ev.bgImage,
+            bgImage: ev.bgImage || getDefaultBackground(ev.event_type),
             fgImage: ev.fgImage,
             bubbleText: ev.bubbleText,
             duration: ev.duration,
