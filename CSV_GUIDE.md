@@ -16,14 +16,44 @@ This document lists the required CSV headers and data structures for all modules
 ---
 
 ## 1. CT-MATRIX (Main Events)
-**File Path**: `D:\__GITHUB\_ct-MATRIX\local-backup.csv`
-**Headers**: `Date,Day,Time,Event Type,Title,Description,Price,QR Code URL`
+**Source of Truth**: Google Sheet (Published CSV URL)
+**Schema**: 24 Columns (Mandatory)
 
-- **Date**: Preferred format `YYYY-MM-DD` or `DD/MM/YYYY`.
-- **Event Type**: Categorization (e.g., Dining, Raffle, Sport, Promo, Karaoke).
-- **Description**: Supports multi-line input (Shift+Enter in GSheets).
-- **Price**: Displayed in the pulse-glow badge.
-- **QR Code URL**: If provided, a QR code will be automatically generated on the slide.
+| Index | Column Name | Description |
+|---|---|---|
+| 0 | **Date** | Event date (YYYY-MM-DD or DD/MM/YYYY) |
+| 1 | **Day** | Name of the day |
+| 2 | **Event Type** | Category (Rugby, Karaoke, Quiz, etc.) |
+| 3 | **Event Name** | Primary slide title |
+| 4 | **Details** | Multi-line description (Shift+Enter supported) |
+| 5 | **Time / Price** | Displayed in the pulse-glow badge |
+| 6 | **Location** | Venue area or address |
+| 7 | **Slide Footer** | Custom footer text for this slide |
+| 8 | **Slide Type** | internal type (Event, Promo, etc.) |
+| 9 | **Hidden Notes** | Admin notes (not displayed) |
+| 10 | **Accent Hex Colour**| Custom theme color (e.g. #f59e0b) |
+| 11 | **Countdown Finish**| Target date/time for countdown slides |
+| 12 | **Feature QR** | Primary QR code URL |
+| 13 | **Footer QR** | Secondary QR code for the footer |
+| 14 | **Footer Hyperlink**| Link for the footer text |
+| 15 | **Slide Duration** | Time in ms (default 30000) |
+| 16 | **Slide Background**| Path to specific BG image (overrides auto) |
+| 17 | **Foreground Image**| Path to overlay image (PNG) |
+| 18 | **Bubble Text** | Floating badge text |
+| 19 | **Lock Slide** | Prevent automatic cycling |
+| 20 | **Lock Day** | Sync with specific day |
+| 21 | **Lock Time** | Sync with specific time |
+| 22 | **Transition** | Effect: `ScrollDown`, `Fade` (default) |
+| 23 | **Zoom** | BG Image scale factor (e.g. `1.2`, `1.5`) |
+
+---
+
+## 🎨 Automated Visual Logic
+The system automatically assigns premium background assets based on the **Event Type** column if no specific "Slide Background" is provided:
+
+- **Stadium Background** (`stadium.png`): Assigned to `Rugby`, `NRL`, `Warriors`, `Crusaders`.
+- **Music Background** (`music.jpg`): Assigned to `Karaoke`, `Band`, or music emojis.
+- **Quiz Background** (`quiz.png`): Assigned to `Quiz`.
 
 ---
 

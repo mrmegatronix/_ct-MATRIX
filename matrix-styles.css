@@ -103,6 +103,24 @@ body {
   height: 100%;
   object-fit: cover;
   animation: subtleZoom 35s linear infinite alternate;
+  transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Custom Zoom override from CSV */
+.slide[data-zoom] .slide-bg img {
+  transform: scale(var(--zoom-level, 1.2));
+  animation: none; /* Disable standard subtle zoom if custom zoom is set */
+}
+
+/* Scroll Down Transition */
+.slide.scroll-down {
+  transform: translateY(-100%) scale(1.1);
+  opacity: 0;
+}
+
+.slide.scroll-down.active {
+  transform: translateY(0) scale(1);
+  opacity: 1;
 }
 
 .slide-bg-overlay {

@@ -230,7 +230,8 @@ function parseCSVToEvents(text) {
   // 6:Location, 7:Slide Footer, 8:Slide Type, 9:Hidden Notes,
   // 10:Accent Hex Colour, 11:Countdown Finish, 12:Feature QR, 13:Footer QR,
   // 14:Footer Hyperlink, 15:Slide Duration, 16:Slide Background,
-  // 17:Foreground Image, 18:Bubble Text, 19:Lock Slide, 20:Lock Day, 21:Lock Time
+  // 17:Foreground Image, 18:Bubble Text, 19:Lock Slide, 20:Lock Day, 21:Lock Time,
+  // 22:Transition, 23:Zoom
   const events = result.slice(1).map(clean => {
     return {
       date: clean[0],
@@ -254,7 +255,9 @@ function parseCSVToEvents(text) {
       bubbleText: clean[18],
       lockSlide: clean[19],
       lockDay: clean[20],
-      lockTime: clean[21]
+      lockTime: clean[21],
+      transition: clean[22],
+      zoom: clean[23]
     };
   }).filter(e => e.title || e.date);
 
@@ -265,21 +268,31 @@ function parseCSVToEvents(text) {
  * Default Background Assignment by Event Type
  * Sheet's 'Slide Background' column takes priority; this is the fallback.
  */
-function getDefaultBackground(eventType) {
-  if (!eventType) return '';
-  const t = eventType.toLowerCase();
-  // Sport: Crusaders, NRL, Warriors, Rugby, Finals
-  if (t.includes('rugby') || t.includes('nrl') || t.includes('warriors') || t.includes('crusaders')) {
+function getDefaultBackground(eventType, title) {
+  const t = (eventType || '').toLowerCase();
+  const name = (title || '').toLowerCase();
+  
+  // Specific branding matches
+  if (t.includes('rugby') || t.includes('nrl') || t.includes('warriors') || t.includes('crusaders') || 
+      name.includes('warriors') || name.includes('crusaders') || name.includes('nrl')) {
     return '_backgrounds/stadium.png';
   }
-  // Music: Karaoke, Band
-  if (t.includes('karaoke') || t.includes('band') || t.includes('🟠') || t.includes('🟣')) {
+  
+  if (t.includes('karaoke') || t.includes('band') || t.includes('music') || t.includes('🟠') || t.includes('🟣')) {
     return '_backgrounds/music.jpg';
   }
-  // Quiz
+  
   if (t.includes('quiz')) {
     return '_backgrounds/quiz.png';
   }
+  
+  // Fallback to rotation
+  const bgs = window.MATRIX.BACKGROUNDS || [];
+  if (bgs.length > 0) {
+    const hash = (t + name).split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    return bgs[hash % bgs.length];
+  }
+  
   return '';
 }
 
@@ -309,12 +322,14 @@ function buildSlideQueue(data) {
             location: ev.location,
             footer: ev.footer,
             accentColor: ev.accentColor,
-            bgImage: ev.bgImage || getDefaultBackground(ev.event_type),
+            bgImage: ev.bgImage || getDefaultBackground(ev.event_type, ev.event_name),
             fgImage: ev.fgImage,
             bubbleText: ev.bubbleText,
             duration: ev.duration,
             footerQR: ev.footerQR,
-            footerLink: ev.footerLink
+            footerLink: ev.footerLink,
+            transition: ev.transition,
+            zoom: ev.zoom
           });
         }
     });
@@ -445,36 +460,6 @@ function isWeekInRange(weekStr) {
  * Background Wallpaper Selection
  * Maps event types to specific backgrounds for visual variety.
  */
-function getBackgroundForSlide(slide) {
-  const title = (slide.title || '').toLowerCase();
-  if (title.includes('crusaders')) return '_backgrounds/stadium.png';
-  if (title.includes('warriors')) return '_backgrounds/stadium.png';
-
-  const bgs = window.MATRIX.BACKGROUNDS;
-  if (!bgs.length) return bgs[0] || '';
-  
-  const typeMap = {
-    'super rugby': 0,
-    'rugby': 0,
-    'nrl': 1,
-    'league': 1,
-    'karaoke': '_backgrounds/music.jpg',
-    'live music': '_backgrounds/music.jpg',
-    'entertainment': '_backgrounds/music.jpg'
-  };
-
-  const typeKey = (slide.subType || '').toLowerCase();
-  if (typeof typeMap[typeKey] === 'string') {
-    return typeMap[typeKey];
-  }
-  if (typeMap[typeKey] !== undefined) {
-    return bgs[typeMap[typeKey] % bgs.length];
-  }
-  
-  // Fallback: hash-based rotation for variety
-  const hash = (slide.id || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  return bgs[hash % bgs.length];
-}
 
 /**
  * Get the highlight color for event type badges
@@ -692,7 +677,16 @@ function renderActiveSlide() {
     // Create fresh slide element
     const slideEl = document.createElement('div');
     slideEl.id = 'slide-target';
-    slideEl.className = 'slide';
+    
+    // Apply custom transition class
+    const transitionClass = (slide.transition || '').toLowerCase().replace(/\s/g, '-');
+    slideEl.className = 'slide ' + transitionClass;
+
+    // Apply custom zoom if specified
+    if (slide.zoom) {
+      slideEl.setAttribute('data-zoom', 'true');
+      slideEl.style.setProperty('--zoom-level', slide.zoom);
+    }
 
     // Apply dynamic theme variables
     const themeColor = slide.type === 'PROMO' ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide);
@@ -712,7 +706,7 @@ function renderActiveSlide() {
     } else {
       const isPromo = slide.type === 'PROMO';
       const isLogo = slide.isLogo || (!slide.title && !slide.subtitle && slide.bgImage && slide.bgImage.includes('LOGO'));
-      const bgImg = isPromo ? (slide.bgImage || getBackgroundForSlide(slide)) : getBackgroundForSlide(slide);
+      const bgImg = slide.bgImage || getDefaultBackground(slide.subType, slide.title);
       const color = isPromo ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide);
       const smartTag = getSmartTag(slide);
       const typeKey = (slide.subType || slide.type || 'Event').toLowerCase();
