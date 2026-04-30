@@ -17,10 +17,10 @@ This document lists the required CSV headers and data structures for all modules
 
 ## 1. CT-MATRIX (Main Events)
 **Source of Truth**: Google Sheet (Published CSV URL)
-**Schema**: 24 Columns (Mandatory)
+**Schema**: 25 Columns (Mandatory)
 
 ### 📋 Copy-Paste Master Headers
-`Date,Day,Event Type,Event Name,Details,Time / Price,Location,Slide Footer,Slide Type,Hidden Notes,Accent Hex Colour,Countdown Finish,Feature QR,Footer QR,Footer Hyperlink,Slide Duration,Slide Background,Foreground Image,Bubble Text,Lock Slide,Lock Day,Lock Time,Transition,Zoom`
+`Date,Day,Event Type,Event Name,Details,Start Time,Price,Location,Slide Footer,Slide Type,Hidden Notes,Accent Hex Colour,Countdown Finish,Feature QR,Footer QR,Footer Hyperlink,Slide Duration,Slide Background,Foreground Image,Bubble Text,Lock Slide,Lock Day,Lock Time,Transition,Zoom`
 
 | Index | Column Name | Description |
 |---|---|---|
@@ -29,25 +29,26 @@ This document lists the required CSV headers and data structures for all modules
 | 2 | **Event Type** | Category (Rugby, Karaoke, Quiz, etc.) |
 | 3 | **Event Name** | Primary slide title |
 | 4 | **Details** | Multi-line description (Shift+Enter supported) |
-| 5 | **Time / Price** | Displayed in the pulse-glow badge |
-| 6 | **Location** | Venue area or address |
-| 7 | **Slide Footer** | Custom footer text for this slide |
-| 8 | **Slide Type** | internal type (Event, Promo, etc.) |
-| 9 | **Hidden Notes** | Admin notes (not displayed) |
-| 10 | **Accent Hex Colour**| Custom theme color (e.g. #f59e0b) |
-| 11 | **Countdown Finish**| Target date/time for countdown slides |
-| 12 | **Feature QR** | Primary QR code URL |
-| 13 | **Footer QR** | Secondary QR code for the footer |
-| 14 | **Footer Hyperlink**| Link for the footer text |
-| 15 | **Slide Duration** | Time in ms (default 30000) |
-| 16 | **Slide Background**| Path to specific BG image (overrides auto) |
-| 17 | **Foreground Image**| Path to overlay image (PNG) |
-| 18 | **Bubble Text** | Floating badge text |
-| 19 | **Lock Slide** | Prevent automatic cycling |
-| 20 | **Lock Day** | Sync with specific day |
-| 21 | **Lock Time** | Sync with specific time |
-| 22 | **Transition** | Effect: `ScrollDown`, `Fade` (default) |
-| 23 | **Zoom** | BG Image scale factor (e.g. `1.2`, `1.5`) |
+| 5 | **Start Time** | Specific event start time |
+| 6 | **Price** | Cost or special pricing |
+| 7 | **Location** | Venue area or address |
+| 8 | **Slide Footer** | Custom footer text for this slide |
+| 9 | **Slide Type** | internal type (Event, Promo, etc.) |
+| 10 | **Hidden Notes** | Admin notes (not displayed) |
+| 11 | **Accent Hex Colour**| Custom theme color (e.g. #f59e0b) |
+| 12 | **Countdown Finish**| Target date/time for countdown slides |
+| 13 | **Feature QR** | Primary QR code URL |
+| 14 | **Footer QR** | Secondary QR code for the footer |
+| 15 | **Footer Hyperlink**| Link for the footer text |
+| 16 | **Slide Duration** | Time in ms (default 30000) |
+| 17 | **Slide Background**| Path to specific BG image (overrides auto) |
+| 18 | **Foreground Image**| Path to overlay image (PNG) |
+| 19 | **Bubble Text** | Floating badge text |
+| 20 | **Lock Slide** | Prevent automatic cycling |
+| 21 | **Lock Day** | Sync with specific day |
+| 22 | **Lock Time** | Sync with specific time |
+| 23 | **Transition** | Effect: `ScrollDown`, `Fade` (default) |
+| 24 | **Zoom** | BG Image scale factor (e.g. `1.2`, `1.5`) |
 
 ---
 

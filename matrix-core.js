@@ -227,11 +227,12 @@ function parseCSVToEvents(text) {
   // Map to events, handle newlines
   // New 22-column schema:
   // 0:Date, 1:Day, 2:Event Type, 3:Event Name, 4:Details, 5:Time/Price,
-  // 6:Location, 7:Slide Footer, 8:Slide Type, 9:Hidden Notes,
-  // 10:Accent Hex Colour, 11:Countdown Finish, 12:Feature QR, 13:Footer QR,
-  // 14:Footer Hyperlink, 15:Slide Duration, 16:Slide Background,
-  // 17:Foreground Image, 18:Bubble Text, 19:Lock Slide, 20:Lock Day, 21:Lock Time,
-  // 22:Transition, 23:Zoom
+  // 0:Date, 1:Day, 2:Event Type, 3:Event Name, 4:Details, 5:Start Time,
+  // 6:Price, 7:Location, 8:Slide Footer, 9:Slide Type, 10:Hidden Notes,
+  // 11:Accent Hex Colour, 12:Countdown Finish, 13:Feature QR, 14:Footer QR,
+  // 15:Footer Hyperlink, 16:Slide Duration, 17:Slide Background,
+  // 18:Foreground Image, 19:Bubble Text, 20:Lock Slide, 21:Lock Day, 22:Lock Time,
+  // 23:Transition, 24:Zoom
   const events = result.slice(1).map(clean => {
     return {
       date: clean[0],
@@ -239,25 +240,26 @@ function parseCSVToEvents(text) {
       event_type: clean[2] || 'Event',
       title: (clean[3] || '').replace(/\n/g, '<br>'),
       notes: (clean[4] || '').replace(/\n/g, '<br>'),
-      time: clean[5],
-      location: clean[6],
-      footer: clean[7],
-      slideType: clean[8],
-      hiddenNotes: clean[9],
-      accentColor: clean[10],
-      countdownFinish: clean[11],
-      qr: clean[12],
-      footerQR: clean[13],
-      footerLink: clean[14],
-      duration: clean[15] ? parseInt(clean[15]) : null,
-      bgImage: clean[16],
-      fgImage: clean[17],
-      bubbleText: clean[18],
-      lockSlide: clean[19],
-      lockDay: clean[20],
-      lockTime: clean[21],
-      transition: clean[22],
-      zoom: clean[23]
+      time: clean[5], // Start Time
+      price: clean[6], // Price
+      location: clean[7],
+      footer: clean[8],
+      slideType: clean[9],
+      hiddenNotes: clean[10],
+      accentColor: clean[11],
+      countdownFinish: clean[12],
+      qr: clean[13],
+      footerQR: clean[14],
+      footerLink: clean[15],
+      duration: clean[16] ? parseInt(clean[16]) : null,
+      bgImage: clean[17],
+      fgImage: clean[18],
+      bubbleText: clean[19],
+      lockSlide: clean[20],
+      lockDay: clean[21],
+      lockTime: clean[22],
+      transition: clean[23],
+      zoom: clean[24]
     };
   }).filter(e => e.title || e.date);
 
@@ -306,8 +308,12 @@ function buildSlideQueue(data) {
   data.forEach(week => {
     const events = week.events || [];
     events.forEach(ev => {
-        // More lenient check or Cloud override
-        if (week.week_starting === 'Cloud Data' || isEventCurrent(ev.date) || isWeekInRange(week.week_starting)) {
+        // Apply subtypes lookahead (7 days vs 14 days)
+        const isCurrent = (week.week_starting === 'Cloud Data') ? 
+                          isEventCurrent(ev.date, ev.event_type) : 
+                          (isEventCurrent(ev.date, ev.event_type) || isWeekInRange(week.week_starting));
+
+        if (isCurrent) {
           const detId = 'ev-' + (ev.title + ev.date + ev.time).replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20);
           queue.push({
             id: detId,
@@ -315,9 +321,9 @@ function buildSlideQueue(data) {
             subType: ev.event_type || 'Event',
             title: ev.title,
             subtitle: ev.notes,
-            price: ev.time,
+            price: ev.price || ev.time,
             qr: ev.qr,
-            meta: `${ev.day || ''} ${ev.time || ''}`,
+            meta: `${ev.day || ''} ${ev.time || ''} ${ev.price ? ' | ' + ev.price : ''}`,
             date: ev.date,
             location: ev.location,
             footer: ev.footer,
@@ -440,13 +446,26 @@ function fitText(el, minSize = 40) {
     }
 }
 
-function isEventCurrent(dateStr) {
+function isEventCurrent(dateStr, subType) {
     if (!dateStr) return true;
     const evDate = new Date(dateStr);
     const today = new Date();
     today.setHours(0,0,0,0);
-    // Include events that haven't passed today
-    return evDate >= today;
+    
+    // 1. Past events are always hidden
+    if (evDate < today) return false;
+    
+    const diffDays = Math.round((evDate - today) / (1000 * 60 * 60 * 24));
+    const type = (subType || '').toLowerCase();
+    
+    // 2. Determine Lookahead Limit
+    // Bands, Sport, and Karaoke get 14 days. Everything else (Food Specials, Promos) get 7 days.
+    const isSpecialEvent = type.includes('band') || type.includes('sport') || type.includes('karaoke') || 
+                           type.includes('nrl') || type.includes('rugby') || type.includes('music');
+    
+    const limit = isSpecialEvent ? 14 : 7;
+    
+    return diffDays <= limit;
 }
 
 function isWeekInRange(weekStr) {

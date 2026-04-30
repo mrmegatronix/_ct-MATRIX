@@ -312,14 +312,17 @@
         
         <div style="display:flex; gap:10px;">
             <div style="flex:1;">
+                <label>Start Time</label>
+                <input type="text" id="edit-time" placeholder="e.g. 7:00 PM">
+            </div>
+            <div style="flex:1;">
                 <label>Price / Info</label>
                 <input type="text" id="edit-price" placeholder="e.g. $10 or FREE">
             </div>
-            <div style="flex:1;">
-                <label>QR Code URL</label>
-                <input type="text" id="edit-qr" placeholder="https://...">
-            </div>
         </div>
+
+        <label>QR Code URL</label>
+        <input type="text" id="edit-qr" placeholder="https://...">
 
         <label>Background Image URL</label>
         <input type="text" id="edit-bgimage" placeholder="images/my-bg.jpg">
@@ -490,6 +493,7 @@
         document.getElementById('edit-title').value = s.title || '';
         document.getElementById('edit-subtitle').value = s.subtitle || '';
         document.getElementById('edit-type').value = s.subType || s.type || 'Event';
+        document.getElementById('edit-time').value = s.time || '';
         document.getElementById('edit-price').value = s.price || '';
         document.getElementById('edit-qr').value = s.qr || '';
         document.getElementById('edit-bgimage').value = s.bgImage || '';
@@ -505,6 +509,7 @@
             subtitle: document.getElementById('edit-subtitle').value,
             type: 'EVENT', // Default manual slides to EVENT rendering style
             subType: document.getElementById('edit-type').value,
+            time: document.getElementById('edit-time').value,
             price: document.getElementById('edit-price').value,
             qr: document.getElementById('edit-qr').value,
             bgImage: document.getElementById('edit-bgimage').value,

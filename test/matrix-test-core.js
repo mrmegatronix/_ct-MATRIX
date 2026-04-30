@@ -1,6 +1,6 @@
 /**
  * MATRIX Core - TEST ENVIRONMENT (v2.0.0)
- * Pointed to Test GSheet: https://docs.google.com/spreadsheets/d/e/2PACX-1vTjplY4qgdlDPmFO4sKUoWHnBPoeqf-rY3Tc0Y50wgDbDutbTn4j_hXhW3aXhYVjvfbIlwcIOF07250/pub?gid=1350797471&single=true&output=csv
+ * COMPLETE MIRROR OF PRODUCTION ENGINE FOR SANDBOX TESTING
  */
 
 window.MATRIX = {
@@ -8,7 +8,7 @@ window.MATRIX = {
   CONFIG: {
     SWAP_DELAY: 30000,
     MODULE_DELAY: 30000,
-    SYNC_CHANNEL: 'ct_matrix_sync_test', // Separate channel for test
+    SYNC_CHANNEL: 'ct_matrix_sync_test',
     WEEKS_LOOKAHEAD: 2,
     SHOW_BANNER: true,
     ADMIN_PIN: '1234',
@@ -32,41 +32,11 @@ window.MATRIX = {
 const bc = new BroadcastChannel(window.MATRIX.CONFIG.SYNC_CHANNEL);
 
 async function initMatrix() {
-  console.log('[MATRIX TEST] Booting test display engine...');
+  console.log('[MATRIX TEST] Booting test engine...');
   const data = await loadAllDataSources();
   buildSlideQueue(data);
   if (window.MATRIX.STATE.slides.length > 0) {
     nextSlide();
-  } else {
-    showStatus('Error: No test slides to display');
-  }
-  
-  bc.onmessage = (e) => {
-    switch(e.data.type) {
-      case 'NEXT': window.nextSlide(); break;
-      case 'PREV': window.prevSlide(); break;
-      case 'TOGGLE': window.togglePause(); break;
-    }
-  };
-
-  // Watchdog for test sheet
-  if (!window.MATRIX.STATE.watchdog) {
-    window.MATRIX.STATE.lastModifiedTags = {};
-    window.MATRIX.STATE.watchdog = setInterval(async () => {
-      try {
-        const url = window.MATRIX.CONFIG.GSHEETS_URL;
-        const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
-        if (res.ok) {
-          const fingerprint = (res.headers.get('Content-Length') || '') + (res.headers.get('Last-Modified') || '');
-          if (window.MATRIX.STATE.lastModifiedTags['gsheet'] && window.MATRIX.STATE.lastModifiedTags['gsheet'] !== fingerprint) {
-              console.log(`[MATRIX TEST] Detected changes in Test GSheet`);
-              const freshData = await loadAllDataSources();
-              buildSlideQueue(freshData);
-          }
-          window.MATRIX.STATE.lastModifiedTags['gsheet'] = fingerprint;
-        }
-      } catch (e) {}
-    }, 10000); // 10s watchdog for faster testing
   }
 }
 
@@ -86,41 +56,26 @@ function parseCSVToEvents(text) {
   let row = [];
   let col = '';
   let inQuotes = false;
-
   for (let i = 0; i < text.length; i++) {
     const char = text[i];
     const nextChar = text[i+1];
-
     if (inQuotes) {
-      if (char === '"' && nextChar === '"') {
-        col += '"';
-        i++;
-      } else if (char === '"') {
-        inQuotes = false;
-      } else {
-        col += char;
-      }
+      if (char === '"' && nextChar === '"') { col += '"'; i++; }
+      else if (char === '"') inQuotes = false;
+      else col += char;
     } else {
-      if (char === '"') {
-        inQuotes = true;
-      } else if (char === ',') {
-        row.push(col.trim());
-        col = '';
-      } else if (char === '\n' || (char === '\r' && nextChar === '\n')) {
+      if (char === '"') inQuotes = true;
+      else if (char === ',') { row.push(col.trim()); col = ''; }
+      else if (char === '\n' || (char === '\r' && nextChar === '\n')) {
         if (char === '\r') i++;
         row.push(col.trim());
         result.push(row);
         row = [];
         col = '';
-      } else {
-        col += char;
-      }
+      } else col += char;
     }
   }
-  if (col || row.length > 0) {
-    row.push(col.trim());
-    result.push(row);
-  }
+  if (col || row.length > 0) { row.push(col.trim()); result.push(row); }
 
   const events = result.slice(1).map(clean => {
     return {
@@ -129,21 +84,23 @@ function parseCSVToEvents(text) {
       event_type: clean[2] || 'Event',
       title: (clean[3] || '').replace(/\n/g, '<br>'),
       notes: (clean[4] || '').replace(/\n/g, '<br>'),
-      time: clean[5],
-      location: clean[6],
-      footer: clean[7],
-      slideType: clean[8],
-      accentColor: clean[10],
-      qr: clean[12],
-      duration: clean[15] ? parseInt(clean[15]) : null,
-      bgImage: clean[16],
-      fgImage: clean[17],
-      bubbleText: clean[18],
-      transition: clean[22],
-      zoom: clean[23]
+      time: clean[5], // Start Time
+      price: clean[6], // Price
+      location: clean[7],
+      footer: clean[8],
+      slideType: clean[9],
+      accentColor: clean[11],
+      qr: clean[13],
+      footerQR: clean[14],
+      footerLink: clean[15],
+      duration: clean[16] ? parseInt(clean[16]) : null,
+      bgImage: clean[17],
+      fgImage: clean[18],
+      bubbleText: clean[19],
+      transition: clean[23],
+      zoom: clean[24]
     };
   }).filter(e => e.title || e.date);
-
   return [{ week_starting: 'Test Data', events }];
 }
 
@@ -151,36 +108,29 @@ function buildSlideQueue(data) {
   const queue = [];
   data.forEach(week => {
     week.events.forEach(ev => {
-      if (isSlideActive(ev)) {
-        queue.push({
-          id: 'test-' + Math.random().toString(36).substr(2, 9),
-          type: 'EVENT',
-          subType: ev.event_type,
-          title: ev.title,
-          subtitle: ev.notes,
-          price: ev.time,
-          qr: ev.qr,
-          date: ev.date,
-          accentColor: ev.accentColor,
-          bgImage: ev.bgImage || '../images/bg1.jpg',
-          fgImage: ev.fgImage,
-          duration: ev.duration,
-          transition: ev.transition,
-          zoom: ev.zoom
-        });
-      }
+      queue.push({
+        id: 'test-' + Math.random().toString(36).substr(2, 9),
+        type: 'EVENT',
+        subType: ev.event_type,
+        title: ev.title,
+        subtitle: ev.notes,
+        price: ev.price || ev.time,
+        qr: ev.qr,
+        date: ev.date,
+        accentColor: ev.accentColor,
+        bgImage: ev.bgImage || '../images/bg1.jpg',
+        fgImage: ev.fgImage,
+        bubbleText: ev.bubbleText,
+        duration: ev.duration,
+        footerQR: ev.footerQR,
+        footerLink: ev.footerLink,
+        transition: ev.transition,
+        zoom: ev.zoom
+      });
     });
   });
   window.MATRIX.STATE.slides = queue;
   console.log(`[MATRIX TEST] Queue built with ${queue.length} slides.`);
-}
-
-function isSlideActive(slide) {
-    // In test mode, we show everything regardless of date filters
-    // Unless the user explicitly wants to test the filters.
-    // For "Personal testing of slides", let's keep it simple.
-    if (slide.title && slide.title.toLowerCase().includes('tbc')) return false;
-    return true; 
 }
 
 function nextSlide() {
@@ -196,13 +146,19 @@ function renderActiveSlide() {
   if (!container || !slide) return;
   
   clearTimeout(window.MATRIX.STATE.timer);
-  
-  // Clean container
-  container.innerHTML = '';
-  
+  const oldSlide = document.getElementById('slide-target');
+  if (oldSlide) oldSlide.remove();
+
   const slideEl = document.createElement('div');
-  slideEl.className = 'slide active ' + (slide.transition || 'fade-in').toLowerCase();
-  
+  slideEl.id = 'slide-target';
+  const transitionClass = (slide.transition || 'fade-in').toLowerCase().replace(/\s/g, '-');
+  slideEl.className = 'slide ' + transitionClass;
+
+  if (slide.zoom) {
+    slideEl.setAttribute('data-zoom', 'true');
+    slideEl.style.setProperty('--zoom-level', slide.zoom);
+  }
+
   const themeColor = slide.accentColor || '#f59e0b';
   document.documentElement.style.setProperty('--theme-color', themeColor);
 
@@ -215,12 +171,14 @@ function renderActiveSlide() {
       <div class="day-tag" style="background: ${themeColor}40; border-color: ${themeColor};">${slide.subType || 'TEST'}</div>
       <h1 class="premium-title">${slide.title}</h1>
       <div class="accent-bar" style="background: ${themeColor};"></div>
-      <div class="premium-desc">${slide.subtitle || ''}</div>
+      ${slide.subtitle ? `<div class="premium-desc">${slide.subtitle}</div>` : ''}
       ${slide.price ? `<div class="price-badge"><div class="price-badge-inner">${slide.price}</div></div>` : ''}
+      ${slide.qr ? `<div style="margin-top:2rem; background:#fff; padding:10px; border-radius:10px; display:inline-block;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.qr)}" style="width:150px; height:150px; display:block;"></div>` : ''}
     </div>
   `;
   
   container.appendChild(slideEl);
+  requestAnimationFrame(() => { slideEl.classList.add('active'); });
   
   const delay = slide.duration || window.MATRIX.CONFIG.SWAP_DELAY;
   window.MATRIX.STATE.timer = setTimeout(nextSlide, delay);
