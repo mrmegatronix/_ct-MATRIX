@@ -137,14 +137,9 @@ function applyUISettings() {
   const header = document.querySelector('.matrix-header');
   if (header) {
     if (window.MATRIX.CONFIG.SHOW_BANNER) {
-      header.style.display = 'flex';
-      header.style.opacity = '1';
-      header.style.transition = 'opacity 1s ease';
-      setTimeout(() => {
-        header.style.opacity = '0';
-      }, 10000);
+      header.classList.remove('hidden');
     } else {
-      header.style.display = 'none';
+      header.classList.add('hidden');
     }
   }
 }

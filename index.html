@@ -28,7 +28,11 @@
     .nav-link:hover { color: var(--accent); }
 
     /* Auto-hide classes */
-    .matrix-header.hidden, .nav-hub.hidden { opacity: 0; pointer-events: none; }
+    .matrix-header, .nav-hub { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+    .matrix-header.hidden, .nav-hub.hidden { display: none !important; }
+    
+    body:hover .matrix-header:not(.hidden), 
+    body:hover .nav-hub:not(.hidden) { opacity: 1; pointer-events: auto; }
 
     /* Slide Controls - hover to reveal */
     .slide-controls {
