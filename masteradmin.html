@@ -452,6 +452,10 @@
                 <div class="slide-main">
                     <div>
                         <div class="slide-title">${s.title}</div>
+                        <div style="font-size: 0.75rem; color: var(--accent); margin-top: 2px;">
+                            ${s.time ? '🕒 ' + s.time : ''} 
+                            ${s.price ? ' • 💰 ' + s.price : ''}
+                        </div>
                         <div style="font-size: 0.65rem; opacity: 0.5; margin-top: 5px;">${s.type} • ID: ${s.id.slice(0,8)}</div>
                     </div>
                     <div class="slide-priority">P:${s.priority || 50}</div>
