@@ -170,7 +170,7 @@ function setupHeaderAutoHide() {
     headerTimer = setTimeout(() => {
       header.classList.add('hidden-auto');
       if (nav) nav.classList.add('hidden-auto');
-    }, 10000); // 10 seconds
+    }, 3000); // 3 seconds - fast clear for venue displays
   }
 
   window.addEventListener('mousemove', resetTimer);
@@ -733,8 +733,8 @@ function renderActiveSlide() {
     document.body.appendChild(loader);
   }
 
-  // Show loader sporadically (5% of the time, was 20%)
-  const showLoader = Math.random() < 0.05;
+  // Show loader sporadically (Disabled as requested - annoying)
+  const showLoader = false; 
 
   if (showLoader) {
     loader.style.opacity = '1';
