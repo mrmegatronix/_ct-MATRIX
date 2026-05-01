@@ -344,6 +344,10 @@ function buildSlideQueue(data) {
                           (isEventCurrent(ev.date, ev.event_type) || isWeekInRange(week.week_starting));
 
         if (isCurrent) {
+          // Skip TBC/TBA entries — not ready for display
+          const tbcCheck = [ev.title, ev.notes, ev.event_type].join(' ').toLowerCase();
+          if (/\btbc\b|\btba\b|to be confirmed|to be announced/i.test(tbcCheck)) return;
+
           const detId = 'ev-' + (ev.title + ev.date + ev.time).replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20);
           queue.push({
             id: detId,

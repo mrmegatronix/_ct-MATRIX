@@ -530,6 +530,8 @@
             notes:r[4]||'', time:r[5]||'', price:r[6]||'', bg:r[17]||''
         })).filter(e=>{
             if(!e.title&&!e.date) return false;
+            const tbcCheck=[e.title,e.notes,e.type].join(' ');
+            if(/\btbc\b|\btba\b|to be confirmed|to be announced/i.test(tbcCheck)) return false;
             const d=parseDate(e.date); if(!d) return true;
             const diff=Math.round((d-now)/(864e5));
             return diff>=0 && diff<=14;
