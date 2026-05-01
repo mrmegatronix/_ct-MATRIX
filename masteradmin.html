@@ -491,8 +491,9 @@
         if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(str)) { const [y,m,d]=str.split('-').map(Number); return new Date(y,m-1,d); }
         if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str)) {
             const p=str.split('/').map(Number);
-            if(p[0]>12) return new Date(p[2],p[1]-1,p[0]);
-            return new Date(p[2],p[0]-1,p[1]);
+            // Default to NZ (DD/MM/YYYY)
+            if(p[1]>12) return new Date(p[2],p[0]-1,p[1]); // Middle is >12? Then it's US
+            return new Date(p[2],p[1]-1,p[0]); // Otherwise assume NZ
         }
         const d=new Date(str); return isNaN(d.getTime())?null:d;
     }
@@ -530,8 +531,9 @@
             notes:r[4]||'', time:r[5]||'', price:r[6]||'', bg:r[17]||''
         })).filter(e=>{
             if(!e.title&&!e.date) return false;
-            const tbcCheck=[e.title,e.notes,e.type].join(' ');
-            if(/\btbc\b|\btba\b|to be confirmed|to be announced/i.test(tbcCheck)) return false;
+            const tbcCheck=[e.title,e.notes,e.type].join(' ').toLowerCase();
+            if(tbcCheck.includes('tbc') || tbcCheck.includes('tba') || 
+               tbcCheck.includes('to be confirmed') || tbcCheck.includes('to be announced')) return false;
             const d=parseDate(e.date); if(!d) return true;
             const diff=Math.round((d-now)/(864e5));
             return diff>=0 && diff<=14;

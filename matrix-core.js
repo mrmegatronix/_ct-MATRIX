@@ -344,9 +344,10 @@ function buildSlideQueue(data) {
                           (isEventCurrent(ev.date, ev.event_type) || isWeekInRange(week.week_starting));
 
         if (isCurrent) {
-          // Skip TBC/TBA entries — not ready for display
+          // RUTHLESS TBC/TBA filtering - drop if it appears anywhere
           const tbcCheck = [ev.title, ev.notes, ev.event_type].join(' ').toLowerCase();
-          if (/\btbc\b|\btba\b|to be confirmed|to be announced/i.test(tbcCheck)) return;
+          if (tbcCheck.includes('tbc') || tbcCheck.includes('tba') || 
+              tbcCheck.includes('to be confirmed') || tbcCheck.includes('to be announced')) return;
 
           const detId = 'ev-' + (ev.title + ev.date + ev.time).replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20);
           queue.push({
@@ -925,22 +926,16 @@ function parseMatrixDate(dateStr) {
     return new Date(y, m - 1, d);
   }
   
-  // 2. Slash format: Could be M/D/YYYY (GSheet) or DD/MM/YYYY (manual NZ)
-  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str)) {
+    // 2. Slash format: Default to DD/MM/YYYY (NZ/UK) as per live CSV data
     const parts = str.split('/').map(Number);
-    // GSheets CSV always exports as M/D/YYYY
-    // Detect: if first part > 12, it MUST be DD/MM/YYYY (day can't be >12 as a month)
-    if (parts[0] > 12) {
-      // Definitely DD/MM/YYYY
-      return new Date(parts[2], parts[1] - 1, parts[0]);
+    if (parts.length === 3) {
+      const [d, m, y] = parts;
+      // If month > 12, it's likely M/D/YYYY (US), but we prioritize D/M/YYYY
+      if (m > 12) {
+        return new Date(y, d - 1, m); // Treat as US if middle is > 12
+      }
+      return new Date(y, m - 1, d); // Default NZ
     }
-    // If second part > 12, it MUST be M/D/YYYY (day > 12 can't be a month)  
-    if (parts[1] > 12) {
-      return new Date(parts[2], parts[0] - 1, parts[1]);
-    }
-    // Ambiguous (both <= 12) — default to M/D/YYYY since data comes from GSheets
-    return new Date(parts[2], parts[0] - 1, parts[1]);
-  }
   
   // 3. Fallback to native (with caution)
   const d = new Date(str);
