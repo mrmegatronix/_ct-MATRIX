@@ -72,19 +72,18 @@ body {
 .slide {
   position: absolute;
   inset: 0;
+  opacity: 0;
+  transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  opacity: 0;
-  transform: scale(1.02);
-  transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1), transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
-  z-index: 10;
+  overflow: hidden;
+  background: #000;
 }
 
 .slide.active {
   opacity: 1;
-  transform: scale(1);
   z-index: 20;
 }
 
@@ -112,7 +111,7 @@ body {
   animation: none; /* Disable standard subtle zoom if custom zoom is set */
 }
 
-/* Scroll Down Transition */
+/* Scroll Down Transition (Slide Entrance) */
 .slide.scroll-down {
   transform: translateY(-100%) scale(1.1);
   opacity: 0;
@@ -121,6 +120,18 @@ body {
 .slide.scroll-down.active {
   transform: translateY(0) scale(1);
   opacity: 1;
+}
+
+/* Pan Down Effect (For long scrolling menus) */
+.slide.pandown.active .slide-bg img,
+.slide.pan-down.active .slide-bg img {
+  object-position: top center;
+  animation: panDownAnimation 45s linear infinite alternate;
+}
+
+@keyframes panDownAnimation {
+  0% { object-position: top center; }
+  100% { object-position: bottom center; }
 }
 
 .slide-bg-overlay {
@@ -504,22 +515,23 @@ body {
    ========================================================================== */
 
 .matrix-header {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 80px;
-  padding: 0 40px;
+  height: 120px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 100%);
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  z-index: 5000;
-  transition: opacity 0.5s ease;
+  align-items: flex-start;
+  padding: 30px 60px;
+  z-index: 1000;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
 }
+
+.matrix-header.hidden { display: none; }
+.matrix-header.hidden-auto { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+.nav-hub.hidden-auto { transform: translateY(100%); opacity: 0; pointer-events: none; }
 
 .brand {
   font-size: 1.8rem;

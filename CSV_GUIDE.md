@@ -25,30 +25,53 @@ This document lists the required CSV headers and data structures for all modules
 | Index | Column Name | Description |
 |---|---|---|
 | 0 | **Date** | Event date (YYYY-MM-DD or DD/MM/YYYY) |
-| 1 | **Day** | Name of the day |
-| 2 | **Event Type** | Category (Rugby, Karaoke, Quiz, etc.) |
-| 3 | **Event Name** | Primary slide title |
-| 4 | **Details** | Multi-line description (Shift+Enter supported) |
-| 5 | **Start Time** | Specific event start time |
-| 6 | **Price** | Cost or special pricing |
-| 7 | **Location** | Venue area or address |
-| 8 | **Slide Footer** | Custom footer text for this slide |
-| 9 | **Slide Type** | internal type (Event, Promo, etc.) |
-| 10 | **Hidden Notes** | Admin notes (not displayed) |
-| 11 | **Accent Hex Colour**| Custom theme color (e.g. #f59e0b) |
-| 12 | **Countdown Finish**| Target date/time for countdown slides |
-| 13 | **Feature QR** | Primary QR code URL |
-| 14 | **Footer QR** | Secondary QR code for the footer |
-| 15 | **Footer Hyperlink**| Link for the footer text |
-| 16 | **Slide Duration** | Time in ms (default 30000) |
-| 17 | **Slide Background**| Path to specific BG image (overrides auto) |
-| 18 | **Foreground Image**| Path to overlay image (PNG) |
-| 19 | **Bubble Text** | Floating badge text |
-| 20 | **Lock Slide** | Prevent automatic cycling |
-| 21 | **Lock Day** | Sync with specific day |
-| 22 | **Lock Time** | Sync with specific time |
-| 23 | **Transition** | Effect: `ScrollDown`, `Fade` (default) |
-| 24 | **Zoom** | BG Image scale factor (e.g. `1.2`, `1.5`) |
+| 1 | **Day** | Name of the day (e.g. Monday) |
+| 2 | **Event Type** | Category (Rugby, Karaoke, Quiz, Special, etc.) |
+| 3 | **Event Name** | Primary slide title (Supports Shift+Enter for new lines) |
+| 4 | **Details** | Subtitle/Description (Supports Shift+Enter) |
+| 5 | **Start Time** | Specific event start time (e.g. 7:00 PM) |
+| 6 | **Price** | Cost or special pricing (e.g. $25 or FREE) |
+| 7 | **Location** | Venue area (e.g. The Garden Bar) |
+| 8 | **Slide Footer** | Custom text at the very bottom of the slide |
+| 9 | **Slide Type** | System identifier (Event, Promo, MODULE) |
+| 10 | **Hidden Notes** | Internal admin notes (never displayed on screen) |
+| 11 | **Accent Hex Colour**| Custom theme color (e.g. #D4AF37) |
+| 12 | **Countdown Finish**| Target date/time for countdown logic |
+| 13 | **Feature QR** | Main QR code link (creates a white-backed QR card) |
+| 14 | **Footer QR** | Smaller QR code specifically for the footer area |
+| 15 | **Footer Hyperlink**| destination for footer clicks (interactive mode) |
+| 16 | **Slide Duration** | Time in milliseconds (default 30000) |
+| 17 | **Slide Background**| Path to custom BG image (e.g. ads/promo1.jpg) |
+| 18 | **Foreground Image**| Path to transparent PNG overlay (e.g. logos/logo.png) |
+| 19 | **Bubble Text** | Text for a floating badge (e.g. SELLING FAST) |
+| 20 | **Lock Slide** | If `TRUE`, this slide stays active (Failsafe) |
+| 21 | **Lock Day** | Force slide to only appear on a specific day |
+| 22 | **Lock Time** | Force slide to only appear at a specific time |
+| 23 | **Transition** | Animation style: `Fade`, `ScrollDown`, or `PanDown` |
+| 24 | **Zoom** | Background zoom factor (e.g. 1.2) |
+
+---
+
+## 🖼️ Image & Asset Path Guidelines
+For **Slide Background** (Col 17) and **Foreground Image** (Col 18), use the following formats:
+
+| Format | Example | Description |
+|---|---|---|
+| **Local Path** | `_backgrounds/stadium.png` | Relative to the project root (Fastest load). |
+| **Direct URL** | `https://i.imgur.com/xyz.jpg` | Full URL to a public image. |
+| **Ad Folder** | `ads/promo_banner.jpg` | Organized assets in sub-folders. |
+
+> [!WARNING]
+> **DO NOT** put image URLs in the **Transition** column. This column only accepts `Fade` or `ScrollDown`.
+
+---
+
+## 📋 Scrolling Menu Recipe
+To create a premium scrolling menu (panning from top to bottom):
+1. **Column 17 (Slide Background)**: Enter your menu image URL (e.g., `ads/menu.jpg`).
+2. **Column 23 (Transition)**: Enter **`PanDown`**.
+3. **Column 24 (Zoom)**: Enter **`1.2`** or **`1.5`** to ensure the image fills the width while scrolling.
+4. **Column 16 (Duration)**: Set to `45000` (45s) to allow enough time for a slow, readable scroll.
 
 ---
 

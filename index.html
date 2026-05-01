@@ -22,17 +22,10 @@
       border-top: 1px solid var(--border); padding: 12px 20px;
       display: flex; justify-content: center; align-items: center; gap: 20px;
       z-index: 5000;
-      transition: opacity 0.5s ease;
+      transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
     }
     .nav-link { color: #888; text-decoration: none; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
     .nav-link:hover { color: var(--accent); }
-
-    /* Auto-hide classes */
-    .matrix-header, .nav-hub { opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
-    .matrix-header.hidden, .nav-hub.hidden { display: none !important; }
-    
-    body:hover .matrix-header:not(.hidden), 
-    body:hover .nav-hub:not(.hidden) { opacity: 1; pointer-events: auto; }
 
     /* Slide Controls - hover to reveal */
     .slide-controls {
@@ -57,52 +50,25 @@
   </style>
 </head>
 <body>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <div class="matrix-bg"></div>
   
   <div id="app">
-    <header class="matrix-header hidden">
+    <header class="matrix-header">
       <div class="brand">_ct-MATRIX</div>
       <div id="clock-display">00:00:00</div>
     </header>
 
     <main class="slide-viewport" id="slide-viewport">
       <!-- Slides are injected here by matrix-core.js -->
-       <div class="slide active" id="loader-slide">
-          <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: #000;">
-            <div class="logo-wrapper" style="position:relative; height: 90vh; display: flex; justify-content: center; animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
-              <img src="images/GOLD-FLAME-LOGO-BLACK-CLEAN.png" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative;">
-              <div class="flame-anchor" style="position: absolute; left: 50%; top: 60%; width: 0; height: 0; z-index: 3; transform: scale(1.5);">
-                <div class="flame-container">
-                    <div class="flame-glow"></div>
-                    <div class="flame-core"></div>
-                    <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
-                    <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
-                    <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
-                    <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
-                </div>
-                <!-- Reflection -->
-                <div class="flame-container reflection" style="transform: scaleY(-0.6) translateY(-40px); opacity: 0.3; filter: blur(4px);">
-                    <div class="flame-glow" style="opacity:0.2;"></div>
-                    <div class="flame-core"></div>
-                    <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
-                    <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
-                    <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
-                    <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
-                </div>
-              </div>
-            </div>
-            <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
-          </div>
-       </div>
     </main>
 
     <div class="timer-bar" id="progress-bar" style="width: 0%;"></div>
 
-    <!-- Navigation Hub (Hover bottom of TV screen to show) -->
-    <nav class="nav-hub hidden">
+    <!-- Navigation Hub -->
+    <nav class="nav-hub">
         <a href="index.html" class="nav-link" style="color:var(--accent)">📺 Display</a>
         <a href="masteradmin.html" class="nav-link">🛠 Admin</a>
-        <a href="remote.html" class="nav-link">📱 Remote</a>
         <span style="color: #333">|</span>
         <a href="../_ct-MOM/index.html" class="nav-link">🌸 MOM</a>
         <a href="../_ct-MMR/index.html" class="nav-link">🥩 MMR</a>
@@ -125,22 +91,26 @@
     // Update Clock
     function updateClock() {
       const now = new Date();
-      document.getElementById('clock-display').innerText = now.toLocaleTimeString('en-NZ', { hour12: false });
+      const clockEl = document.getElementById('clock-display');
+      if (clockEl) clockEl.innerText = now.toLocaleTimeString('en-NZ', { hour12: false });
     }
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Init Logic
+    // Confetti Trigger
+    window.triggerConfetti = function() {
+      const duration = 3 * 1000;
+      const end = Date.now() + duration;
+      (function frame() {
+        confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#D4AF37', '#FFD700', '#B8860B'] });
+        confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#D4AF37', '#FFD700', '#B8860B'] });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      }());
+    };
+
+    // Init — the global functions nextSlide, prevSlide, togglePause
+    // are already exported by matrix-core.js onto the window object
     window.onload = () => {
-      // Auto-hide header and nav after 5 seconds
-      const header = document.querySelector('.matrix-header');
-      const navHub = document.querySelector('.nav-hub');
-
-      document.addEventListener('mousemove', () => {
-        if (header) header.classList.remove('hidden');
-        if (navHub) navHub.classList.remove('hidden');
-      });
-
       setTimeout(() => {
         window.initMatrix();
       }, 1000);

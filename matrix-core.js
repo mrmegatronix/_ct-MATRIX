@@ -28,15 +28,7 @@ window.MATRIX = {
     'images/bg2.jpg',
     'images/bg3.jpg',
     'images/bg4.jpg'
-  ],
-  // State management
-  STATE: {
-    slides: [],
-    currentIndex: -1,
-    isPaused: false,
-    timer: null,
-    manualSlides: [] // Local edits saved here
-  }
+  ]
 };
 
 const bc = new BroadcastChannel(window.MATRIX.CONFIG.SYNC_CHANNEL);
@@ -55,7 +47,19 @@ async function initMatrix() {
   // 2. Build Slide Queue
   buildSlideQueue(data);
   
-  // 3. Start Rotation
+  // 3. Start Rotation or Preview
+  const urlParams = new URLSearchParams(window.location.search);
+  const previewId = urlParams.get('preview');
+  
+  if (previewId) {
+    const pIdx = window.MATRIX.STATE.slides.findIndex(s => s.id === previewId);
+    if (pIdx !== -1) {
+      window.MATRIX.STATE.currentIndex = pIdx;
+      renderActiveSlide();
+      return; // Stay on this slide for preview
+    }
+  }
+
   if (window.MATRIX.STATE.slides.length > 0) {
     nextSlide();
   } else {
@@ -71,6 +75,10 @@ async function initMatrix() {
       case 'PROJECT': window.jumpToProject(e.data.id); break;
       case 'SETTINGS_UPDATE': updateConfig(e.data.payload); break;
       case 'SYNC_DATA': window.initMatrix(); break; // Reload everything
+      case 'GET_SLIDES_DUMP': 
+        bc.postMessage({ type: 'SLIDES_DUMP', slides: window.MATRIX.STATE.slides, currentIndex: window.MATRIX.STATE.currentIndex }); 
+        break;
+      case 'CONFETTI': if (window.triggerConfetti) window.triggerConfetti(); break;
     }
   };
 
@@ -135,13 +143,40 @@ function updateConfig(newConfig) {
 
 function applyUISettings() {
   const header = document.querySelector('.matrix-header');
+  const nav = document.querySelector('.nav-hub');
   if (header) {
     if (window.MATRIX.CONFIG.SHOW_BANNER) {
       header.classList.remove('hidden');
+      if (nav) nav.classList.remove('hidden');
+      setupHeaderAutoHide();
     } else {
       header.classList.add('hidden');
+      if (nav) nav.classList.add('hidden');
     }
   }
+}
+
+let headerTimer;
+function setupHeaderAutoHide() {
+  const header = document.querySelector('.matrix-header');
+  const nav = document.querySelector('.nav-hub');
+  if (!header) return;
+
+  function resetTimer() {
+    header.classList.remove('hidden-auto');
+    if (nav) nav.classList.remove('hidden-auto');
+    
+    clearTimeout(headerTimer);
+    headerTimer = setTimeout(() => {
+      header.classList.add('hidden-auto');
+      if (nav) nav.classList.add('hidden-auto');
+    }, 10000); // 10 seconds
+  }
+
+  window.addEventListener('mousemove', resetTimer);
+  window.addEventListener('touchstart', resetTimer);
+  window.addEventListener('keydown', resetTimer);
+  resetTimer();
 }
 
 /**
@@ -386,7 +421,7 @@ function buildSlideQueue(data) {
  */
 function getSmartTag(slide) {
     const now = new Date();
-    const eventDate = slide.date ? new Date(slide.date) : null;
+    const eventDate = slide.date ? parseMatrixDate(slide.date) : null;
     const typeLabel = (slide.subType || slide.type || 'Event').toUpperCase();
     
     if (!eventDate) return typeLabel;
@@ -443,20 +478,24 @@ function fitText(el, minSize = 40) {
 
 function isEventCurrent(dateStr, subType) {
     if (!dateStr) return true;
-    const evDate = new Date(dateStr);
+    const evDate = parseMatrixDate(dateStr);
+    if (!evDate) return true;
+
     const today = new Date();
     today.setHours(0,0,0,0);
     
-    // 1. Past events are always hidden
-    if (evDate < today) return false;
+    const evDay = new Date(evDate.getFullYear(), evDate.getMonth(), evDate.getDate());
     
-    const diffDays = Math.round((evDate - today) / (1000 * 60 * 60 * 24));
+    // 1. Past events are always hidden
+    if (evDay < today) return false;
+    
+    const diffDays = Math.round((evDay - today) / (1000 * 60 * 60 * 24));
     const type = (subType || '').toLowerCase();
     
     // 2. Determine Lookahead Limit
     // Bands, Sport, and Karaoke get 14 days. Everything else (Food Specials, Promos) get 7 days.
     const isSpecialEvent = type.includes('band') || type.includes('sport') || type.includes('karaoke') || 
-                           type.includes('nrl') || type.includes('rugby') || type.includes('music');
+                           type.includes('nrl') || type.includes('rugby') || type.includes('music') || type.includes('weekly');
     
     const limit = isSpecialEvent ? 14 : 7;
     
@@ -464,9 +503,11 @@ function isEventCurrent(dateStr, subType) {
 }
 
 function isWeekInRange(weekStr) {
-  const start = new Date(weekStr);
-  if (isNaN(start)) return true;
-  const diffDays = (start - new Date()) / (1000 * 60 * 60 * 24);
+  const start = parseMatrixDate(weekStr);
+  if (!start) return true;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const diffDays = (start - today) / (1000 * 60 * 60 * 24);
   return diffDays >= -7 && diffDays <= (window.MATRIX.CONFIG.WEEKS_LOOKAHEAD * 7);
 }
 
@@ -515,12 +556,12 @@ function isSlideActive(slide) {
 
   // Advanced Scheduling Logic (Based on user request)
   if (slide.date && !slide.isManual) {
-    const slideDate = new Date(slide.date);
-    if (!isNaN(slideDate)) {
+    const slideDate = parseMatrixDate(slide.date);
+    if (slideDate) {
       const today = new Date();
       today.setHours(0,0,0,0);
-      const diffTime = slideDate.getTime() - today.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 3600 * 24));
+      const evDay = new Date(slideDate.getFullYear(), slideDate.getMonth(), slideDate.getDate());
+      const diffDays = Math.round((evDay.getTime() - today.getTime()) / (1000 * 3600 * 24));
 
       const subType = (slide.subType || '').toLowerCase();
       const isFood = subType.includes('food') || subType.includes('promo') || subType.includes('special') || slide.type === 'PROMO';
@@ -687,8 +728,8 @@ function renderActiveSlide() {
     document.body.appendChild(loader);
   }
 
-  // Show loader sporadically (20% of the time)
-  const showLoader = Math.random() < 0.2;
+  // Show loader sporadically (5% of the time, was 20%)
+  const showLoader = Math.random() < 0.05;
 
   if (showLoader) {
     loader.style.opacity = '1';
@@ -811,10 +852,14 @@ function renderActiveSlide() {
             ` : ''}
             ${(slide.meta || slide.date) ? `
               <div class="premium-meta animate-content-enter" style="animation-delay: 0.4s;">
-                <div class="premium-meta-item">📅 ${
-                  (slide.date ? formatDate(slide.date) : '') + 
-                  (slide.meta && slide.date ? ' • ' : '') + 
-                  (slide.meta ? slide.meta.replace(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+/i, '') : '')
+                <div class="premium-meta-item">${(slide.subType || '').toLowerCase().includes('weekly') ? '⏰' : '📅'} ${
+                  (slide.date && !(slide.subType || '').toLowerCase().includes('weekly') ? formatDate(slide.date) : '') + 
+                  (slide.meta && slide.date && !(slide.subType || '').toLowerCase().includes('weekly') ? ' • ' : '') + 
+                  (slide.meta ? (
+                    (slide.subType || '').toLowerCase().includes('weekly') 
+                    ? slide.meta 
+                    : slide.meta.replace(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+/i, '')
+                  ) : '')
                 }</div>
               </div>
             ` : ''}
@@ -860,12 +905,51 @@ function renderActiveSlide() {
 }
 
 /**
+ * Robust Date Parser
+ * Google Sheets CSV export ALWAYS uses M/D/YYYY (US format) regardless of locale.
+ * Also handles ISO YYYY-MM-DD and explicit NZ DD/MM/YYYY (manual input).
+ */
+function parseMatrixDate(dateStr) {
+  if (!dateStr) return null;
+  if (dateStr instanceof Date) return dateStr;
+  
+  const str = String(dateStr).trim();
+  
+  // 1. ISO Format: YYYY-MM-DD
+  if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(str)) {
+    const [y, m, d] = str.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+  
+  // 2. Slash format: Could be M/D/YYYY (GSheet) or DD/MM/YYYY (manual NZ)
+  if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str)) {
+    const parts = str.split('/').map(Number);
+    // GSheets CSV always exports as M/D/YYYY
+    // Detect: if first part > 12, it MUST be DD/MM/YYYY (day can't be >12 as a month)
+    if (parts[0] > 12) {
+      // Definitely DD/MM/YYYY
+      return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+    // If second part > 12, it MUST be M/D/YYYY (day > 12 can't be a month)  
+    if (parts[1] > 12) {
+      return new Date(parts[2], parts[0] - 1, parts[1]);
+    }
+    // Ambiguous (both <= 12) — default to M/D/YYYY since data comes from GSheets
+    return new Date(parts[2], parts[0] - 1, parts[1]);
+  }
+  
+  // 3. Fallback to native (with caution)
+  const d = new Date(str);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+/**
  * Date Formatting Helper
  */
 function formatDate(dateStr) {
   try {
-    const d = new Date(dateStr);
-    if (isNaN(d)) return dateStr;
+    const d = parseMatrixDate(dateStr);
+    if (!d) return dateStr;
     
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
