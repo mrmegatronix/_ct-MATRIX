@@ -12,7 +12,7 @@ window.MATRIX = {
     WEEKS_LOOKAHEAD: 2,
     SHOW_BANNER: true,
     ADMIN_PIN: '1234',
-    GSHEETS_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjplY4qgdlDPmFO4sKUoWHnBPoeqf-rY3Tc0Y50wgDbDutbTn4j_hXhW3aXhYVjvfbIlwcIOF07250/pub?gid=1350797471&single=true&output=csv'
+    CSV_URL: 'matrix_test_data.csv'
   },
   STATE: {
     slides: [],
@@ -42,11 +42,11 @@ async function initMatrix() {
 
 async function loadAllDataSources() {
   try {
-    const res = await fetch(window.MATRIX.CONFIG.GSHEETS_URL + '&t=' + Date.now());
+    const res = await fetch(window.MATRIX.CONFIG.CSV_URL + '?t=' + Date.now());
     const csv = await res.text();
     return parseCSVToEvents(csv);
   } catch (e) {
-    console.error('[MATRIX TEST] GSheet fetch failed:', e);
+    console.error('[MATRIX TEST] CSV fetch failed:', e);
     return [];
   }
 }

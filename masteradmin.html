@@ -3,518 +3,352 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Master Admin | Matrix Ecosystem</title>
+  <title>MATRIX COMMAND CENTER | Workspace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&family=Playfair+Display:wght@900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #030712;
-      --card: #111827;
+      --surface: #0f172a;
+      --surface-bright: #1e293b;
       --accent: #06b6d4;
-      --accent-hover: #0891b2;
-      --text: #f3f4f6;
-      --border: rgba(255,255,255,0.08);
-      --red: #ef4444;
-      --green: #10b981;
-      --gold: #f59e0b;
-      --purple: #8b5cf6;
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --border: rgba(255, 255, 255, 0.1);
+      --glass: rgba(15, 23, 42, 0.98);
+      --nav-w: 260px;
+      --header-h: 70px;
     }
     
+    * { box-sizing: border-box; }
     body { 
-        background: var(--bg); 
-        color: var(--text); 
-        font-family: 'Inter', sans-serif; 
-        margin: 0; 
-        padding: 0;
-        height: 100vh;
-        overflow: hidden;
+        background: var(--bg); color: var(--text); 
+        font-family: 'Inter', sans-serif; margin: 0; padding: 0;
+        height: 100vh; overflow: hidden;
     }
-    
-    .layout {
+
+    .app-shell {
         display: grid;
-        grid-template-columns: 80px 400px 1fr;
+        grid-template-columns: var(--nav-w) 1fr;
+        grid-template-rows: var(--header-h) 1fr;
         height: 100vh;
     }
 
-    /* Primary Nav (Icons only) */
-    .nav-rail {
-        background: #020617;
-        border-right: 1px solid var(--border);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 1.5rem 0;
-        gap: 2rem;
-    }
-
-    .rail-item {
-        width: 48px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 12px;
-        cursor: pointer;
-        color: #64748b;
-        transition: 0.2s;
-        font-size: 1.4rem;
-    }
-    .rail-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
-    .rail-item.active { background: var(--accent); color: #000; box-shadow: 0 0 20px rgba(6, 182, 212, 0.4); }
-
-    /* Secondary Sidebar */
-    .sidebar {
-        background: #0f172a;
-        border-right: 1px solid var(--border);
-        display: flex;
-        flex-direction: column;
-        padding: 1.5rem;
-        overflow-y: auto;
-    }
-
-    /* Main Content Area */
-    .main-stage {
-        display: flex;
-        flex-direction: column;
-        background: #000;
-        position: relative;
-        overflow: hidden;
-    }
-
-    /* Top Bar / Status Area */
-    .top-bar {
-        background: #111827;
+    /* TOP COMMAND BAR */
+    .header-top {
+        grid-column: 1 / -1;
+        background: var(--glass);
+        backdrop-filter: blur(30px);
         border-bottom: 1px solid var(--border);
-        padding: 1rem 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        height: 70px;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 1.5rem; z-index: 1000;
+        box-shadow: 0 4px 30px rgba(0,0,0,0.5);
     }
 
-    /* Content Switching Views */
-    .view { display: none; width: 100%; height: calc(100vh - 70px); overflow-y: auto; padding: 2rem; box-sizing: border-box; }
-    .view.active { display: block; }
-
-    /* Preview Grid */
-    .preview-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-        gap: 2rem;
-    }
-    .preview-card {
-        background: var(--card);
+    .master-controls {
+        display: flex; gap: 12px;
+        background: rgba(0,0,0,0.4);
+        padding: 8px 15px; border-radius: 14px;
         border: 1px solid var(--border);
-        border-radius: 16px;
-        overflow: hidden;
-        position: relative;
-        aspect-ratio: 16/9;
-        cursor: pointer;
-        transition: 0.3s;
-    }
-    .preview-card:hover { transform: scale(1.02); border-color: var(--accent); }
-    .preview-card.active { border: 3px solid var(--accent); box-shadow: 0 0 30px rgba(6, 182, 212, 0.3); }
-    .preview-card iframe {
-        width: 1920px;
-        height: 1080px;
-        transform: scale(0.208); /* 400/1920 approx */
-        transform-origin: top left;
-        border: none;
-        pointer-events: none;
-    }
-    .preview-info {
-        position: absolute;
-        bottom: 0; left: 0; right: 0;
-        background: linear-gradient(transparent, rgba(0,0,0,0.9));
-        padding: 1.5rem 1rem 0.5rem 1rem;
-        font-weight: 700;
-        font-size: 0.9rem;
     }
 
-    /* Remote View */
-    .remote-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
-        max-width: 600px;
-        margin: 0 auto;
+    .ctrl-btn {
+        background: var(--surface-bright); border: 1px solid var(--border);
+        color: #fff; padding: 10px 18px; border-radius: 8px;
+        cursor: pointer; font-weight: 800; font-size: 0.75rem;
+        display: flex; align-items: center; gap: 8px; transition: 0.2s;
+        text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px;
     }
-    .remote-btn {
-        background: var(--card);
-        border: 1px solid var(--border);
-        padding: 2rem;
-        border-radius: 24px;
-        text-align: center;
-        cursor: pointer;
-        transition: 0.1s;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-    .remote-btn:active { transform: scale(0.95); background: var(--accent); color: #000; }
-    .remote-btn .icon { font-size: 2.5rem; }
-    .remote-btn span { font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-    .remote-btn.big { grid-column: span 2; }
+    .ctrl-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); transform: translateY(-1px); }
+    .ctrl-btn.primary { background: var(--accent); color: #000; border: none; }
 
-    /* Project Cards */
-    .project-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 1rem;
-    }
-    .project-card {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid var(--border);
-        padding: 1.5rem;
-        border-radius: 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-    .project-header { display: flex; align-items: center; gap: 12px; }
-    .project-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-
-    /* PIP Container */
-    .pip-wrapper {
-        position: fixed;
-        bottom: 2rem;
-        right: 2rem;
-        width: 384px;
-        height: 216px;
-        background: #000;
-        border: 2px solid var(--accent);
-        border-radius: 12px;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-        overflow: hidden;
-        z-index: 500;
-    }
-    .pip-wrapper iframe {
-        width: 1920px;
-        height: 1080px;
-        transform: scale(0.2);
-        transform-origin: top left;
-        border: none;
+    /* LEFT SIDEBAR */
+    .nav-side {
+        background: #020617; border-right: 1px solid var(--border);
+        padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 2rem;
     }
 
-    /* Common Components */
-    h1 { font-weight: 900; color: var(--accent); margin: 0 0 1rem 0; font-size: 1.4rem; letter-spacing: -1px; }
-    h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.5; margin-bottom: 1rem; }
+    .nav-section-title {
+        font-size: 0.6rem; text-transform: uppercase; letter-spacing: 2.5px;
+        color: var(--text-dim); margin-bottom: 1.2rem; display: flex; align-items: center; gap: 8px; opacity: 0.5;
+    }
+
+    .nav-link {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 14px; border-radius: 10px; color: var(--text-dim);
+        text-decoration: none; font-size: 0.8rem; font-weight: 600;
+        transition: 0.2s; cursor: pointer; margin-bottom: 6px;
+    }
+    .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
+    .nav-link.active { color: var(--accent); background: rgba(6, 182, 212, 0.1); font-weight: 800; border-left: 3px solid var(--accent); border-radius: 0 10px 10px 0; }
+
+    /* TREE UI */
+    .tree-node { margin-bottom: 10px; }
+    .tree-header { 
+        display: flex; align-items: center; gap: 10px; font-size: 0.75rem; font-weight: 700; color: #94a3b8;
+        padding: 8px; cursor: pointer; border-radius: 6px; transition: 0.2s;
+    }
+    .tree-header:hover { background: rgba(255,255,255,0.03); color: #fff; }
+    .tree-children { padding-left: 24px; margin-top: 5px; border-left: 1px solid var(--border); margin-left: 14px; }
+    .tree-item { 
+        font-size: 0.7rem; color: var(--text-dim); padding: 7px 0; display: block;
+        text-decoration: none; transition: 0.2s;
+    }
+    .tree-item:hover { color: var(--accent); padding-left: 5px; }
+
+    /* WORKSPACE */
+    .workspace {
+        display: grid; grid-template-columns: 1fr 1fr; background: #000; gap: 1px;
+    }
+
+    .panel { background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
+    .panel-header {
+        background: var(--surface); padding: 0.8rem 1.5rem; border-bottom: 1px solid var(--border);
+        font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;
+        display: flex; justify-content: space-between; align-items: center; color: var(--accent);
+    }
+
+    .frame-container { flex-grow: 1; background: #000; }
+    iframe { width: 100%; height: 100%; border: none; }
+
+    /* RIGHT PANE: PREVIEW + MONITOR TRAY */
+    .preview-pane { background: #000; display: flex; flex-direction: column; }
+    .preview-frame-wrap { aspect-ratio: 16/9; width: 100%; background: #000; border-bottom: 1px solid var(--border); }
     
-    .btn { background: var(--accent); color: #000; border: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.2s; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px; }
-    .btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
-    .btn-red { background: var(--red); color: #fff; }
-    .btn-outline { background: transparent; border: 1px solid var(--border); color: #fff; }
+    .monitor-tray {
+        flex-grow: 1; background: #020617; overflow-y: auto; padding: 1.5rem;
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; align-content: start;
+    }
+    .monitor-card {
+        background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+        transition: 0.3s; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+    .monitor-card:hover { border-color: var(--accent); transform: scale(1.02); }
+    .monitor-thumb { aspect-ratio: 16/9; background: #000; position: relative; overflow: hidden; }
+    .monitor-thumb iframe {
+        width: 1920px; height: 1080px; transform: scale(0.12); transform-origin: top left; pointer-events: none;
+    }
+    .monitor-label {
+        background: rgba(0,0,0,0.9); padding: 6px 12px; font-size: 0.65rem; font-weight: 900; color: #fff;
+        text-transform: uppercase; border-top: 1px solid var(--border); display: flex; justify-content: space-between;
+    }
 
-    .slide-list { display: flex; flex-direction: column; gap: 8px; }
-    .slide-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 12px; border-radius: 10px; display: flex; flex-direction: column; gap: 10px; position: relative; }
-    .slide-card.active { border-color: var(--accent); background: rgba(6, 182, 212, 0.05); }
-    .slide-card.disabled { opacity: 0.3; filter: grayscale(1); }
+    /* AUTH & TOAST */
+    .auth-overlay { position: fixed; inset: 0; background: #020617; z-index: 10000; display: flex; align-items: center; justify-content: center; }
+    .pin-box { background: var(--surface); padding: 4rem; border-radius: 40px; border: 1px solid var(--border); text-align: center; box-shadow: 0 30px 100px rgba(0,0,0,0.8); }
+    #pin-display { font-family: 'JetBrains Mono', monospace; font-size: 3.5rem; color: var(--accent); letter-spacing: 20px; margin-bottom: 3rem; height: 4rem; }
     
-    .slide-main { display: flex; justify-content: space-between; align-items: flex-start; }
-    .slide-title { font-weight: 700; font-size: 0.95rem; line-height: 1.2; }
-    
-    /* Auth Overlay */
-    .auth-overlay {
-        position: fixed; inset: 0; background: #030712; z-index: 10000;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        backdrop-filter: blur(20px);
-    }
-    .pin-pad {
-        background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-        padding: 3rem; border-radius: 30px; box-shadow: 0 20px 80px rgba(0,0,0,0.5);
-        text-align: center;
-    }
-    .pin-display {
-        font-family: 'JetBrains Mono', monospace; font-size: 2.5rem; letter-spacing: 15px;
-        margin-bottom: 2rem; color: var(--accent); min-height: 4rem;
-    }
-    .keypad {
-        display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;
-    }
-    .key {
-        width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,0.05);
-        border: 1px solid var(--border); color: #fff; font-size: 1.5rem; font-weight: 700;
-        display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;
-    }
-    .key:hover { background: var(--accent); color: #000; }
+    #toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--accent); color: #000; padding: 14px 35px; border-radius: 14px; font-weight: 900; opacity: 0; transition: 0.4s; z-index: 11000; pointer-events: none; }
+    #toast.show { opacity: 1; transform: translateY(-10px); }
 
-    #status-toast { position: fixed; top: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 10px 25px; border-radius: 50px; font-weight: 900; z-index: 11000; opacity: 0; pointer-events: none; transition: 0.3s; }
-    #status-toast.show { opacity: 1; transform: translateX(-50%) translateY(10px); }
-
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
   </style>
 </head>
 <body>
 
 <div id="auth-screen" class="auth-overlay">
-    <div class="pin-pad">
-        <h1 style="color:#fff; margin-bottom: 0.5rem;">Matrix Master Admin</h1>
-        <p style="opacity:0.5; margin-bottom: 2rem; font-size:0.8rem;">AUTHENTICATION REQUIRED</p>
-        <div class="pin-display" id="pin-display"></div>
-        <div class="keypad">
-            <div class="key" onclick="pressKey('1')">1</div>
-            <div class="key" onclick="pressKey('2')">2</div>
-            <div class="key" onclick="pressKey('3')">3</div>
-            <div class="key" onclick="pressKey('4')">4</div>
-            <div class="key" onclick="pressKey('5')">5</div>
-            <div class="key" onclick="pressKey('6')">6</div>
-            <div class="key" onclick="pressKey('7')">7</div>
-            <div class="key" onclick="pressKey('8')">8</div>
-            <div class="key" onclick="pressKey('9')">9</div>
-            <div class="key btn-red" style="font-size: 1rem; border-radius: 15px;" onclick="pressKey('C')">CLR</div>
-            <div class="key" onclick="pressKey('0')">0</div>
-            <div class="key btn-green" style="font-size: 1rem; border-radius: 15px;" onclick="pressKey('E')">OK</div>
+    <div class="pin-box">
+        <h1 style="margin:0; font-weight:900; color: var(--accent); font-size: 2rem;">MATRIX COMMAND</h1>
+        <p style="opacity:0.4; font-size: 0.7rem; margin: 0.5rem 0 3rem 0; letter-spacing: 4px;">ENCRYPTED ACCESS ONLY</p>
+        <div id="pin-display"></div>
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('1')">1</button>
+            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('2')">2</button>
+            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('3')">3</button>
+            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('4')">4</button>
+            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('5')">5</button>
+            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('6')">6</button>
+            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('7')">7</button>
+            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('8')">8</button>
+            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('9')">9</button>
+            <button class="ctrl-btn" style="padding: 25px; color:var(--accent)" onclick="pressKey('C')">C</button>
+            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('0')">0</button>
+            <button class="ctrl-btn primary" style="padding: 25px; font-size: 1.2rem;" onclick="pressKey('E')">OK</button>
         </div>
     </div>
 </div>
 
-<div id="status-toast">Ready</div>
+<div id="toast">Command Success</div>
 
-<div class="layout">
-    <!-- Rail: Main Categories -->
-    <nav class="nav-rail">
-        <div class="rail-item active" onclick="switchView('HOME')" title="Dashboard">🏠</div>
-        <div class="rail-item" onclick="switchView('REMOTE')" title="Remote Control">🎮</div>
-        <div class="rail-item" onclick="switchView('PREVIEW')" title="Slide Preview Grid">📱</div>
-        <div class="rail-item" onclick="switchView('PROJECTS')" title="Project Hub">🌸</div>
-        <div class="rail-item" onclick="switchView('SETTINGS')" title="System Settings">⚙️</div>
+<div class="app-shell">
+    <header class="header-top">
+        <div style="display:flex; align-items:center; gap: 3rem;">
+            <div style="font-weight:900; letter-spacing: -2px; font-size: 1.6rem; color: var(--accent);">MATRIX <span style="font-weight:400; opacity:0.3">COMMAND</span></div>
+            <div class="master-controls">
+                <button class="ctrl-btn" onclick="sendMaster('PREV')">« PREV</button>
+                <button class="ctrl-btn primary" onclick="sendMaster('NEXT')">NEXT SLIDE »</button>
+                <button class="ctrl-btn" onclick="sendMaster('TOGGLE')">PAUSE / PLAY</button>
+            </div>
+        </div>
+
+        <div id="context-links" style="display:flex; gap: 12px;">
+            <div style="opacity:0.2; font-size: 0.7rem; font-weight:800; letter-spacing: 1px;">SELECT MODULE TO ACTIVATE LINKS</div>
+        </div>
+    </header>
+
+    <nav class="nav-side">
+        <div>
+            <div class="nav-section-title">GLOBAL CONTROLS</div>
+            <div class="nav-link active" onclick="loadWorkspaceView('HOME')">Dashboard Home</div>
+            <div class="nav-link" onclick="loadWorkspaceView('PLAYLIST')">Playlist Grid View</div>
+        </div>
+
+        <div id="module-tree">
+            <div class="nav-section-title">PROJECT ECOSYSTEM</div>
+            
+            <div class="tree-node">
+                <div class="tree-header" onclick="toggleNode(this)">_ct-MATRIX (Core)</div>
+                <div class="tree-children">
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MATRIX', 'index.html')">Display Engine</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MATRIX', 'masteradmin.html')">Master Admin</a>
+                </div>
+            </div>
+
+            <div class="tree-node">
+                <div class="tree-header" onclick="toggleNode(this)">_ct-ACE (Chase Ace)</div>
+                <div class="tree-children" style="display:none">
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('ACE', '../_ct-ACE/index.html')">Module View</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('ACE', '../_ct-ACE/admin.html')">Admin Panel</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('ACE', '../_ct-ACE/remote.html')">Remote Controller</a>
+                </div>
+            </div>
+
+            <div class="tree-node">
+                <div class="tree-header" onclick="toggleNode(this)">_ct-MMR (Meat Raffle)</div>
+                <div class="tree-children" style="display:none">
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MMR', '../_ct-MMR/index.html')">Module View</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MMR', '../_ct-MMR/admin.html')">Admin Panel</a>
+                </div>
+            </div>
+
+            <div class="tree-node">
+                <div class="tree-header" onclick="toggleNode(this)">_ct-MOM (Mothers Day)</div>
+                <div class="tree-children" style="display:none">
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MOM', '../_ct-MOM/index.html')">Module View</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MOM', '../_ct-MOM/admin.html')">Admin Panel</a>
+                </div>
+            </div>
+
+            <!-- ADDED WEA MODULE -->
+            <div class="tree-node">
+                <div class="tree-header" onclick="toggleNode(this)">_ct-WEA (Weather)</div>
+                <div class="tree-children" style="display:none">
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('WEA', '../_ct-WEA/index.html')">Live Conditions</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('WEA', '../_ct-WEA/admin.html')">Config Panel</a>
+                </div>
+            </div>
+
+            <div class="tree-node">
+                <div class="tree-header" onclick="toggleNode(this)">_ct-FIR (Fireplace)</div>
+                <div class="tree-children" style="display:none">
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('FIR', '../_ct-FIR/index.html')">Atmosphere View</a>
+                </div>
+            </div>
+        </div>
     </nav>
 
-    <!-- Sidebar: Contextual Content -->
-    <div class="sidebar">
-        <div id="side-home">
-            <h1>Matrix Queue</h1>
-            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h2>Current Lineup</h2>
-                <button class="btn btn-outline" style="padding: 4px 8px;" onclick="openAddModal()">+</button>
+    <div class="workspace" id="main-workspace">
+        <div class="panel">
+            <div class="panel-header">
+                <span id="ctrl-title">REMOTE OPERATOR</span>
+                <span id="ctrl-url" style="opacity:0.3; font-family:'JetBrains Mono'">IDLE</span>
             </div>
-            <div class="slide-list" id="slide-list">
-                <!-- Slides injected here -->
+            <div class="frame-container">
+                <iframe id="ctrl-frame" src="about:blank"></iframe>
             </div>
         </div>
-        
-        <div id="side-remote" style="display:none">
-            <h1>Remote Active</h1>
-            <p style="font-size:0.8rem; opacity:0.5">Use the controls on the right panel to manage the live display.</p>
+
+        <div class="panel preview-pane">
+            <div class="panel-header" style="color:#fff; background: #000">
+                <span>LIVE MATRIX MONITOR</span>
+                <div class="ctrl-btn primary" style="padding: 4px 10px; font-size: 0.6rem;">LIVE FEED</div>
+            </div>
+            <div class="preview-frame-wrap">
+                <iframe id="preview-frame" src="index.html"></iframe>
+            </div>
+            <div class="panel-header">
+                <span>MULTI-MODULE MONITOR TRAY</span>
+                <span style="opacity:0.3">ALL MODULES PREVIEW</span>
+            </div>
+            <div class="monitor-tray">
+                <div class="monitor-card" onclick="loadModule('ACE', '../_ct-ACE/admin.html')">
+                    <div class="monitor-thumb"><iframe src="../_ct-ACE/index.html"></iframe></div>
+                    <div class="monitor-label"><span>CHASE ACE</span> <span style="opacity:0.5">ONLINE</span></div>
+                </div>
+                <div class="monitor-card" onclick="loadModule('MMR', '../_ct-MMR/admin.html')">
+                    <div class="monitor-thumb"><iframe src="../_ct-MMR/index.html"></iframe></div>
+                    <div class="monitor-label"><span>MEAT RAFFLE</span> <span style="opacity:0.5">ONLINE</span></div>
+                </div>
+                <div class="monitor-card" onclick="loadModule('MOM', '../_ct-MOM/admin.html')">
+                    <div class="monitor-thumb"><iframe src="../_ct-MOM/index.html"></iframe></div>
+                    <div class="monitor-label"><span>MOTHERS DAY</span> <span style="opacity:0.5">ONLINE</span></div>
+                </div>
+                <div class="monitor-card" onclick="loadModule('WEA', '../_ct-WEA/index.html')">
+                    <div class="monitor-thumb"><iframe src="../_ct-WEA/index.html"></iframe></div>
+                    <div class="monitor-label"><span>WEATHER</span> <span style="opacity:0.5">ONLINE</span></div>
+                </div>
+                <div class="monitor-card" onclick="loadModule('FIR', '../_ct-FIR/index.html')">
+                    <div class="monitor-thumb"><iframe src="../_ct-FIR/index.html"></iframe></div>
+                    <div class="monitor-label"><span>FIREPLACE</span> <span style="opacity:0.5">ONLINE</span></div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Main Stage: Workspace -->
-    <div class="main-stage">
-        <div class="top-bar">
-            <h1 id="view-title" style="margin:0">Dashboard</h1>
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-outline" onclick="forceReload()">Reload Live</button>
-                <button class="btn" onclick="refreshData()">Sync Data</button>
-            </div>
+    <div id="full-grid-view" class="full-view">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 3rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+            <h1 style="margin:0; font-weight:900; color: var(--accent);">GLOBAL PLAYLIST GRID</h1>
+            <button class="ctrl-btn" onclick="loadWorkspaceView('HOME')">CLOSE ✕</button>
         </div>
-
-        <!-- Views -->
-        <div id="view-home" class="view active">
-            <h2 style="opacity:1">Active Session Preview</h2>
-            <div style="background:#111827; border: 1px solid var(--border); border-radius: 20px; padding: 2rem; text-align: center; margin-top: 2rem;">
-                <p style="opacity:0.5; margin-bottom: 2rem;">Full display preview is available in the bottom-right PiP or via the Preview Grid.</p>
-                <div class="project-grid">
-                    <div class="project-card">
-                        <div class="project-header">
-                            <div class="project-icon" style="background:#06b6d430; color:var(--accent)">M</div>
-                            <div style="font-weight:700">Matrix Core</div>
-                        </div>
-                        <div style="font-size:0.8rem; opacity:0.6">Primary display engine active. Synchronizing 24/7.</div>
-                        <button class="btn btn-sm btn-outline" onclick="window.open('index.html','_blank')">Open Full Display</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="view-remote" class="view">
-            <div class="remote-grid">
-                <button class="remote-btn big" style="border-color:var(--accent); color:var(--accent)" onclick="sendRemote('NEXT')">
-                    <div class="icon">⏭</div>
-                    <span>Next Slide</span>
-                </button>
-                <button class="remote-btn" onclick="sendRemote('PREV')">
-                    <div class="icon">⏮</div>
-                    <span>Previous</span>
-                </button>
-                <button class="remote-btn" onclick="sendRemote('TOGGLE')">
-                    <div class="icon">⏯</div>
-                    <span>Play / Pause</span>
-                </button>
-                <div style="grid-column: span 2; margin-top: 2rem; opacity: 0.3; font-size: 0.8rem; font-weight: 800; text-transform: uppercase;">Direct Project Jump</div>
-                <button class="remote-btn" onclick="jumpProject('ct-mom')">
-                    <div class="icon">🌸</div>
-                    <span>Mothers Day</span>
-                </button>
-                <button class="remote-btn" onclick="jumpProject('ct-mmr')">
-                    <div class="icon">🥩</div>
-                    <span>Meat Raffle</span>
-                </button>
-                <button class="remote-btn big" style="border-color:var(--purple); color:#a78bfa" onclick="celebrate()">
-                    <div class="icon">✨</div>
-                    <span>Emergency Confetti</span>
-                </button>
-            </div>
-        </div>
-
-        <div id="view-preview" class="view">
-            <div class="preview-grid" id="preview-grid">
-                <!-- Grid items injected here -->
-            </div>
-        </div>
-
-        <div id="view-projects" class="view">
-            <div class="project-grid">
-                <div class="project-card">
-                    <div class="project-header">
-                        <div class="project-icon" style="background:#ec489920; color:#ec4899">🌸</div>
-                        <div style="font-weight:700">Mothers Day (MOM)</div>
-                    </div>
-                    <p style="font-size:0.8rem; opacity:0.6">Countdowns & Bookings.</p>
-                    <button class="btn btn-sm btn-outline" onclick="loadModuleViewer('../_ct-MOM/admin.html')">Admin Panel</button>
-                </div>
-                <div class="project-card">
-                    <div class="project-header">
-                        <div class="project-icon" style="background:#ef444420; color:#ef4444">🥩</div>
-                        <div style="font-weight:700">Meat Raffle (MMR)</div>
-                    </div>
-                    <p style="font-size:0.8rem; opacity:0.6">Raffle display & winner management.</p>
-                    <button class="btn btn-sm btn-outline" onclick="loadModuleViewer('../_ct-MMR/admin.html')">Admin Panel</button>
-                </div>
-                <div class="project-card">
-                    <div class="project-header">
-                        <div class="project-icon" style="background:#06b6d420; color:#06b6d4">🃏</div>
-                        <div style="font-weight:700">Chase Ace (ACE)</div>
-                    </div>
-                    <p style="font-size:0.8rem; opacity:0.6">Jackpot values & draw timers.</p>
-                    <button class="btn btn-sm btn-outline" onclick="loadModuleViewer('../_ct-ACE/admin.html')">Admin Panel</button>
-                </div>
-                <div class="project-card">
-                    <div class="project-header">
-                        <div class="project-icon" style="background:#8b5cf620; color:#8b5cf6">🌦</div>
-                        <div style="font-weight:700">Weather (WEA)</div>
-                    </div>
-                    <p style="font-size:0.8rem; opacity:0.6">Christchurch live conditions.</p>
-                    <button class="btn btn-sm btn-outline" onclick="loadModuleViewer('../_ct-WEA/index.html')">View Module</button>
-                </div>
-                <div class="project-card">
-                    <div class="project-header">
-                        <div class="project-icon" style="background:#f9731620; color:#f97316">🔥</div>
-                        <div style="font-weight:700">Fireplace (FIR)</div>
-                    </div>
-                    <p style="font-size:0.8rem; opacity:0.6">Ambiance loop control.</p>
-                    <button class="btn btn-sm btn-outline" onclick="loadModuleViewer('../_ct-FIR/index.html')">View Module</button>
-                </div>
-            </div>
-            
-            <div style="margin-top:2rem; background:#111827; border: 1px solid var(--border); border-radius: 20px; overflow:hidden; display:none" id="module-viewer-container">
-                <div style="padding:0.8rem; background:#1f2937; display:flex; justify-content:space-between; align-items:center">
-                    <span id="module-viewer-title" style="font-weight:700; font-size:0.8rem">Project Module Viewer</span>
-                    <button class="btn btn-sm btn-outline" onclick="closeModuleViewer()">Close ✕</button>
-                </div>
-                <iframe id="module-viewer" style="width:100%; height:600px; border:none" src="about:blank"></iframe>
-            </div>
-        </div>
-
-        <div id="view-settings" class="view">
-            <div style="max-width: 600px;">
-                <h2>System Configuration</h2>
-                <label>GSheet Public CSV URL</label>
-                <input type="text" id="cfg-url" placeholder="Paste .csv URL">
-                
-                <label>Auto-Sync Interval (min)</label>
-                <input type="number" id="cfg-sync" value="15">
-                
-                <label>Matrix Display Banner</label>
-                <select id="cfg-banner">
-                    <option value="true">Visible</option>
-                    <option value="false">Hidden</option>
-                </select>
-
-                <label>Admin Access PIN</label>
-                <input type="password" id="cfg-pin" placeholder="Current: 1234">
-
-                <button class="btn" style="margin-top: 2rem; width:100%" onclick="saveConfig()">Apply System Changes</button>
-            </div>
-        </div>
+        <div id="playlist-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem;"></div>
     </div>
 </div>
 
-<!-- Picture-in-Picture -->
-<div class="pip-wrapper">
-    <iframe src="index.html" id="pip-frame"></iframe>
-</div>
-
-<!-- Modals -->
-<div class="auth-overlay" id="slide-modal" style="display:none; background:rgba(0,0,0,0.9)">
-    <div class="pin-pad" style="width:450px; text-align:left">
-        <h1 id="modal-heading">Add Slide</h1>
-        <input type="hidden" id="edit-id">
-        <label>Slide Title</label>
-        <input type="text" id="edit-title" required>
-        <label>Subtitle / Description</label>
-        <textarea id="edit-subtitle" rows="3" style="width:100%; background:#000; border:1px solid var(--border); color:#fff; border-radius:8px; padding:10px"></textarea>
-        <div style="display:flex; gap:10px; margin-top:10px">
-            <div style="flex:1">
-                <label>Priority</label>
-                <input type="number" id="edit-priority" value="10">
-            </div>
-            <div style="flex:1">
-                <label>Price/Time</label>
-                <input type="text" id="edit-price">
-            </div>
-        </div>
-        <div style="display:flex; gap:10px; margin-top:2rem">
-            <button class="btn btn-red" style="flex:1" onclick="closeModal()">Cancel</button>
-            <button class="btn" style="flex:2" onclick="handleSlideSubmit()">Save Slide</button>
-        </div>
-    </div>
-</div>
-
-<!-- matrix-core.js intentionally NOT loaded here — admin uses BroadcastChannel only -->
 <script>
     const GSHEETS_DEFAULT = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjplY4qgdlDPmFO4sKUoWHnBPoeqf-rY3Tc0Y50wgDbDutbTn4j_hXhW3aXhYVjvfbIlwcIOF07250/pub?gid=1948723750&single=true&output=csv';
-    const bc_admin = new BroadcastChannel('ct_matrix_sync');
-    let currentPinInput = '';
+    const bc = new BroadcastChannel('ct_matrix_sync');
     let currentSlides = [];
+    let pinBuffer = '';
 
-    function getGSheetURL() {
-        try { const c = JSON.parse(localStorage.getItem('matrix_config')||'{}'); return c.GSHEETS_URL || GSHEETS_DEFAULT; } catch(e) { return GSHEETS_DEFAULT; }
+    function toggleNode(el) {
+        const c = el.nextElementSibling;
+        c.style.display = c.style.display === 'none' ? 'block' : 'none';
     }
 
-    // Date parser (same logic as matrix-core.js)
-    function parseDate(s) {
-        if (!s) return null;
-        const str = String(s).trim();
-        if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(str)) { const [y,m,d]=str.split('-').map(Number); return new Date(y,m-1,d); }
-        if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str)) {
-            const p=str.split('/').map(Number);
-            // Default to NZ (DD/MM/YYYY)
-            if(p[1]>12) return new Date(p[2],p[0]-1,p[1]); // Middle is >12? Then it's US
-            return new Date(p[2],p[1]-1,p[0]); // Otherwise assume NZ
-        }
-        const d=new Date(str); return isNaN(d.getTime())?null:d;
-    }
-    function fmtDate(s) {
-        const d=parseDate(s); if(!d) return s||'';
-        const now=new Date(), today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-        const ev=new Date(d.getFullYear(),d.getMonth(),d.getDate());
-        const diff=Math.round((ev-today)/(864e5));
-        if(diff===0) return 'Today'; if(diff===1) return 'Tomorrow';
-        return d.toLocaleDateString('en-NZ',{weekday:'short',day:'numeric',month:'short'});
+    function loadWorkspaceView(v) {
+        const grid = document.getElementById('full-grid-view');
+        const workspace = document.getElementById('main-workspace');
+        if(v === 'PLAYLIST') { grid.classList.add('active'); workspace.style.display = 'none'; renderPlaylistGrid(); }
+        else { grid.classList.remove('active'); workspace.style.display = 'grid'; }
     }
 
-    // Self-contained CSV fetch & parse
-    async function fetchSlides() {
-        const url = getGSheetURL();
+    function loadModule(name, url) {
+        document.getElementById('ctrl-frame').src = url;
+        document.getElementById('ctrl-title').innerText = name + ' OPERATOR';
+        document.getElementById('ctrl-url').innerText = url.split('/').pop().toUpperCase();
+        
+        const ctx = document.getElementById('context-links');
+        const basePath = url.substring(0, url.lastIndexOf('/') + 1);
+        ctx.innerHTML = `
+            <a href="${basePath}index.html" target="_blank" class="ctrl-btn">MAIN</a>
+            <a href="${basePath}admin.html" target="_blank" class="ctrl-btn">ADMIN</a>
+            <a href="${basePath}remote.html" target="_blank" class="ctrl-btn">REMOTE</a>
+        `;
+        showToast('CONNECTED TO ' + name);
+    }
+
+    function sendMaster(type) { bc.postMessage({type}); showToast('MASTER CMD: ' + type); }
+
+    async function refreshData() {
         try {
-            const res = await fetch(url + (url.includes('?')?'&':'?') + 't='+Date.now());
-            const csv = await res.text();
-            return parseCSV(csv);
-        } catch(e) { console.error('Fetch failed',e); return []; }
+            const url = localStorage.getItem('matrix_gsheet_url') || GSHEETS_DEFAULT;
+            const res = await fetch(url + '&t=' + Date.now());
+            const text = await res.text();
+            currentSlides = parseCSV(text);
+        } catch(e) { console.error(e); }
     }
+
     function parseCSV(text) {
         const rows=[]; let row=[],col='',inQ=false;
         for(let i=0;i<text.length;i++){
@@ -525,175 +359,38 @@
             else col+=c;}
         }
         if(col||row.length){row.push(col.trim());rows.push(row);}
-        const now=new Date(); now.setHours(0,0,0,0);
-        return rows.slice(1).map(r=>({
-            date:r[0], day:r[1], type:r[2]||'Event', title:(r[3]||'').replace(/\n/g,' '),
-            notes:r[4]||'', time:r[5]||'', price:r[6]||'', bg:r[17]||''
-        })).filter(e=>{
-            if(!e.title&&!e.date) return false;
-            const tbcCheck=[e.title,e.notes,e.type].join(' ').toLowerCase();
-            if(tbcCheck.includes('tbc') || tbcCheck.includes('tba') || 
-               tbcCheck.includes('to be confirmed') || tbcCheck.includes('to be announced')) return false;
-            const d=parseDate(e.date); if(!d) return true;
-            const diff=Math.round((d-now)/(864e5));
-            return diff>=0 && diff<=14;
-        });
+        return rows.slice(1).map(r => ({ title:r[3]||'', bg:r[17]||'' })).filter(e => e.title);
     }
 
-    // Navigation
-    function switchView(view) {
-        document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-        const el=document.getElementById('view-'+view.toLowerCase());
-        if(el) el.classList.add('active');
-        document.querySelectorAll('.rail-item').forEach(i=>i.classList.remove('active'));
-        event.target.closest('.rail-item')?.classList.add('active');
-        document.getElementById('view-title').innerText = {HOME:'Dashboard',REMOTE:'Remote Control',PREVIEW:'Slide Grid',PROJECTS:'Projects',SETTINGS:'Settings'}[view]||view;
-        document.getElementById('side-home').style.display=(view==='HOME'||view==='PREVIEW')?'block':'none';
-        document.getElementById('side-remote').style.display=(view==='REMOTE')?'block':'none';
-        if(view==='PREVIEW') loadPreviewGrid();
-    }
-
-    // Remote
-    function sendRemote(type){bc_admin.postMessage({type});showStatus('Sent: '+type);}
-    function jumpProject(id){bc_admin.postMessage({type:'PROJECT',id});showStatus('Jump: '+id);}
-    function celebrate(){bc_admin.postMessage({type:'CONFETTI'});showStatus('🎉 CONFETTI!');}
-
-    // Self-contained preview grid
-    async function loadPreviewGrid() {
-        const grid=document.getElementById('preview-grid');
-        if(!grid) return;
-        grid.innerHTML='<p style="opacity:0.5;text-align:center;padding:3rem">Loading slides from Google Sheet...</p>';
-        const slides=await fetchSlides();
-        currentSlides=slides;
-        if(!slides.length){grid.innerHTML='<p style="opacity:0.5;text-align:center;padding:3rem">No upcoming slides found.</p>';return;}
-        grid.innerHTML=slides.map((s,i)=>`
-            <div class="preview-card" onclick="sendRemote('NEXT')">
-                <div style="width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:1.5rem;background:${s.bg?`url(${s.bg}) center/cover`:'linear-gradient(135deg,#1a1a2e,#16213e)'};text-align:center;">
-                    <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:2px;opacity:0.7;margin-bottom:0.5rem;color:${getTypeColor(s.type)}">${s.type}</div>
-                    <div style="font-weight:900;font-size:1.1rem;line-height:1.2;text-shadow:0 2px 8px rgba(0,0,0,0.8)">${s.title}</div>
-                    ${s.notes?`<div style="font-size:0.7rem;opacity:0.7;margin-top:0.4rem">${s.notes.substring(0,60)}</div>`:''}
-                </div>
-                <div class="preview-info">
-                    <span style="color:${getTypeColor(s.type)}">${fmtDate(s.date)}</span>
-                    ${s.time?' • '+s.time:''} ${s.price?' • '+s.price:''}
+    function renderPlaylistGrid() {
+        const target = document.getElementById('playlist-grid');
+        target.innerHTML = currentSlides.map(s => `
+            <div style="background:var(--surface); border-radius:15px; overflow:hidden; border: 1px solid var(--border)">
+                <div style="aspect-ratio:16/9; background:${s.bg?`url(${s.bg}) center/cover`:'var(--surface-bright)'}; display:flex; align-items:center; justify-content:center; padding:1.5rem; text-align:center;">
+                    <div style="font-weight:900; font-size:0.9rem; text-shadow:0 3px 10px #000">${s.title}</div>
                 </div>
             </div>
         `).join('');
-        renderQueueList(slides);
-    }
-    function getTypeColor(t){
-        const k=(t||'').toLowerCase();
-        if(k.includes('rugby')||k.includes('nrl'))return'#ef4444';
-        if(k.includes('karaoke'))return'#8b5cf6';
-        if(k.includes('music')||k.includes('band'))return'#f59e0b';
-        if(k.includes('quiz'))return'#3b82f6';
-        return'#06b6d4';
     }
 
-    // Sidebar queue
-    function renderQueueList(slides){
-        const list=document.getElementById('slide-list');
-        if(!list)return;
-        list.innerHTML=slides.map((s,i)=>`
-            <div class="slide-card">
-                <div class="slide-main">
-                    <div class="slide-title" style="color:${getTypeColor(s.type)}">${s.title||'Untitled'}</div>
-                    <div style="font-size:0.65rem;opacity:0.4">${fmtDate(s.date)}</div>
-                </div>
-                <div style="font-size:0.7rem;opacity:0.5">${s.type} ${s.time?'• '+s.time:''}</div>
-            </div>
-        `).join('');
+    function pressKey(k) {
+        if(k === 'C') pinBuffer = '';
+        else if(k === 'E') {
+            const correct = localStorage.getItem('matrix_admin_pin') || '1234';
+            if(pinBuffer === correct) { document.getElementById('auth-screen').style.display = 'none'; sessionStorage.setItem('matrix_authed', 'true'); refreshData(); }
+            else { pinBuffer = ''; showToast('ACCESS DENIED'); }
+        } else if(pinBuffer.length < 8) pinBuffer += k;
+        document.getElementById('pin-display').innerText = '•'.repeat(pinBuffer.length);
     }
 
-    // BroadcastChannel listener (for live updates from display)
-    bc_admin.onmessage=(e)=>{
-        if(e.data.type==='SLIDES_DUMP'){currentSlides=e.data.slides;renderQueueList(e.data.slides);}
-        if(e.data.type==='DATA_HOT_RELOADED') loadPreviewGrid();
-    };
-
-    // Project Module Viewer
-    function loadModuleViewer(url){
-        const c=document.getElementById('module-viewer-container');
-        document.getElementById('module-viewer').src=url;
-        c.style.display='block';c.scrollIntoView({behavior:'smooth'});
-    }
-    function closeModuleViewer(){
-        document.getElementById('module-viewer-container').style.display='none';
-        document.getElementById('module-viewer').src='about:blank';
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg; t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2000);
     }
 
-    // Auth
-    function pressKey(k){
-        if(k==='C')currentPinInput='';
-        else if(k==='E')checkPin();
-        else if(currentPinInput.length<8)currentPinInput+=k;
-        document.getElementById('pin-display').innerText='●'.repeat(currentPinInput.length);
-    }
-    function checkPin(){
-        let correct='1234';
-        try{const c=JSON.parse(localStorage.getItem('matrix_config')||'{}');if(c.ADMIN_PIN)correct=c.ADMIN_PIN;}catch(e){}
-        if(currentPinInput===String(correct)){
-            document.getElementById('auth-screen').style.display='none';
-            sessionStorage.setItem('matrix_authed','true');
-            loadPreviewGrid();
-        }else{currentPinInput='';document.getElementById('pin-display').innerText='';showStatus('Incorrect PIN');}
-    }
-    if(sessionStorage.getItem('matrix_authed')==='true') document.getElementById('auth-screen').style.display='none';
-
-    function refreshData(){
-        showStatus('Syncing...');
-        bc_admin.postMessage({type:'SYNC_DATA'});
-        loadPreviewGrid();
-    }
-    function forceReload(){
-        document.getElementById('pip-frame').src='index.html?t='+Date.now();
-        bc_admin.postMessage({type:'SYNC_DATA'});
-        showStatus('Display Reloaded');
-    }
-    function showStatus(msg){
-        const el=document.getElementById('status-toast');
-        el.innerText=msg;el.classList.add('show');
-        setTimeout(()=>el.classList.remove('show'),2000);
-    }
-    function saveConfig(){
-        const cfg={
-            SHOW_BANNER:document.getElementById('cfg-banner').value==='true',
-            GSHEETS_URL:document.getElementById('cfg-url').value,
-            WEEKS_LOOKAHEAD:parseInt(document.getElementById('cfg-sync').value),
-            ADMIN_PIN:document.getElementById('cfg-pin').value
-        };
-        localStorage.setItem('matrix_config',JSON.stringify(cfg));
-        bc_admin.postMessage({type:'SETTINGS_UPDATE',payload:cfg});
-        showStatus('Settings Saved');
-    }
-    // Modal
-    function openAddModal(){document.getElementById('slide-modal').style.display='flex';}
-    function closeModal(){document.getElementById('slide-modal').style.display='none';}
-    function handleSlideSubmit(){
-        const slide={id:document.getElementById('edit-id').value||'man-'+Math.random().toString(36).substr(2,9),
-            title:document.getElementById('edit-title').value,subtitle:document.getElementById('edit-subtitle').value,
-            priority:parseInt(document.getElementById('edit-priority').value)||10,price:document.getElementById('edit-price').value,
-            type:'EVENT',isManual:true};
-        let m=[];try{m=JSON.parse(localStorage.getItem('matrix_manual_slides')||'[]');}catch(e){}
-        const i=m.findIndex(s=>s.id===slide.id);if(i>-1)m[i]=slide;else m.push(slide);
-        localStorage.setItem('matrix_manual_slides',JSON.stringify(m));
-        closeModal();refreshData();
-    }
-    function editSlide(id){
-        const s=currentSlides.find(x=>x.id===id);if(!s)return;
-        document.getElementById('edit-title').value=s.title||'';
-        document.getElementById('edit-subtitle').value=s.subtitle||s.notes||'';
-        document.getElementById('slide-modal').style.display='flex';
-    }
-
-    window.onload=()=>{
-        try{
-            const c=JSON.parse(localStorage.getItem('matrix_config')||'{}');
-            if(c.GSHEETS_URL)document.getElementById('cfg-url').value=c.GSHEETS_URL;
-            if(c.SHOW_BANNER!==undefined)document.getElementById('cfg-banner').value=String(c.SHOW_BANNER);
-            if(c.ADMIN_PIN)document.getElementById('cfg-pin').value=c.ADMIN_PIN;
-        }catch(e){}
-        if(sessionStorage.getItem('matrix_authed')==='true') loadPreviewGrid();
+    window.onload = () => {
+        if(sessionStorage.getItem('matrix_authed') === 'true') { document.getElementById('auth-screen').style.display = 'none'; refreshData(); }
     };
 </script>
 </body>
