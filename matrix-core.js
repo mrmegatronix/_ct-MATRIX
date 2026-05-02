@@ -340,67 +340,81 @@ function buildSlideQueue(data) {
   data.forEach(week => {
     const events = week.events || [];
     events.forEach(ev => {
-        // 14-day lookahead for ALL events as requested
-        const isCurrent = isEventCurrent(ev.date, ev.event_type);
+          // Handle Recurring Day-based Events
+          let daysArray = null;
+          let virtualDate = null;
+          if (ev.day && !ev.date) {
+            const dayMap = { 'sun':0,'mon':1,'tue':2,'wed':3,'thu':4,'fri':5,'sat':6 };
+            const dayStr = ev.day.toLowerCase();
+            daysArray = [];
+            Object.keys(dayMap).forEach(k => {
+              if (dayStr.includes(k)) daysArray.push(dayMap[k]);
+            });
 
-        if (isCurrent) {
-          // RUTHLESS TBC/TBA filtering - scan ALL text fields
-          const ruthlessString = [
-            ev.title, ev.notes, ev.event_type, ev.location, ev.price, ev.time, ev.hiddenNotes, ev.footer
-          ].join(' ').toLowerCase();
-
-          if (ruthlessString.includes('tbc') || ruthlessString.includes('tba') || 
-              ruthlessString.includes('to be confirmed') || ruthlessString.includes('to be announced')) {
-            return;
+            // Calculate next occurrence for lookahead/tagging
+            if (daysArray.length > 0) {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                let next = new Date(today);
+                let found = false;
+                for(let i=0; i<14; i++) {
+                    let check = new Date(today);
+                    check.setDate(today.getDate() + i);
+                    if (daysArray.includes(check.getDay())) {
+                        virtualDate = check;
+                        found = true;
+                        break;
+                    }
+                }
+            }
           }
 
-          const detId = 'ev-' + (ev.title + ev.date + ev.time).replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20);
-          queue.push({
-            id: detId,
-            type: 'EVENT',
-            subType: ev.event_type || 'Event',
-            title: ev.title,
-            subtitle: ev.notes,
-            price: ev.price, // DO NOT fallback to time (prevents double time showing)
-            qr: ev.qr,
-            meta: `${ev.day || ''} ${ev.time || ''}`.trim(),
-            date: ev.date,
-            time: ev.time,
-            location: ev.location,
-            footer: ev.footer,
-            accentColor: ev.accentColor,
-            bgImage: ev.bgImage || getDefaultBackground(ev.event_type, ev.title),
-            fgImage: ev.fgImage,
-            bubbleText: ev.bubbleText,
-            duration: ev.duration,
-            footerQR: ev.footerQR,
-            footerLink: ev.footerLink,
-            transition: ev.transition,
-            zoom: ev.zoom
-          });
-        }
+          const targetDate = ev.date ? parseMatrixDate(ev.date) : virtualDate;
+          const isCurrent = isEventCurrent(targetDate, ev.event_type);
+
+          if (isCurrent) {
+            // RUTHLESS TBC/TBA filtering - scan ALL text fields
+            const ruthlessString = [
+              ev.title, ev.notes, ev.event_type, ev.location, ev.price, ev.time, ev.hiddenNotes, ev.footer
+            ].join(' ').toLowerCase();
+
+            if (ruthlessString.includes('tbc') || ruthlessString.includes('tba') || 
+                ruthlessString.includes('to be confirmed') || ruthlessString.includes('to be announced')) {
+              return;
+            }
+
+            const detId = 'ev-' + (ev.title + (ev.date || ev.day) + ev.time).replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20);
+            queue.push({
+              id: detId,
+              type: 'EVENT',
+              subType: ev.event_type || 'Event',
+              title: ev.title,
+              subtitle: ev.notes,
+              price: ev.price, 
+              qr: ev.qr,
+              meta: ev.day || '', 
+              date: ev.date || (virtualDate ? virtualDate.toISOString().split('T')[0] : null),
+              days: daysArray, 
+              time: ev.time,
+              location: ev.location,
+              footer: ev.footer,
+              accentColor: ev.accentColor,
+              bgImage: ev.bgImage || getDefaultBackground(ev.event_type, ev.title),
+              fgImage: ev.fgImage,
+              bubbleText: ev.bubbleText,
+              duration: ev.duration,
+              footerQR: ev.footerQR,
+              footerLink: ev.footerLink,
+              transition: ev.transition,
+              zoom: ev.zoom
+            });
+          }
     });
   });
 
   // 2. Weekly Specials are now in the Google Sheet — no hardcoded injection needed.
 
-  // 3. Apply Manual (Local) Slides (Overrides and Additions)
-  window.MATRIX.STATE.manualSlides.forEach(s => {
-    const existingIdx = queue.findIndex(q => q.id === s.id);
-    const manualData = {
-        ...s,
-        id: s.id || 'man-' + Math.random().toString(36).substr(2, 9),
-        isManual: true,
-        priority: s.priority || 10
-    };
-    if (existingIdx > -1) {
-        queue[existingIdx] = { ...queue[existingIdx], ...manualData };
-    } else {
-        queue.push(manualData);
-    }
-  });
-
-  // 4. Add Project Modules
+  // 3. Project Modules (Base Infrastructure)
   queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5 });
   queue.push({ type: 'MODULE', id: 'ct-wea', url: '../_ct-WEA/index.html', title: "Christchurch Weather", priority: 80 });
   queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5 });
@@ -432,29 +446,35 @@ function buildSlideQueue(data) {
  */
 function getSmartTag(slide) {
     const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const eventDate = slide.date ? parseMatrixDate(slide.date) : null;
     const typeLabel = (slide.subType || slide.type || 'Event').toUpperCase();
     
-    if (!eventDate) return typeLabel;
+    // Modules and non-dated slides don't get smart tags
+    if (!eventDate || slide.type === 'MODULE') return typeLabel;
 
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const evDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
     const diffDays = Math.round((evDay - today) / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return `TONIGHT: ${typeLabel}`;
-    if (diffDays === 1) return `TOMORROW: ${typeLabel}`;
+    // Filtered out past events already, but safety check
+    if (diffDays < 0) return typeLabel; 
+    
+    // Apply "Tonight" or "Tomorrow"
+    if (diffDays === 0) return `Tonight: ${typeLabel}`;
+    if (diffDays === 1) return `Tomorrow: ${typeLabel}`;
 
-    // Monday-to-Monday logic for "This Week" vs "Next Week"
-    // Find next Monday
+    // Monday-to-Sunday logic for "This Week" vs "Next Week"
     const currentDay = today.getDay(); // 0=Sun, 1=Mon...
     const daysToNextMonday = (currentDay === 0) ? 1 : (8 - currentDay);
     const nextMonday = new Date(today);
     nextMonday.setDate(today.getDate() + daysToNextMonday);
+    nextMonday.setHours(0,0,0,0);
 
+    // Apply tags only if within the relevant window
     if (evDay < nextMonday) {
-        return `THIS WEEK: ${typeLabel}`;
+        return `This Week: ${typeLabel}`;
     } else if (diffDays <= 14) {
-        return `NEXT WEEK: ${typeLabel}`;
+        return `Next Week: ${typeLabel}`;
     }
 
     return typeLabel;
@@ -484,17 +504,16 @@ function fitText(el, minSize = 40) {
     }
 }
 
-function isEventCurrent(dateStr, subType) {
-    if (!dateStr) return true;
-    const evDate = parseMatrixDate(dateStr);
+function isEventCurrent(dateOrStr, subType) {
+    if (!dateOrStr) return true;
+    const evDate = (dateOrStr instanceof Date) ? dateOrStr : parseMatrixDate(dateOrStr);
     if (!evDate) return true;
 
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const evDay = new Date(evDate.getFullYear(), evDate.getMonth(), evDate.getDate());
     
-    // 1. Past events are always hidden
+    // 1. Past events are always hidden (before today)
     if (evDay < today) return false;
     
     const diffDays = Math.round((evDay - today) / (1000 * 60 * 60 * 24));
@@ -555,14 +574,15 @@ function isSlideActive(slide) {
   const time = h + m / 60;
   const day = now.getDay(); // 0=Sun, 1=Mon, ..., 3=Wed
 
-  // Advanced Scheduling Logic (Based on user request)
+  // Advanced Scheduling Logic
   if (slide.date && !slide.isManual) {
     const slideDate = parseMatrixDate(slide.date);
     if (slideDate) {
-      const today = new Date();
-      today.setHours(0,0,0,0);
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const evDay = new Date(slideDate.getFullYear(), slideDate.getMonth(), slideDate.getDate());
-      const diffDays = Math.round((evDay.getTime() - today.getTime()) / (1000 * 3600 * 24));
+      
+      const diffDays = Math.round((evDay - today) / (1000 * 3600 * 24));
 
       const subType = (slide.subType || '').toLowerCase();
       const isFood = subType.includes('food') || subType.includes('promo') || subType.includes('special') || slide.type === 'PROMO';
@@ -572,9 +592,9 @@ function isSlideActive(slide) {
       if (diffDays < 0) return false; // Past event
 
       if (isPriority) {
-        if (diffDays > 14) return false; // Priority items (Bands/Sport/Karaoke) show 2 weeks ahead
+        if (diffDays > 14) return false; // Priority items show 2 weeks ahead
       } else {
-        // Food Specials and all other generic events only show 7 days ahead (current week)
+        // Food Specials and others only show 7 days ahead (current week)
         if (diffDays > 7) return false; 
       }
     }
@@ -861,14 +881,24 @@ function renderActiveSlide() {
             ` : ''}
 
             <!-- 6. Day, Date, Time -->
-            ${(slide.meta || slide.date) ? `
-              <div class="premium-meta animate-content-enter" style="animation-delay: 0.6s;">
-                <div class="premium-meta-item">${(slide.subType || '').toLowerCase().includes('weekly') ? '⏰' : '📅'} ${
-                  (slide.date && !(slide.subType || '').toLowerCase().includes('weekly') ? formatDate(slide.date) : '') + 
-                  (slide.time ? ' • ' + slide.time : '')
-                }</div>
-              </div>
-            ` : ''}
+            ${(() => {
+              const timeStr = slide.time || '';
+              const titleLower = (slide.title || '').toLowerCase();
+              const subtitleLower = (slide.subtitle || '').toLowerCase();
+              const timeRedundant = timeStr && (titleLower.includes(timeStr.toLowerCase()) || subtitleLower.includes(timeStr.toLowerCase()));
+              
+              if (slide.date || (slide.time && !timeRedundant) || slide.days) {
+                return `
+                  <div class="premium-meta animate-content-enter" style="animation-delay: 0.6s;">
+                    <div class="premium-meta-item">${(slide.subType || '').toLowerCase().includes('weekly') ? '⏰' : '📅'} ${
+                      (slide.date ? formatDate(slide.date) : (slide.days ? 'EVERY ' + (slide.meta || '').split(' ')[0].toUpperCase() : '')) + 
+                      (slide.time && !timeRedundant ? ' • ' + slide.time : '')
+                    }</div>
+                  </div>
+                `;
+              }
+              return '';
+            })()}
 
             <!-- 7. Slide Footer -->
             ${slide.footer ? `
