@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MATRIX COMMAND CENTER | Workspace</title>
+  <title>MATRIX COMMAND CENTER | Control Room</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -15,10 +15,11 @@
       --accent: #06b6d4;
       --text: #f8fafc;
       --text-dim: #94a3b8;
-      --border: rgba(255, 255, 255, 0.1);
+      --border: rgba(255, 255, 255, 0.08);
       --glass: rgba(15, 23, 42, 0.98);
-      --nav-w: 260px;
+      --nav-w: 240px;
       --header-h: 70px;
+      --bottom-h: 180px;
     }
     
     * { box-sizing: border-box; }
@@ -28,14 +29,15 @@
         height: 100vh; overflow: hidden;
     }
 
+    /* GRID SKELETON */
     .app-shell {
         display: grid;
         grid-template-columns: var(--nav-w) 1fr;
-        grid-template-rows: var(--header-h) 1fr;
+        grid-template-rows: var(--header-h) 1fr var(--bottom-h);
         height: 100vh;
     }
 
-    /* TOP COMMAND BAR */
+    /* TOP BAR */
     .header-top {
         grid-column: 1 / -1;
         background: var(--glass);
@@ -43,128 +45,123 @@
         border-bottom: 1px solid var(--border);
         display: flex; align-items: center; justify-content: space-between;
         padding: 0 1.5rem; z-index: 1000;
-        box-shadow: 0 4px 30px rgba(0,0,0,0.5);
     }
 
     .master-controls {
-        display: flex; gap: 12px;
+        display: flex; gap: 10px;
         background: rgba(0,0,0,0.4);
-        padding: 8px 15px; border-radius: 14px;
+        padding: 6px 12px; border-radius: 12px;
         border: 1px solid var(--border);
     }
 
     .ctrl-btn {
         background: var(--surface-bright); border: 1px solid var(--border);
-        color: #fff; padding: 10px 18px; border-radius: 8px;
-        cursor: pointer; font-weight: 800; font-size: 0.75rem;
+        color: #fff; padding: 8px 16px; border-radius: 6px;
+        cursor: pointer; font-weight: 800; font-size: 0.7rem;
         display: flex; align-items: center; gap: 8px; transition: 0.2s;
-        text-decoration: none; text-transform: uppercase; letter-spacing: 0.5px;
+        text-decoration: none; text-transform: uppercase;
     }
-    .ctrl-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); transform: translateY(-1px); }
+    .ctrl-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
     .ctrl-btn.primary { background: var(--accent); color: #000; border: none; }
 
-    /* LEFT SIDEBAR */
+    /* SIDEBAR */
     .nav-side {
+        grid-row: 2 / 3;
         background: #020617; border-right: 1px solid var(--border);
         padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 2rem;
     }
 
     .nav-section-title {
-        font-size: 0.6rem; text-transform: uppercase; letter-spacing: 2.5px;
-        color: var(--text-dim); margin-bottom: 1.2rem; display: flex; align-items: center; gap: 8px; opacity: 0.5;
+        font-size: 0.55rem; text-transform: uppercase; letter-spacing: 2px;
+        color: var(--text-dim); margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; opacity: 0.5;
     }
 
     .nav-link {
-        display: flex; align-items: center; gap: 12px;
-        padding: 12px 14px; border-radius: 10px; color: var(--text-dim);
-        text-decoration: none; font-size: 0.8rem; font-weight: 600;
-        transition: 0.2s; cursor: pointer; margin-bottom: 6px;
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 12px; border-radius: 8px; color: var(--text-dim);
+        text-decoration: none; font-size: 0.75rem; font-weight: 600;
+        transition: 0.2s; cursor: pointer; margin-bottom: 4px;
     }
     .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
-    .nav-link.active { color: var(--accent); background: rgba(6, 182, 212, 0.1); font-weight: 800; border-left: 3px solid var(--accent); border-radius: 0 10px 10px 0; }
+    .nav-link.active { color: var(--accent); background: rgba(6, 182, 212, 0.1); font-weight: 800; }
 
-    /* TREE UI */
-    .tree-node { margin-bottom: 10px; }
-    .tree-header { 
-        display: flex; align-items: center; gap: 10px; font-size: 0.75rem; font-weight: 700; color: #94a3b8;
-        padding: 8px; cursor: pointer; border-radius: 6px; transition: 0.2s;
-    }
-    .tree-header:hover { background: rgba(255,255,255,0.03); color: #fff; }
-    .tree-children { padding-left: 24px; margin-top: 5px; border-left: 1px solid var(--border); margin-left: 14px; }
-    .tree-item { 
-        font-size: 0.7rem; color: var(--text-dim); padding: 7px 0; display: block;
-        text-decoration: none; transition: 0.2s;
-    }
-    .tree-item:hover { color: var(--accent); padding-left: 5px; }
-
-    /* WORKSPACE */
-    .workspace {
-        display: grid; grid-template-columns: 1fr 1fr; background: #000; gap: 1px;
+    /* WORKSPACE (D-FRAME + A-FRAME) */
+    .workspace-main {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+        background: var(--border); overflow: hidden;
     }
 
     .panel { background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
     .panel-header {
-        background: var(--surface); padding: 0.8rem 1.5rem; border-bottom: 1px solid var(--border);
-        font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;
+        background: var(--surface); padding: 0.6rem 1.2rem; border-bottom: 1px solid var(--border);
+        font-size: 0.6rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;
         display: flex; justify-content: space-between; align-items: center; color: var(--accent);
     }
-
-    .frame-container { flex-grow: 1; background: #000; }
+    .frame-wrap { flex-grow: 1; background: #000; }
     iframe { width: 100%; height: 100%; border: none; }
 
-    /* RIGHT PANE: PREVIEW + MONITOR TRAY */
-    .preview-pane { background: #000; display: flex; flex-direction: column; }
-    .preview-frame-wrap { aspect-ratio: 16/9; width: 100%; background: #000; border-bottom: 1px solid var(--border); }
-    
-    .monitor-tray {
-        flex-grow: 1; background: #020617; overflow-y: auto; padding: 1.5rem;
-        display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; align-content: start;
+    /* BOTTOM BAR (C-FRAME) */
+    .footer-tray {
+        grid-column: 1 / -1;
+        background: #020617; border-top: 1px solid var(--border);
+        padding: 0.75rem 1.5rem; display: flex; gap: 1.5rem; overflow-x: auto;
     }
+
     .monitor-card {
-        background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
-        transition: 0.3s; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        flex: 0 0 240px; background: var(--surface); border: 1px solid var(--border);
+        border-radius: 10px; overflow: hidden; transition: 0.2s; cursor: pointer;
+        display: flex; flex-direction: column;
     }
-    .monitor-card:hover { border-color: var(--accent); transform: scale(1.02); }
-    .monitor-thumb { aspect-ratio: 16/9; background: #000; position: relative; overflow: hidden; }
+    .monitor-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .monitor-thumb { aspect-ratio: 16/9; background: #000; overflow: hidden; position: relative; }
     .monitor-thumb iframe {
-        width: 1920px; height: 1080px; transform: scale(0.12); transform-origin: top left; pointer-events: none;
+        width: 1920px; height: 1080px; transform: scale(0.125); transform-origin: top left; pointer-events: none;
     }
     .monitor-label {
-        background: rgba(0,0,0,0.9); padding: 6px 12px; font-size: 0.65rem; font-weight: 900; color: #fff;
-        text-transform: uppercase; border-top: 1px solid var(--border); display: flex; justify-content: space-between;
+        background: rgba(0,0,0,0.8); padding: 4px 10px; font-size: 0.55rem;
+        font-weight: 900; color: var(--accent); border-top: 1px solid var(--border);
+        display: flex; justify-content: space-between;
     }
+
+    /* HOME VIEW DASHBOARD */
+    .dashboard-home { padding: 2rem; overflow-y: auto; height: 100%; }
+    .module-card {
+        background: var(--surface); border: 1px solid var(--border); padding: 1.5rem; border-radius: 16px;
+        display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;
+    }
+    .toggle { position: relative; display: inline-block; width: 50px; height: 26px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--accent); }
+    input:checked + .slider:before { transform: translateX(24px); }
 
     /* AUTH & TOAST */
     .auth-overlay { position: fixed; inset: 0; background: #020617; z-index: 10000; display: flex; align-items: center; justify-content: center; }
-    .pin-box { background: var(--surface); padding: 4rem; border-radius: 40px; border: 1px solid var(--border); text-align: center; box-shadow: 0 30px 100px rgba(0,0,0,0.8); }
-    #pin-display { font-family: 'JetBrains Mono', monospace; font-size: 3.5rem; color: var(--accent); letter-spacing: 20px; margin-bottom: 3rem; height: 4rem; }
-    
-    #toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--accent); color: #000; padding: 14px 35px; border-radius: 14px; font-weight: 900; opacity: 0; transition: 0.4s; z-index: 11000; pointer-events: none; }
+    .pin-box { background: var(--surface); padding: 3rem; border-radius: 32px; border: 1px solid var(--border); text-align: center; }
+    #toast { position: fixed; bottom: 200px; right: 2rem; background: var(--accent); color: #000; padding: 12px 30px; border-radius: 10px; font-weight: 900; opacity: 0; transition: 0.3s; z-index: 11000; }
     #toast.show { opacity: 1; transform: translateY(-10px); }
-
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
   </style>
 </head>
 <body>
 
 <div id="auth-screen" class="auth-overlay">
     <div class="pin-box">
-        <h1 style="margin:0; font-weight:900; color: var(--accent); font-size: 2rem;">MATRIX COMMAND</h1>
-        <p style="opacity:0.4; font-size: 0.7rem; margin: 0.5rem 0 3rem 0; letter-spacing: 4px;">ENCRYPTED ACCESS ONLY</p>
-        <div id="pin-display"></div>
-        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
-            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('1')">1</button>
-            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('2')">2</button>
-            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('3')">3</button>
-            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('4')">4</button>
-            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('5')">5</button>
-            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('6')">6</button>
-            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('7')">7</button>
-            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('8')">8</button>
-            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('9')">9</button>
-            <button class="ctrl-btn" style="padding: 25px; color:var(--accent)" onclick="pressKey('C')">C</button>
-            <button class="ctrl-btn" style="padding: 25px; font-size: 1.5rem;" onclick="pressKey('0')">0</button>
-            <button class="ctrl-btn primary" style="padding: 25px; font-size: 1.2rem;" onclick="pressKey('E')">OK</button>
+        <h1 style="margin:0; font-weight:900; color: var(--accent); font-size: 1.5rem;">MATRIX CONTROL ROOM</h1>
+        <div id="pin-display" style="font-family: 'JetBrains Mono', monospace; font-size: 3rem; color: #fff; letter-spacing: 15px; margin: 2rem 0; height: 4rem;"></div>
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <button class="ctrl-btn" style="padding: 20px; font-size: 1.2rem;" onclick="pressKey('1')">1</button>
+            <button class="ctrl-btn" style="padding: 20px; font-size: 1.2rem;" onclick="pressKey('2')">2</button>
+            <button class="ctrl-btn" style="padding: 20px; font-size: 1.2rem;" onclick="pressKey('3')">3</button>
+            <button class="ctrl-btn" style="padding: 20px; font-size: 1.2rem;" onclick="pressKey('4')">4</button>
+            <button class="ctrl-btn" style="padding: 20px; font-size: 1.2rem;" onclick="pressKey('5')">5</button>
+            <button class="ctrl-btn" style="padding: 20px; font-size: 1.2rem;" onclick="pressKey('6')">6</button>
+            <button class="ctrl-btn" style="padding: 20px; font-size: 1.2rem;" onclick="pressKey('7')">7</button>
+            <button class="ctrl-btn" style="padding: 20px; font-size: 1.2rem;" onclick="pressKey('8')">8</button>
+            <button class="ctrl-btn" style="padding: 20px; font-size: 1.2rem;" onclick="pressKey('9')">9</button>
+            <button class="ctrl-btn" style="padding: 20px; color:var(--accent)" onclick="pressKey('C')">C</button>
+            <button class="ctrl-btn" style="padding: 20px; font-size: 1.2rem;" onclick="pressKey('0')">0</button>
+            <button class="ctrl-btn primary" style="padding: 20px;" onclick="pressKey('E')">OK</button>
         </div>
     </div>
 </div>
@@ -173,38 +170,38 @@
 
 <div class="app-shell">
     <header class="header-top">
-        <div style="display:flex; align-items:center; gap: 3rem;">
-            <div style="font-weight:900; letter-spacing: -2px; font-size: 1.6rem; color: var(--accent);">MATRIX <span style="font-weight:400; opacity:0.3">COMMAND</span></div>
+        <div style="display:flex; align-items:center; gap: 2.5rem;">
+            <div style="font-weight:900; letter-spacing: -1.5px; font-size: 1.4rem; color: var(--accent);">MATRIX <span style="font-weight:400; opacity:0.3">COMMAND</span></div>
             <div class="master-controls">
-                <button class="ctrl-btn" onclick="sendMaster('PREV')">« PREV</button>
-                <button class="ctrl-btn primary" onclick="sendMaster('NEXT')">NEXT SLIDE »</button>
-                <button class="ctrl-btn" onclick="sendMaster('TOGGLE')">PAUSE / PLAY</button>
+                <button class="ctrl-btn" onclick="sendMaster('PREV')">PREV</button>
+                <button class="ctrl-btn primary" onclick="sendMaster('NEXT')">NEXT SLIDE</button>
+                <button class="ctrl-btn" onclick="sendMaster('TOGGLE')">PAUSE/PLAY</button>
             </div>
         </div>
-
-        <div id="context-links" style="display:flex; gap: 12px;">
-            <div style="opacity:0.2; font-size: 0.7rem; font-weight:800; letter-spacing: 1px;">SELECT MODULE TO ACTIVATE LINKS</div>
+        <div id="context-links" style="display:flex; gap: 8px;">
+            <span style="opacity:0.2; font-size: 0.6rem; letter-spacing: 1.5px;">ACTIVE CONTEXT LINKS INACTIVE</span>
         </div>
     </header>
 
     <nav class="nav-side">
         <div>
-            <div class="nav-section-title">GLOBAL CONTROLS</div>
-            <div class="nav-link active" onclick="loadWorkspaceView('HOME')">Dashboard Home</div>
-            <div class="nav-link" onclick="loadWorkspaceView('PLAYLIST')">Playlist Grid View</div>
+            <div class="nav-section-title">GLOBAL DASHBOARD</div>
+            <div class="nav-link active" id="nav-home" onclick="loadWorkspaceView('HOME')">Dashboard Home</div>
+            <div class="nav-link" id="nav-playlist" onclick="loadWorkspaceView('PLAYLIST')">Playlist Grid</div>
         </div>
 
         <div id="module-tree">
-            <div class="nav-section-title">PROJECT ECOSYSTEM</div>
-            
+            <div class="nav-section-title">CORE INFRASTRUCTURE</div>
             <div class="tree-node">
                 <div class="tree-header" onclick="toggleNode(this)">_ct-MATRIX (Core)</div>
                 <div class="tree-children">
                     <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MATRIX', 'index.html')">Display Engine</a>
-                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MATRIX', 'masteradmin.html')">Master Admin</a>
+                    <!-- FIXED: TARGET _BLANK TO PREVENT RECURSION -->
+                    <a href="masteradmin.html" target="_blank" class="tree-item">Master Admin Panel</a>
                 </div>
             </div>
 
+            <div class="nav-section-title">LIVE MODULES TREE</div>
             <div class="tree-node">
                 <div class="tree-header" onclick="toggleNode(this)">_ct-ACE (Chase Ace)</div>
                 <div class="tree-children" style="display:none">
@@ -213,7 +210,6 @@
                     <a href="javascript:void(0)" class="tree-item" onclick="loadModule('ACE', '../_ct-ACE/remote.html')">Remote Controller</a>
                 </div>
             </div>
-
             <div class="tree-node">
                 <div class="tree-header" onclick="toggleNode(this)">_ct-MMR (Meat Raffle)</div>
                 <div class="tree-children" style="display:none">
@@ -221,7 +217,6 @@
                     <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MMR', '../_ct-MMR/admin.html')">Admin Panel</a>
                 </div>
             </div>
-
             <div class="tree-node">
                 <div class="tree-header" onclick="toggleNode(this)">_ct-MOM (Mothers Day)</div>
                 <div class="tree-children" style="display:none">
@@ -229,8 +224,6 @@
                     <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MOM', '../_ct-MOM/admin.html')">Admin Panel</a>
                 </div>
             </div>
-
-            <!-- ADDED WEA MODULE -->
             <div class="tree-node">
                 <div class="tree-header" onclick="toggleNode(this)">_ct-WEA (Weather)</div>
                 <div class="tree-children" style="display:none">
@@ -238,7 +231,6 @@
                     <a href="javascript:void(0)" class="tree-item" onclick="loadModule('WEA', '../_ct-WEA/admin.html')">Config Panel</a>
                 </div>
             </div>
-
             <div class="tree-node">
                 <div class="tree-header" onclick="toggleNode(this)">_ct-FIR (Fireplace)</div>
                 <div class="tree-children" style="display:none">
@@ -248,67 +240,63 @@
         </div>
     </nav>
 
-    <div class="workspace" id="main-workspace">
+    <main class="workspace-main" id="workspace-main">
+        <!-- OPERATOR PANE (D-FRAME) -->
         <div class="panel">
             <div class="panel-header">
-                <span id="ctrl-title">REMOTE OPERATOR</span>
-                <span id="ctrl-url" style="opacity:0.3; font-family:'JetBrains Mono'">IDLE</span>
+                <span id="ctrl-title">OPERATOR WORKSPACE</span>
+                <span id="ctrl-url" style="opacity:0.3; font-family:'JetBrains Mono'">READY</span>
             </div>
-            <div class="frame-container">
+            <div class="frame-wrap" id="operator-wrap">
                 <iframe id="ctrl-frame" src="about:blank"></iframe>
             </div>
         </div>
 
-        <div class="panel preview-pane">
+        <!-- MONITOR PANE (A-FRAME) -->
+        <div class="panel">
             <div class="panel-header" style="color:#fff; background: #000">
-                <span>LIVE MATRIX MONITOR</span>
-                <div class="ctrl-btn primary" style="padding: 4px 10px; font-size: 0.6rem;">LIVE FEED</div>
+                <span>LIVE MONITOR (A-FRAME)</span>
+                <div class="ctrl-btn primary" style="padding: 4px 10px; font-size: 0.55rem;">DIRECT FEED</div>
             </div>
-            <div class="preview-frame-wrap">
+            <div class="frame-wrap">
                 <iframe id="preview-frame" src="index.html"></iframe>
             </div>
-            <div class="panel-header">
-                <span>MULTI-MODULE MONITOR TRAY</span>
-                <span style="opacity:0.3">ALL MODULES PREVIEW</span>
-            </div>
-            <div class="monitor-tray">
-                <div class="monitor-card" onclick="loadModule('ACE', '../_ct-ACE/admin.html')">
-                    <div class="monitor-thumb"><iframe src="../_ct-ACE/index.html"></iframe></div>
-                    <div class="monitor-label"><span>CHASE ACE</span> <span style="opacity:0.5">ONLINE</span></div>
-                </div>
-                <div class="monitor-card" onclick="loadModule('MMR', '../_ct-MMR/admin.html')">
-                    <div class="monitor-thumb"><iframe src="../_ct-MMR/index.html"></iframe></div>
-                    <div class="monitor-label"><span>MEAT RAFFLE</span> <span style="opacity:0.5">ONLINE</span></div>
-                </div>
-                <div class="monitor-card" onclick="loadModule('MOM', '../_ct-MOM/admin.html')">
-                    <div class="monitor-thumb"><iframe src="../_ct-MOM/index.html"></iframe></div>
-                    <div class="monitor-label"><span>MOTHERS DAY</span> <span style="opacity:0.5">ONLINE</span></div>
-                </div>
-                <div class="monitor-card" onclick="loadModule('WEA', '../_ct-WEA/index.html')">
-                    <div class="monitor-thumb"><iframe src="../_ct-WEA/index.html"></iframe></div>
-                    <div class="monitor-label"><span>WEATHER</span> <span style="opacity:0.5">ONLINE</span></div>
-                </div>
-                <div class="monitor-card" onclick="loadModule('FIR', '../_ct-FIR/index.html')">
-                    <div class="monitor-thumb"><iframe src="../_ct-FIR/index.html"></iframe></div>
-                    <div class="monitor-label"><span>FIREPLACE</span> <span style="opacity:0.5">ONLINE</span></div>
-                </div>
-            </div>
         </div>
+    </main>
+
+    <!-- FULL GRID OVERLAY -->
+    <div id="full-grid-view" class="panel" style="display:none; grid-column: 2; grid-row: 2;">
+        <div class="panel-header"><span>Playlist Grid View</span> <button class="ctrl-btn" onclick="loadWorkspaceView('HOME')">CLOSE</button></div>
+        <div id="playlist-grid" style="padding:2rem; display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; overflow-y:auto;"></div>
     </div>
 
-    <div id="full-grid-view" class="full-view">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 3rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
-            <h1 style="margin:0; font-weight:900; color: var(--accent);">GLOBAL PLAYLIST GRID</h1>
-            <button class="ctrl-btn" onclick="loadWorkspaceView('HOME')">CLOSE ✕</button>
+    <!-- MONITOR TRAY (C-FRAME) -->
+    <footer class="footer-tray">
+        <div class="monitor-card" onclick="loadModule('ACE', '../_ct-ACE/admin.html')">
+            <div class="monitor-thumb"><iframe src="../_ct-ACE/index.html"></iframe></div>
+            <div class="monitor-label"><span>CHASE ACE</span> <span style="opacity:0.5">LIVE</span></div>
         </div>
-        <div id="playlist-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem;"></div>
-    </div>
+        <div class="monitor-card" onclick="loadModule('MMR', '../_ct-MMR/admin.html')">
+            <div class="monitor-thumb"><iframe src="../_ct-MMR/index.html"></iframe></div>
+            <div class="monitor-label"><span>MEAT RAFFLE</span> <span style="opacity:0.5">LIVE</span></div>
+        </div>
+        <div class="monitor-card" onclick="loadModule('MOM', '../_ct-MOM/admin.html')">
+            <div class="monitor-thumb"><iframe src="../_ct-MOM/index.html"></iframe></div>
+            <div class="monitor-label"><span>MOTHERS DAY</span> <span style="opacity:0.5">LIVE</span></div>
+        </div>
+        <div class="monitor-card" onclick="loadModule('WEA', '../_ct-WEA/index.html')">
+            <div class="monitor-thumb"><iframe src="../_ct-WEA/index.html"></iframe></div>
+            <div class="monitor-label"><span>WEATHER</span> <span style="opacity:0.5">LIVE</span></div>
+        </div>
+        <div class="monitor-card" onclick="loadModule('FIR', '../_ct-FIR/index.html')">
+            <div class="monitor-thumb"><iframe src="../_ct-FIR/index.html"></iframe></div>
+            <div class="monitor-label"><span>FIREPLACE</span> <span style="opacity:0.5">LIVE</span></div>
+        </div>
+    </footer>
 </div>
 
 <script>
-    const GSHEETS_DEFAULT = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjplY4qgdlDPmFO4sKUoWHnBPoeqf-rY3Tc0Y50wgDbDutbTn4j_hXhW3aXhYVjvfbIlwcIOF07250/pub?gid=1948723750&single=true&output=csv';
     const bc = new BroadcastChannel('ct_matrix_sync');
-    let currentSlides = [];
     let pinBuffer = '';
 
     function toggleNode(el) {
@@ -318,13 +306,52 @@
 
     function loadWorkspaceView(v) {
         const grid = document.getElementById('full-grid-view');
-        const workspace = document.getElementById('main-workspace');
-        if(v === 'PLAYLIST') { grid.classList.add('active'); workspace.style.display = 'none'; renderPlaylistGrid(); }
-        else { grid.classList.remove('active'); workspace.style.display = 'grid'; }
+        const workspace = document.getElementById('workspace-main');
+        const operatorWrap = document.getElementById('operator-wrap');
+        
+        if(v === 'PLAYLIST') { 
+            grid.style.display = 'flex'; workspace.style.display = 'none'; 
+            renderPlaylistGrid();
+        } else if(v === 'HOME') {
+            grid.style.display = 'none'; workspace.style.display = 'grid';
+            renderDashboardHome();
+        } else {
+            grid.style.display = 'none'; workspace.style.display = 'grid';
+        }
+    }
+
+    function renderDashboardHome() {
+        const wrap = document.getElementById('operator-wrap');
+        wrap.innerHTML = `
+            <div class="dashboard-home">
+                <h1 style="margin-top:0">Module Configuration</h1>
+                <p style="opacity:0.5; margin-bottom:2rem">Toggle specific modules to enable or disable them from the Matrix rotation.</p>
+                ${['ACE', 'MMR', 'MOM', 'WEA', 'FIR'].map(m => `
+                    <div class="module-card">
+                        <div>
+                            <div style="font-weight:900">${m} MODULE</div>
+                            <div style="font-size:0.7rem; opacity:0.4">Status: Active in rotation</div>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" checked onchange="toggleModule('${m}', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        document.getElementById('ctrl-title').innerText = 'DASHBOARD HOME';
+        document.getElementById('ctrl-url').innerText = 'CONFIG';
+    }
+
+    function toggleModule(id, state) {
+        bc.postMessage({type: 'MODULE_FILTER', id, active: state});
+        showToast(`${id} ${state ? 'ENABLED' : 'DISABLED'}`);
     }
 
     function loadModule(name, url) {
-        document.getElementById('ctrl-frame').src = url;
+        const wrap = document.getElementById('operator-wrap');
+        wrap.innerHTML = `<iframe id="ctrl-frame" src="${url}"></iframe>`;
         document.getElementById('ctrl-title').innerText = name + ' OPERATOR';
         document.getElementById('ctrl-url').innerText = url.split('/').pop().toUpperCase();
         
@@ -335,50 +362,21 @@
             <a href="${basePath}admin.html" target="_blank" class="ctrl-btn">ADMIN</a>
             <a href="${basePath}remote.html" target="_blank" class="ctrl-btn">REMOTE</a>
         `;
-        showToast('CONNECTED TO ' + name);
+        showToast('LOADED ' + name);
     }
 
-    function sendMaster(type) { bc.postMessage({type}); showToast('MASTER CMD: ' + type); }
-
-    async function refreshData() {
-        try {
-            const url = localStorage.getItem('matrix_gsheet_url') || GSHEETS_DEFAULT;
-            const res = await fetch(url + '&t=' + Date.now());
-            const text = await res.text();
-            currentSlides = parseCSV(text);
-        } catch(e) { console.error(e); }
-    }
-
-    function parseCSV(text) {
-        const rows=[]; let row=[],col='',inQ=false;
-        for(let i=0;i<text.length;i++){
-            const c=text[i],n=text[i+1];
-            if(inQ){if(c==='"'&&n==='"'){col+='"';i++;}else if(c==='"')inQ=false;else col+=c;}
-            else{if(c==='"')inQ=true;else if(c===','){row.push(col.trim());col='';}
-            else if(c==='\n'||(c==='\r'&&n==='\n')){if(c==='\r')i++;row.push(col.trim());rows.push(row);row=[];col='';}
-            else col+=c;}
-        }
-        if(col||row.length){row.push(col.trim());rows.push(row);}
-        return rows.slice(1).map(r => ({ title:r[3]||'', bg:r[17]||'' })).filter(e => e.title);
-    }
-
-    function renderPlaylistGrid() {
-        const target = document.getElementById('playlist-grid');
-        target.innerHTML = currentSlides.map(s => `
-            <div style="background:var(--surface); border-radius:15px; overflow:hidden; border: 1px solid var(--border)">
-                <div style="aspect-ratio:16/9; background:${s.bg?`url(${s.bg}) center/cover`:'var(--surface-bright)'}; display:flex; align-items:center; justify-content:center; padding:1.5rem; text-align:center;">
-                    <div style="font-weight:900; font-size:0.9rem; text-shadow:0 3px 10px #000">${s.title}</div>
-                </div>
-            </div>
-        `).join('');
-    }
+    function sendMaster(type) { bc.postMessage({type}); showToast('MASTER: ' + type); }
 
     function pressKey(k) {
         if(k === 'C') pinBuffer = '';
         else if(k === 'E') {
             const correct = localStorage.getItem('matrix_admin_pin') || '1234';
-            if(pinBuffer === correct) { document.getElementById('auth-screen').style.display = 'none'; sessionStorage.setItem('matrix_authed', 'true'); refreshData(); }
-            else { pinBuffer = ''; showToast('ACCESS DENIED'); }
+            if(pinBuffer === correct) { 
+                document.getElementById('auth-screen').style.display = 'none'; 
+                sessionStorage.setItem('matrix_authed', 'true'); 
+                loadWorkspaceView('HOME');
+            }
+            else { pinBuffer = ''; showToast('DENIED'); }
         } else if(pinBuffer.length < 8) pinBuffer += k;
         document.getElementById('pin-display').innerText = '•'.repeat(pinBuffer.length);
     }
@@ -390,7 +388,10 @@
     }
 
     window.onload = () => {
-        if(sessionStorage.getItem('matrix_authed') === 'true') { document.getElementById('auth-screen').style.display = 'none'; refreshData(); }
+        if(sessionStorage.getItem('matrix_authed') === 'true') { 
+            document.getElementById('auth-screen').style.display = 'none'; 
+            loadWorkspaceView('HOME');
+        }
     };
 </script>
 </body>
