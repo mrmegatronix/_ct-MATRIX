@@ -13,7 +13,7 @@ window.MATRIX = {
     WEEKS_LOOKAHEAD: 2,
     SHOW_BANNER: true,
     ADMIN_PIN: '1234',
-    GSHEETS_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjplY4qgdlDPmFO4sKUoWHnBPoeqf-rY3Tc0Y50wgDbDutbTn4j_hXhW3aXhYVjvfbIlwcIOF07250/pub?gid=1948723750&single=true&output=csv'
+    GSHEETS_URL: 'live_headers_check.csv' // Switched from GSheet to Local Live CSV as per user request
   },
   STATE: {
     slides: [],
@@ -77,6 +77,7 @@ async function initMatrix() {
       case 'SETTINGS_UPDATE': updateConfig(e.data.payload); break;
       case 'SYNC_DATA': window.initMatrix(); break; 
       case 'REFRESH': window.location.reload(); break;
+      case 'LIVE_SLIDE': handleLiveSlide(e.data.payload); break;
       case 'GET_SLIDES_DUMP': 
         bc.postMessage({ type: 'SLIDES_DUMP', slides: window.MATRIX.STATE.slides, currentIndex: window.MATRIX.STATE.currentIndex }); 
         break;
@@ -419,7 +420,7 @@ function buildSlideQueue(data) {
   queue.push({ type: 'MODULE', id: 'ct-wea', url: '../_ct-WEA/index.html', title: "Christchurch Weather", priority: 80 });
   queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5 });
   queue.push({ type: 'MODULE', id: 'ct-mom', url: '../_ct-MOM/index.html', title: "Mother's Day Celebration", pinned: true, priority: 5 });
-  queue.push({ type: 'MODULE', id: 'ct-nim', url: '../_ct-NIM/index.html', title: "Nim Creative Display", priority: 85 });
+  queue.push({ type: 'MODULE', id: 'ct-nim', url: '../_ct-NIM/index.html', title: "Nim Creative Display", priority: 85, disabled: true });
   queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, disabled: true });
 
   // 5. Filter & Sort
@@ -832,17 +833,20 @@ function renderActiveSlide() {
             <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
           </div>
         `;
-      } else if (slide.isBand) {
+      } else if (slide.type === 'LIVE') {
+        const accent = slide.accent || '#06b6d4';
         slideEl.innerHTML = `
-          <div class="slide-bg">
-            <img src="${bgImg}" alt="" loading="eager" style="object-position: ${bgImg.includes('crusaders') ? 'left center' : (bgImg.includes('warriors') ? 'right center' : 'center center')};" />
-            <div class="slide-bg-overlay" style="background: rgba(0,0,0,0.85);"></div>
-          </div>
-          <div class="band-gig-overlay animate-band">
-            <div class="band-gig-title">${slide.title}</div>
-            ${slide.subtitle ? `<div class="band-gig-subtitle">${slide.subtitle}</div>` : ''}
-            <div class="band-gig-time">PLAYING TONIGHT: 8PM - 11PM</div>
-          </div>
+            <div class="slide-bg" style="background: #000;">
+              <div style="position:absolute; inset:0; background: radial-gradient(circle at center, ${accent}22 0%, #000 70%);"></div>
+            </div>
+            <div style="position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; text-align:center; padding: 5rem;">
+              <div class="text-label" style="font-size: 2rem; letter-spacing: 10px; color: ${accent}; margin-bottom: 2rem; font-weight: 900;">LIVE BROADCAST</div>
+              <div class="slide-title" style="font-size: 8rem; font-weight: 900; line-height: 0.9; margin-bottom: 3rem; color: #fff; text-shadow: 0 0 50px ${accent}44;">${slide.title}</div>
+              <div class="slide-subtitle" style="font-size: 3rem; color: #94a3b8; font-weight: 600; max-width: 1200px;">${slide.detail || ''}</div>
+            </div>
+            <div style="position: absolute; bottom: 4rem; width: 100%; text-align: center; font-family: 'JetBrains Mono'; font-size: 1.2rem; color: ${accent}; opacity: 0.5;">
+              MATRIX LIVE ALERT SYSTEM v1.0
+            </div>
         `;
       } else {
         slideEl.innerHTML = `
@@ -1018,5 +1022,67 @@ function showStatus(msg) {
 
 // Initial Sync
 loadPersistedState();
+
+function handleLiveSlide(payload) {
+    if (!payload || !payload.active) {
+        const liveOverlay = document.getElementById('live-slide-overlay');
+        if (liveOverlay) liveOverlay.remove();
+        window.MATRIX.STATE.isPaused = false;
+        renderActiveSlide();
+        return;
+    }
+
+    if (payload.mode === 'INJECT') {
+        const newSlide = {
+            id: 'live-' + Date.now(),
+            type: 'LIVE',
+            subType: 'LIVE BROADCAST',
+            title: payload.title,
+            detail: payload.detail,
+            accent: payload.accent,
+            date: new Date().toISOString(),
+            isManual: true
+        };
+        // Inject after current slide
+        window.MATRIX.STATE.slides.splice(window.MATRIX.STATE.currentIndex + 1, 0, newSlide);
+        showStatus('LIVE SLIDE INJECTED INTO ROTATION');
+        return;
+    }
+
+    // OVERRIDE logic (Full Screen Overlay)
+    let liveOverlay = document.getElementById('live-slide-overlay');
+    if (!liveOverlay) {
+        liveOverlay = document.createElement('div');
+        liveOverlay.id = 'live-slide-overlay';
+        liveOverlay.style.cssText = `
+            position: fixed; inset: 0; z-index: 9999;
+            background: #000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center;
+            padding: 5rem; font-family: 'Inter', sans-serif;
+        `;
+        document.body.appendChild(liveOverlay);
+    }
+
+    const accent = payload.accent || '#06b6d4';
+    liveOverlay.innerHTML = `
+        <style>
+            @keyframes liveSlideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
+        </style>
+        <div style="position:absolute; inset:0; background: radial-gradient(circle at center, ${accent}22 0%, #000 70%);"></div>
+        <div style="z-index:1; animation: liveSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1)">
+            <h2 style="font-size: 2rem; text-transform: uppercase; letter-spacing: 10px; color: ${accent}; margin-bottom: 2rem; font-weight: 900;">LIVE BROADCAST</h2>
+            <h1 style="font-size: 8rem; font-weight: 900; line-height: 0.9; margin-bottom: 3rem; color: #fff; text-shadow: 0 0 50px ${accent}44;">${payload.title || ''}</h1>
+            <p style="font-size: 3rem; color: #94a3b8; font-weight: 600; max-width: 1200px;">${payload.detail || ''}</p>
+        </div>
+        <div style="position: absolute; bottom: 4rem; width: 100%; text-align: center; font-family: 'JetBrains Mono'; font-size: 1.2rem; color: ${accent}; opacity: 0.5;">
+            MATRIX LIVE ALERT SYSTEM v1.0
+        </div>
+    `;
+
+    if (payload.mode === 'OVERRIDE') {
+        window.MATRIX.STATE.isPaused = true;
+        if (window.MATRIX.STATE.timer) clearTimeout(window.MATRIX.STATE.timer);
+    }
+}
 
 window.initMatrix = initMatrix;
