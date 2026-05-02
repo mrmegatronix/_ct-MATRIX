@@ -72,9 +72,11 @@ async function initMatrix() {
       case 'NEXT': window.nextSlide(); break;
       case 'PREV': window.prevSlide(); break;
       case 'TOGGLE': window.togglePause(); break;
+      case 'JUMP': window.jumpToProject(e.data.id); break;
       case 'PROJECT': window.jumpToProject(e.data.id); break;
       case 'SETTINGS_UPDATE': updateConfig(e.data.payload); break;
-      case 'SYNC_DATA': window.initMatrix(); break; // Reload everything
+      case 'SYNC_DATA': window.initMatrix(); break; 
+      case 'REFRESH': window.location.reload(); break;
       case 'GET_SLIDES_DUMP': 
         bc.postMessage({ type: 'SLIDES_DUMP', slides: window.MATRIX.STATE.slides, currentIndex: window.MATRIX.STATE.currentIndex }); 
         break;
@@ -338,16 +340,19 @@ function buildSlideQueue(data) {
   data.forEach(week => {
     const events = week.events || [];
     events.forEach(ev => {
-        // Apply subtypes lookahead (7 days vs 14 days)
-        const isCurrent = (week.week_starting === 'Cloud Data') ? 
-                          isEventCurrent(ev.date, ev.event_type) : 
-                          (isEventCurrent(ev.date, ev.event_type) || isWeekInRange(week.week_starting));
+        // 14-day lookahead for ALL events as requested
+        const isCurrent = isEventCurrent(ev.date, ev.event_type);
 
         if (isCurrent) {
-          // RUTHLESS TBC/TBA filtering - drop if it appears anywhere
-          const tbcCheck = [ev.title, ev.notes, ev.event_type].join(' ').toLowerCase();
-          if (tbcCheck.includes('tbc') || tbcCheck.includes('tba') || 
-              tbcCheck.includes('to be confirmed') || tbcCheck.includes('to be announced')) return;
+          // RUTHLESS TBC/TBA filtering - scan ALL text fields
+          const ruthlessString = [
+            ev.title, ev.notes, ev.event_type, ev.location, ev.price, ev.time, ev.hiddenNotes, ev.footer
+          ].join(' ').toLowerCase();
+
+          if (ruthlessString.includes('tbc') || ruthlessString.includes('tba') || 
+              ruthlessString.includes('to be confirmed') || ruthlessString.includes('to be announced')) {
+            return;
+          }
 
           const detId = 'ev-' + (ev.title + ev.date + ev.time).replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20);
           queue.push({
@@ -356,14 +361,15 @@ function buildSlideQueue(data) {
             subType: ev.event_type || 'Event',
             title: ev.title,
             subtitle: ev.notes,
-            price: ev.price || ev.time,
+            price: ev.price, // DO NOT fallback to time (prevents double time showing)
             qr: ev.qr,
-            meta: `${ev.day || ''} ${ev.time || ''} ${ev.price ? ' | ' + ev.price : ''}`,
+            meta: `${ev.day || ''} ${ev.time || ''}`.trim(),
             date: ev.date,
+            time: ev.time,
             location: ev.location,
             footer: ev.footer,
             accentColor: ev.accentColor,
-            bgImage: ev.bgImage || getDefaultBackground(ev.event_type, ev.event_name),
+            bgImage: ev.bgImage || getDefaultBackground(ev.event_type, ev.title),
             fgImage: ev.fgImage,
             bubbleText: ev.bubbleText,
             duration: ev.duration,
@@ -431,26 +437,23 @@ function getSmartTag(slide) {
     
     if (!eventDate) return typeLabel;
 
-    // Compare dates (day-level, not time-level)
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const evDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
     const diffDays = Math.round((evDay - today) / (1000 * 60 * 60 * 24));
 
-    const isSport = ['nrl', 'super rugby', 'rugby', 'league'].includes((slide.subType || '').toLowerCase());
-    const isMusic = ['live music', 'karaoke', 'entertainment'].includes((slide.subType || '').toLowerCase());
+    if (diffDays === 0) return `TONIGHT: ${typeLabel}`;
+    if (diffDays === 1) return `TOMORROW: ${typeLabel}`;
 
-    if (diffDays === 0) {
-        if (isMusic) return 'TONIGHT: LIVE MUSIC';
-        if (isSport) return 'TONIGHT: LIVE SPORT';
-        return `TONIGHT: ${typeLabel}`;
-    } else if (diffDays === 1) {
-        if (isMusic) return 'TOMORROW: LIVE MUSIC';
-        if (isSport) return 'TOMORROW: LIVE SPORT';
-        return `TOMORROW: ${typeLabel}`;
-    } else if (diffDays >= 2 && diffDays <= 7) {
-        if (isSport) return "THIS WEEK'S LIVE SPORT";
+    // Monday-to-Monday logic for "This Week" vs "Next Week"
+    // Find next Monday
+    const currentDay = today.getDay(); // 0=Sun, 1=Mon...
+    const daysToNextMonday = (currentDay === 0) ? 1 : (8 - currentDay);
+    const nextMonday = new Date(today);
+    nextMonday.setDate(today.getDate() + daysToNextMonday);
+
+    if (evDay < nextMonday) {
         return `THIS WEEK: ${typeLabel}`;
-    } else if (diffDays > 7 && diffDays <= 14) {
+    } else if (diffDays <= 14) {
         return `NEXT WEEK: ${typeLabel}`;
     }
 
@@ -495,16 +498,9 @@ function isEventCurrent(dateStr, subType) {
     if (evDay < today) return false;
     
     const diffDays = Math.round((evDay - today) / (1000 * 60 * 60 * 24));
-    const type = (subType || '').toLowerCase();
     
-    // 2. Determine Lookahead Limit
-    // Bands, Sport, and Karaoke get 14 days. Everything else (Food Specials, Promos) get 7 days.
-    const isSpecialEvent = type.includes('band') || type.includes('sport') || type.includes('karaoke') || 
-                           type.includes('nrl') || type.includes('rugby') || type.includes('music') || type.includes('weekly');
-    
-    const limit = isSpecialEvent ? 14 : 7;
-    
-    return diffDays <= limit;
+    // 2. 14 Day lookahead for ALL events as per latest request
+    return diffDays <= 14;
 }
 
 function isWeekInRange(weekStr) {
@@ -833,39 +829,59 @@ function renderActiveSlide() {
             <div class="slide-bg-overlay" style="background: rgba(0,0,0,0.85);"></div>
           </div>
           <div class="premium-card">
+            <!-- 1. Event Type -->
             <div class="animate-tag-enter">
               <span class="day-tag" data-type="${typeKey}" style="background-color: ${color}40; border-color: ${color}; box-shadow: 0 0 40px ${color}60;">${smartTag}</span>
             </div>
-            <div class="animate-content-enter">
+
+            <!-- 2. Event Name -->
+            <div class="animate-content-enter" style="animation-delay: 0.1s;">
               <h1 class="premium-title">${slide.title}</h1>
             </div>
-            <div class="accent-bar animate-content-enter" style="background: ${color}; box-shadow: 0 0 30px ${color}80;"></div>
-            ${slide.subtitle ? `<div class="premium-desc animate-content-enter">${String(slide.subtitle).replace(/\n/g, '<br>')}</div>` : ''}
-            ${(slide.qr || slide.qrUrl) ? `
-              <div class="animate-content-enter" style="margin-top: 2rem;">
-                <div style="background:#fff; padding: 10px; border-radius: 10px; display:inline-block; box-shadow: 0 0 30px var(--theme-glow);">
-                   <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.qr || slide.qrUrl)}" style="width: 150px; height: 150px; display:block;">
-                </div>
-              </div>
-            ` : ''}
+
+            <div class="accent-bar animate-content-enter" style="background: ${color}; box-shadow: 0 0 30px ${color}80; animation-delay: 0.2s;"></div>
+
+            <!-- 3. Details -->
+            ${slide.subtitle ? `<div class="premium-desc animate-content-enter" style="animation-delay: 0.3s;">${String(slide.subtitle).replace(/\n/g, '<br>')}</div>` : ''}
+
+            <!-- 4. Price -->
             ${slide.price ? `
-              <div class="animate-content-enter" style="animation-delay: 0.5s;">
+              <div class="animate-content-enter" style="animation-delay: 0.4s;">
                 <div class="price-badge" style="animation: pulse-glow 3s infinite; box-shadow: 0 0 60px ${color}80;">
                   <div class="price-badge-inner"><span class="price-text">${slide.price}</span></div>
                 </div>
               </div>
             ` : ''}
+
+            <!-- 5. Location -->
+            ${slide.location ? `
+              <div class="animate-content-enter" style="animation-delay: 0.5s;">
+                <div class="premium-location">${slide.location}</div>
+              </div>
+            ` : ''}
+
+            <!-- 6. Day, Date, Time -->
             ${(slide.meta || slide.date) ? `
-              <div class="premium-meta animate-content-enter" style="animation-delay: 0.4s;">
+              <div class="premium-meta animate-content-enter" style="animation-delay: 0.6s;">
                 <div class="premium-meta-item">${(slide.subType || '').toLowerCase().includes('weekly') ? '⏰' : '📅'} ${
                   (slide.date && !(slide.subType || '').toLowerCase().includes('weekly') ? formatDate(slide.date) : '') + 
-                  (slide.meta && slide.date && !(slide.subType || '').toLowerCase().includes('weekly') ? ' • ' : '') + 
-                  (slide.meta ? (
-                    (slide.subType || '').toLowerCase().includes('weekly') 
-                    ? slide.meta 
-                    : slide.meta.replace(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\s+/i, '')
-                  ) : '')
+                  (slide.time ? ' • ' + slide.time : '')
                 }</div>
+              </div>
+            ` : ''}
+
+            <!-- 7. Slide Footer -->
+            ${slide.footer ? `
+              <div class="animate-content-enter" style="animation-delay: 0.7s;">
+                <div class="premium-footer">${slide.footer}</div>
+              </div>
+            ` : ''}
+
+            ${(slide.qr || slide.qrUrl) ? `
+              <div class="animate-content-enter" style="margin-top: 1rem; animation-delay: 0.8s;">
+                <div style="background:#fff; padding: 10px; border-radius: 10px; display:inline-block; box-shadow: 0 0 30px var(--theme-glow);">
+                   <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(slide.qr || slide.qrUrl)}" style="width: 120px; height: 120px; display:block;">
+                </div>
               </div>
             ` : ''}
           </div>

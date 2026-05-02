@@ -381,6 +381,47 @@
         document.getElementById('pin-display').innerText = '•'.repeat(pinBuffer.length);
     }
 
+    function renderPlaylistGrid() {
+        const grid = document.getElementById('playlist-grid');
+        grid.innerHTML = '<div style="grid-column:1/-1; opacity:0.5">Requesting playlist data from live monitor...</div>';
+        
+        // Request fresh dump from index.html (which uses matrix-core.js)
+        bc.postMessage({ type: 'GET_SLIDES_DUMP' });
+    }
+
+    bc.onmessage = (e) => {
+        if (e.data.type === 'SLIDES_DUMP') {
+            const grid = document.getElementById('playlist-grid');
+            const slides = e.data.slides || [];
+            if (slides.length === 0) {
+                grid.innerHTML = '<div style="grid-column:1/-1; opacity:0.5">No active slides found in 2-week lookahead.</div>';
+                return;
+            }
+            grid.innerHTML = slides.map((s, idx) => `
+                <div class="monitor-card" style="flex:none; ${e.data.currentIndex === idx ? 'border-color:var(--accent); box-shadow: 0 0 20px var(--accent)' : ''}" onclick="sendMaster('JUMP', '${s.id}')">
+                    <div class="monitor-thumb" style="height:120px">
+                        ${s.type === 'MODULE' 
+                            ? `<div style="background:#1e293b; height:100%; display:flex; align-items:center; justify-content:center; font-size:0.6rem; color:var(--accent); font-weight:900">MODULE: ${s.id}</div>`
+                            : `<div style="background:url('${s.bgImage}') center/cover; height:100%; position:relative">
+                                 <div style="position:absolute; inset:0; background:rgba(0,0,0,0.6); display:flex; flex-direction:column; justify-content:center; padding:10px">
+                                    <div style="font-size:0.5rem; font-weight:900; color:var(--accent)">${s.subType}</div>
+                                    <div style="font-size:0.7rem; font-weight:800; line-height:1">${s.title.slice(0, 30)}</div>
+                                 </div>
+                               </div>`
+                        }
+                    </div>
+                    <div class="monitor-label">
+                        <span>${idx + 1}. ${s.subType}</span>
+                        <span style="opacity:0.5">${s.date || 'PERMANENT'}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        if (e.data.type === 'DATA_HOT_RELOADED') {
+            if (document.getElementById('full-grid-view').style.display === 'flex') renderPlaylistGrid();
+        }
+    };
+
     function showToast(msg) {
         const t = document.getElementById('toast');
         t.innerText = msg; t.classList.add('show');

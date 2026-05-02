@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COMMAND CENTER | Matrix Workspace (DRAFT)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #030712;
+      --surface: #0f172a;
+      --surface-bright: #1e293b;
+      --accent: #06b6d4;
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --border: rgba(255, 255, 255, 0.1);
+      --glass: rgba(15, 23, 42, 0.9);
+      --nav-w: 280px;
+      --header-h: 70px;
+    }
+    
+    * { box-sizing: border-box; }
+    body { 
+        background: var(--bg); 
+        color: var(--text); 
+        font-family: 'Inter', sans-serif; 
+        margin: 0; padding: 0;
+        height: 100vh; overflow: hidden;
+    }
+
+    /* Layout Skeleton */
+    .app-shell {
+        display: grid;
+        grid-template-columns: var(--nav-w) 1fr;
+        grid-template-rows: var(--header-h) 1fr;
+        height: 100vh;
+    }
+
+    /* Top Bar */
+    .header-top {
+        grid-column: 1 / -1;
+        background: var(--glass);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        padding: 0 1.5rem;
+        justify-content: space-between;
+        z-index: 1000;
+    }
+
+    .master-controls {
+        display: flex;
+        gap: 0.5rem;
+        background: rgba(0,0,0,0.3);
+        padding: 6px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+    }
+
+    .ctrl-btn {
+        background: var(--surface-bright);
+        border: 1px solid var(--border);
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 800;
+        font-size: 0.7rem;
+        display: flex; align-items: center; gap: 8px;
+        transition: 0.2s;
+    }
+    .ctrl-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
+    .ctrl-btn svg { width: 14px; height: 14px; }
+    .ctrl-btn.primary { background: var(--accent); color: #000; border: none; }
+
+    /* Sidebar Navigation */
+    .nav-side {
+        background: #020617;
+        border-right: 1px solid var(--border);
+        padding: 1.5rem;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .nav-section-title {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--text-dim);
+        margin-bottom: 1rem;
+        display: flex; align-items: center; gap: 8px;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        color: var(--text-dim);
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: 0.2s;
+        cursor: pointer;
+        margin-bottom: 4px;
+    }
+    .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
+    .nav-link.active { color: var(--accent); background: rgba(6, 182, 212, 0.1); font-weight: 700; }
+    .nav-link svg { width: 18px; height: 18px; opacity: 0.7; }
+
+    /* Module Tree */
+    .tree-node { margin-bottom: 8px; }
+    .tree-header { 
+        display: flex; align-items: center; gap: 10px; 
+        font-size: 0.8rem; font-weight: 700; color: #fff;
+        padding: 8px; cursor: pointer; border-radius: 6px;
+    }
+    .tree-header:hover { background: rgba(255,255,255,0.03); }
+    .tree-children { padding-left: 28px; margin-top: 4px; border-left: 1px solid var(--border); margin-left: 16px; }
+    .tree-item { 
+        font-size: 0.75rem; color: var(--text-dim); padding: 6px 0; display: block;
+        text-decoration: none; transition: 0.2s;
+    }
+    .tree-item:hover { color: var(--accent); }
+
+    /* Workspace Stage */
+    .workspace {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Vertical Split */
+        background: #000;
+        gap: 1px;
+    }
+
+    .panel {
+        background: var(--bg);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .panel-header {
+        background: var(--surface);
+        padding: 0.75rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.7rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .frame-container { flex-grow: 1; position: relative; background: #000; }
+    iframe { width: 100%; height: 100%; border: none; }
+
+    /* Right Side Preview Specifics */
+    .preview-pane { background: #000; }
+    .preview-frame { aspect-ratio: 16/9; width: 100%; height: auto; border-bottom: 1px solid var(--border); }
+    
+    .jump-tray {
+        flex-grow: 1;
+        background: #020617;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+    .jump-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 12px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .jump-card:hover { border-color: var(--accent); background: var(--surface-bright); }
+    .jump-card .title { font-weight: 700; font-size: 0.85rem; }
+    .jump-card .meta { font-size: 0.7rem; opacity: 0.5; }
+
+    /* Views (Full Screen) */
+    .full-view { 
+        display: none; 
+        grid-column: 2; grid-row: 2; 
+        background: var(--bg); padding: 2rem; overflow-y: auto; 
+    }
+    .full-view.active { display: block; }
+
+    /* Components */
+    .badge { padding: 2px 8px; border-radius: 4px; font-size: 0.6rem; font-weight: 900; background: var(--accent); color: #000; }
+    
+    /* Auth */
+    .auth-overlay { position: fixed; inset: 0; background: #000; z-index: 10000; display: flex; align-items: center; justify-content: center; }
+    .pin-box { background: var(--surface); padding: 3rem; border-radius: 24px; text-align: center; border: 1px solid var(--border); }
+    
+    #toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--accent); color: #000; padding: 12px 24px; border-radius: 12px; font-weight: 900; opacity: 0; transition: 0.3s; z-index: 11000; }
+    #toast.show { opacity: 1; transform: translateY(-10px); }
+  </style>
+</head>
+<body>
+
+<div id="auth-screen" class="auth-overlay">
+    <div class="pin-box">
+        <h1 style="margin:0; font-weight:900;">WORKSPACE AUTH</h1>
+        <p style="opacity:0.5; font-size: 0.7rem; margin: 0.5rem 0 2rem 0;">ENTER PIN TO UNLOCK COMMAND CENTER</p>
+        <div id="pin-display" style="font-family: 'JetBrains Mono', monospace; font-size: 2.5rem; color: var(--accent); letter-spacing: 15px; margin-bottom: 2rem;"></div>
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+            <button class="ctrl-btn" style="padding: 20px;" onclick="pressKey('1')">1</button>
+            <button class="ctrl-btn" style="padding: 20px;" onclick="pressKey('2')">2</button>
+            <button class="ctrl-btn" style="padding: 20px;" onclick="pressKey('3')">3</button>
+            <button class="ctrl-btn" style="padding: 20px;" onclick="pressKey('4')">4</button>
+            <button class="ctrl-btn" style="padding: 20px;" onclick="pressKey('5')">5</button>
+            <button class="ctrl-btn" style="padding: 20px;" onclick="pressKey('6')">6</button>
+            <button class="ctrl-btn" style="padding: 20px;" onclick="pressKey('7')">7</button>
+            <button class="ctrl-btn" style="padding: 20px;" onclick="pressKey('8')">8</button>
+            <button class="ctrl-btn" style="padding: 20px;" onclick="pressKey('9')">9</button>
+            <button class="ctrl-btn" style="padding: 20px; color:var(--accent)" onclick="pressKey('C')">C</button>
+            <button class="ctrl-btn" style="padding: 20px;" onclick="pressKey('0')">0</button>
+            <button class="ctrl-btn primary" style="padding: 20px;" onclick="pressKey('E')">OK</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast">Command Sent</div>
+
+<div class="app-shell">
+    <header class="header-top">
+        <div style="display:flex; align-items:center; gap: 20px;">
+            <div style="font-weight:900; letter-spacing: -1px; font-size: 1.2rem; color: var(--accent);">MATRIX <span style="font-weight:400; opacity:0.5">COMMAND</span></div>
+            <div class="master-controls">
+                <button class="ctrl-btn" onclick="sendMaster('PREV')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"></path></svg>
+                    PREV
+                </button>
+                <button class="ctrl-btn primary" onclick="sendMaster('NEXT')">
+                    NEXT SLIDE
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M13 17l5-5-5-5M6 17l5-5-5-5"></path></svg>
+                </button>
+                <button class="ctrl-btn" onclick="sendMaster('TOGGLE')">PAUSE / PLAY</button>
+            </div>
+        </div>
+
+        <div id="context-links" style="display:flex; gap: 10px;">
+            <!-- Contextual links for current module show here -->
+            <div style="opacity:0.3; font-size: 0.7rem;">SELECT A MODULE TO ACTIVATE CONTEXT LINKS</div>
+        </div>
+    </header>
+
+    <nav class="nav-side">
+        <div>
+            <div class="nav-section-title">GLOBAL CONTROLS</div>
+            <div class="nav-link active" id="nav-home" onclick="loadWorkspaceView('HOME')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                Dashboard Home
+            </div>
+            <div class="nav-link" id="nav-playlist" onclick="loadWorkspaceView('PLAYLIST')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                Playlist Preview Grid
+            </div>
+        </div>
+
+        <div id="module-tree">
+            <div class="nav-section-title">MODULES ECOSYSTEM</div>
+            
+            <!-- Matrix Core -->
+            <div class="tree-node">
+                <div class="tree-header" onclick="toggleNode(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:14px"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                    _ct-MATRIX (Core)
+                </div>
+                <div class="tree-children">
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MATRIX', 'index.html', 'matrix-core.js')">Display Engine (Main)</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MATRIX', 'masteradmin.html', 'admin.html')">Master Admin Panel</a>
+                </div>
+            </div>
+
+            <!-- ACE -->
+            <div class="tree-node">
+                <div class="tree-header" onclick="toggleNode(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:14px"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                    _ct-ACE (Chase Ace)
+                </div>
+                <div class="tree-children" style="display:none">
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('ACE', '../_ct-ACE/index.html')">Module View</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('ACE', '../_ct-ACE/admin.html')">Admin Controls</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('ACE', '../_ct-ACE/remote.html')">Remote Panel</a>
+                </div>
+            </div>
+
+            <!-- MMR -->
+            <div class="tree-node">
+                <div class="tree-header" onclick="toggleNode(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:14px"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                    _ct-MMR (Meat Raffle)
+                </div>
+                <div class="tree-children" style="display:none">
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MMR', '../_ct-MMR/index.html')">Module View</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MMR', '../_ct-MMR/admin.html')">Admin Controls</a>
+                </div>
+            </div>
+
+            <!-- MOM -->
+            <div class="tree-node">
+                <div class="tree-header" onclick="toggleNode(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:14px"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                    _ct-MOM (Mothers Day)
+                </div>
+                <div class="tree-children" style="display:none">
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MOM', '../_ct-MOM/index.html')">Module View</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MOM', '../_ct-MOM/admin.html')">Admin Controls</a>
+                </div>
+            </div>
+
+            <!-- FIR -->
+            <div class="tree-node">
+                <div class="tree-header" onclick="toggleNode(this)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:14px"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                    _ct-FIR (Fireplace)
+                </div>
+                <div class="tree-children" style="display:none">
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('FIR', '../_ct-FIR/index.html')">Module View</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="workspace" id="main-workspace">
+        <!-- Left Pane: Control -->
+        <div class="panel">
+            <div class="panel-header">
+                <span id="ctrl-title">Module Controls</span>
+                <span id="ctrl-url" style="opacity:0.3; font-family:'JetBrains Mono'">READY</span>
+            </div>
+            <div class="frame-container">
+                <iframe id="ctrl-frame" src="about:blank"></iframe>
+            </div>
+        </div>
+
+        <!-- Right Pane: Preview -->
+        <div class="panel preview-pane">
+            <div class="panel-header">
+                <span>Live Matrix Monitor</span>
+                <div class="badge">LIVE FEED</div>
+            </div>
+            <div class="preview-frame">
+                <iframe id="preview-frame" src="index.html"></iframe>
+            </div>
+            <div class="panel-header" style="background:transparent; border-top: 1px solid var(--border)">
+                <span>Slide Jump Tray</span>
+                <span id="slide-count" style="opacity:0.5">-- ITEMS</span>
+            </div>
+            <div class="jump-tray" id="jump-tray">
+                <div style="opacity:0.2; text-align:center; padding: 2rem;">LOAD DATA TO ACTIVATE JUMP TRAY</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View: Full Grid -->
+    <div id="full-grid-view" class="full-view">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+            <h1 style="margin:0; font-weight:900;">PLAYLIST GRID</h1>
+            <button class="ctrl-btn" onclick="loadWorkspaceView('HOME')">CLOSE GRID ✕</button>
+        </div>
+        <div id="playlist-grid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
+</div>
+
+<script>
+    const GSHEETS_DEFAULT = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjplY4qgdlDPmFO4sKUoWHnBPoeqf-rY3Tc0Y50wgDbDutbTn4j_hXhW3aXhYVjvfbIlwcIOF07250/pub?gid=1948723750&single=true&output=csv';
+    const bc = new BroadcastChannel('ct_matrix_sync');
+    let currentSlides = [];
+    let pinBuffer = '';
+
+    // Navigation
+    function toggleNode(el) {
+        const children = el.nextElementSibling;
+        children.style.display = children.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function loadWorkspaceView(view) {
+        const grid = document.getElementById('full-grid-view');
+        const workspace = document.getElementById('main-workspace');
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        
+        if(view === 'PLAYLIST') {
+            grid.classList.add('active');
+            workspace.style.display = 'none';
+            document.getElementById('nav-playlist').classList.add('active');
+            renderPlaylistGrid();
+        } else {
+            grid.classList.remove('active');
+            workspace.style.display = 'grid';
+            document.getElementById('nav-home').classList.add('active');
+        }
+    }
+
+    function loadModule(name, url) {
+        document.getElementById('ctrl-frame').src = url;
+        document.getElementById('ctrl-title').innerText = name + ' CONTROL';
+        document.getElementById('ctrl-url').innerText = url.split('/').pop().toUpperCase();
+        
+        // Update Context Links in Top Bar
+        const ctx = document.getElementById('context-links');
+        const basePath = url.substring(0, url.lastIndexOf('/') + 1);
+        ctx.innerHTML = `
+            <a href="${basePath}index.html" target="_blank" class="ctrl-btn">MAIN</a>
+            <a href="${basePath}admin.html" target="_blank" class="ctrl-btn">ADMIN</a>
+            <a href="${basePath}remote.html" target="_blank" class="ctrl-btn">REMOTE</a>
+        `;
+        showToast('LOADED ' + name);
+    }
+
+    // Master Controls
+    function sendMaster(type) { bc.postMessage({type}); showToast('SENT: ' + type); }
+    function jumpToSlide(index) { bc.postMessage({type:'JUMP_TO_INDEX', index}); showToast('JUMPING TO SLIDE ' + (index+1)); }
+
+    // Data Sync
+    async function refreshData() {
+        try {
+            const url = localStorage.getItem('matrix_gsheet_url') || GSHEETS_DEFAULT;
+            const res = await fetch(url + '&t=' + Date.now());
+            const text = await res.text();
+            currentSlides = parseCSV(text);
+            updateJumpTray();
+            updateStats();
+        } catch(e) { console.error(e); }
+    }
+
+    function parseCSV(text) {
+        const rows=[]; let row=[],col='',inQ=false;
+        for(let i=0;i<text.length;i++){
+            const c=text[i],n=text[i+1];
+            if(inQ){if(c==='"'&&n==='"'){col+='"';i++;}else if(c==='"')inQ=false;else col+=c;}
+            else{if(c==='"')inQ=true;else if(c===','){row.push(col.trim());col='';}
+            else if(c==='\n'||(c==='\r'&&n==='\n')){if(c==='\r')i++;row.push(col.trim());rows.push(row);row=[];col='';}
+            else col+=c;}
+        }
+        if(col||row.length){row.push(col.trim());rows.push(row);}
+        const now = new Date(); now.setHours(0,0,0,0);
+        return rows.slice(1).map(r => ({
+            date:r[0], type:r[2]||'EVENT', title:r[3]||'', notes:r[4]||'', 
+            time:r[5]||'', price:r[6]||'', bg:r[17]||''
+        })).filter(e => {
+            if(!e.title) return false;
+            const tbcCheck = [e.title, e.notes, e.type].join(' ').toLowerCase();
+            if(tbcCheck.includes('tbc') || tbcCheck.includes('tba')) return false;
+            const d = parseDate(e.date); if(!d) return true;
+            const diff = Math.round((d-now)/864e5);
+            return diff >= 0 && diff <= 14;
+        });
+    }
+
+    function parseDate(s) {
+        if (!s) return null;
+        const str = String(s).trim();
+        if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(str)) { const [y,m,d]=str.split('-').map(Number); return new Date(y,m-1,d); }
+        if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str)) {
+            const p=str.split('/').map(Number);
+            if(p[1]>12) return new Date(p[2],p[0]-1,p[1]); // US
+            return new Date(p[2],p[1]-1,p[0]); // NZ Primary
+        }
+        const d=new Date(str); return isNaN(d.getTime())?null:d;
+    }
+
+    function updateJumpTray() {
+        const tray = document.getElementById('jump-tray');
+        tray.innerHTML = currentSlides.map((s, i) => `
+            <div class="jump-card" onclick="jumpToSlide(${i})">
+                <div>
+                    <div class="title">${s.title}</div>
+                    <div class="meta">${s.type} • ${s.date}</div>
+                </div>
+                <div class="badge" style="background:rgba(255,255,255,0.1); color:#fff">SKIP TO ➔</div>
+            </div>
+        `).join('');
+        document.getElementById('slide-count').innerText = currentSlides.length + ' ITEMS';
+    }
+
+    function renderPlaylistGrid() {
+        const target = document.getElementById('playlist-grid');
+        target.innerHTML = currentSlides.map(s => `
+            <div style="background:var(--surface); border-radius:12px; overflow:hidden; border: 1px solid var(--border)">
+                <div style="aspect-ratio:16/9; background:${s.bg?`url(${s.bg}) center/cover`:'var(--surface-bright)'}; display:flex; align-items:center; justify-content:center; padding:1rem; text-align:center;">
+                    <div style="font-weight:900; font-size:0.9rem; text-shadow:0 2px 5px #000">${s.title}</div>
+                </div>
+                <div style="padding: 12px;">
+                    <div style="font-size:0.75rem; font-weight:700">${s.date}</div>
+                    <div style="font-size:0.65rem; opacity:0.5">${s.type}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function updateStats() {
+        // Shared stats logic if needed
+    }
+
+    // Auth & Utilities
+    function pressKey(k) {
+        if(k === 'C') pinBuffer = '';
+        else if(k === 'E') {
+            const correct = localStorage.getItem('matrix_admin_pin') || '1234';
+            if(pinBuffer === correct) {
+                document.getElementById('auth-screen').style.display = 'none';
+                sessionStorage.setItem('matrix_authed', 'true');
+                refreshData();
+            } else { pinBuffer = ''; showToast('INVALID PIN'); }
+        } else if(pinBuffer.length < 8) pinBuffer += k;
+        document.getElementById('pin-display').innerText = '•'.repeat(pinBuffer.length);
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg; t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    window.onload = () => {
+        if(sessionStorage.getItem('matrix_authed') === 'true') {
+            document.getElementById('auth-screen').style.display = 'none';
+            refreshData();
+        }
+    };
+</script>
+</body>
+</html>

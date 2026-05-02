@@ -244,6 +244,28 @@ body {
   font-weight: 600;
 }
 
+.premium-location {
+  font-size: clamp(2.2rem, 3.2vw, 3.8rem);
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.5rem 2rem;
+  border-radius: 1rem;
+  display: inline-block;
+  margin-top: 0.5rem;
+}
+
+.premium-footer {
+  font-size: clamp(1.8rem, 2.5vw, 3rem);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.05em;
+  margin-top: 1rem;
+}
+
 /* ==========================================================================
    BAND GIG CARD
    ========================================================================== */
