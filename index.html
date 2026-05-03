@@ -9,24 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="matrix-styles.css">
   <style>
-    #clock-display {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 2.2rem;
-      color: var(--accent);
-      text-shadow: 0 0 10px var(--accent-glow);
-    }
-    /* Nav Hub - Fixed at Bottom */
-    .nav-hub {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
-      border-top: 1px solid var(--border); padding: 12px 20px;
-      display: flex; justify-content: center; align-items: center; gap: 20px;
-      z-index: 5000;
-      transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
-    }
-    .nav-link { color: #888; text-decoration: none; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
-    .nav-link:hover { color: var(--accent); }
-
     /* Slide Controls - hover to reveal */
     .slide-controls {
       position: fixed; top: 1.5rem; left: 1.5rem; z-index: 5000;
@@ -54,29 +36,11 @@
   <div class="matrix-bg"></div>
   
   <div id="app">
-    <header class="matrix-header">
-      <div class="brand">_ct-MATRIX</div>
-      <div id="clock-display">00:00:00</div>
-    </header>
-
     <main class="slide-viewport" id="slide-viewport">
       <!-- Slides are injected here by matrix-core.js -->
     </main>
 
     <div class="timer-bar" id="progress-bar" style="width: 0%;"></div>
-
-    <!-- Navigation Hub -->
-    <nav class="nav-hub">
-        <a href="index.html" class="nav-link" style="color:var(--accent)">📺 Display</a>
-        <a href="masteradmin.html" class="nav-link">🛠 Admin</a>
-        <span style="color: #333">|</span>
-        <a href="../_ct-MOM/index.html" class="nav-link">🌸 MOM</a>
-        <a href="../_ct-MMR/index.html" class="nav-link">🥩 MMR</a>
-        <a href="../_ct-ACE/index.html" class="nav-link">🃏 ACE</a>
-        <a href="../_ct-WEA/index.html" class="nav-link">🌦 WEA</a>
-        <a href="../_ct-FIR/index.html" class="nav-link">🔥 FIR</a>
-        <a href="../_ct-NIM/index.html" class="nav-link">🎨 NIM</a>
-    </nav>
 
     <!-- Slide Controls (hover to show) -->
     <div class="slide-controls">
@@ -88,15 +52,6 @@
 
   <script src="matrix-core.js"></script>
   <script>
-    // Update Clock
-    function updateClock() {
-      const now = new Date();
-      const clockEl = document.getElementById('clock-display');
-      if (clockEl) clockEl.innerText = now.toLocaleTimeString('en-NZ', { hour12: false });
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
     // Confetti Trigger
     window.triggerConfetti = function() {
       const duration = 3 * 1000;

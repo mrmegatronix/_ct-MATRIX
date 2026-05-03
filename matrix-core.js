@@ -317,7 +317,7 @@ function getDefaultBackground(eventType, title) {
     return '_backgrounds/music.jpg';
   }
   
-  if (t.includes('quiz')) {
+  if (t.includes('quiz') || name.includes('quiz') || t.includes('trivia') || name.includes('trivia')) {
     return '_backgrounds/quiz.png';
   }
   
