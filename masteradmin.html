@@ -368,6 +368,14 @@
         const wrap = document.getElementById('operator-wrap');
         wrap.innerHTML = `
             <div class="dashboard-home">
+                <div id="dashboard-metrics" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem;">
+                    <h2 style="margin-top:0; color: var(--accent); font-size: 1rem;">LIVE PLAYLIST METRICS</h2>
+                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 0.5rem;" id="metrics-grid">
+                        <div style="opacity:0.5; font-size: 0.8rem;">Awaiting telemetry from engine...</div>
+                    </div>
+                    <div style="font-size: 0.7rem; opacity: 0.5; margin-top: 10px;">NOTE: Each module has a strict 30s window. Time per static slide is 15s (unless overridden). Last Database Sync: Just now.</div>
+                </div>
+
                 <h1 style="margin-top:0">Module Configuration</h1>
                 <p style="opacity:0.5; margin-bottom:2rem">Toggle specific modules to enable or disable them from the Matrix rotation.</p>
                 ${['ACE', 'MMR', 'MOM', 'WEA', 'FIR'].map(m => `
@@ -386,6 +394,9 @@
         `;
         document.getElementById('ctrl-title').innerText = 'DASHBOARD HOME';
         document.getElementById('ctrl-url').innerText = 'CONFIG';
+        
+        // Request metrics telemetry
+        bc.postMessage({ type: 'GET_SLIDES_DUMP' });
     }
 
     function toggleModule(id, state) {
@@ -455,30 +466,67 @@
     bc.onmessage = (e) => {
         if (e.data.type === 'SLIDES_DUMP') {
             const grid = document.getElementById('playlist-grid');
+            const metrics = document.getElementById('metrics-grid');
             const slides = e.data.slides || [];
-            if (slides.length === 0) {
-                grid.innerHTML = '<div style="grid-column:1/-1; opacity:0.5">No active slides found in 2-week lookahead.</div>';
-                return;
+            
+            // Render Metrics if on HOME view
+            if(metrics) {
+                let totalSecs = 0;
+                let moduleCount = 0;
+                let staticCount = 0;
+                slides.forEach(s => {
+                    const dur = s.duration ? parseInt(s.duration) : (s.type === 'MODULE' ? 30 : 15);
+                    totalSecs += dur;
+                    if(s.type === 'MODULE') moduleCount++; else staticCount++;
+                });
+                const mins = Math.floor(totalSecs / 60);
+                const secs = totalSecs % 60;
+                
+                metrics.innerHTML = `
+                    <div style="background: var(--surface); padding: 1rem; border-radius: 8px;">
+                        <div style="font-size: 0.7rem; opacity: 0.5;">TOTAL PLAYLIST LENGTH</div>
+                        <div style="font-size: 1.5rem; font-weight: 900; color: #fff;">${mins}m ${secs}s</div>
+                    </div>
+                    <div style="background: var(--surface); padding: 1rem; border-radius: 8px;">
+                        <div style="font-size: 0.7rem; opacity: 0.5;">TOTAL SLIDES</div>
+                        <div style="font-size: 1.5rem; font-weight: 900; color: #fff;">${slides.length}</div>
+                    </div>
+                    <div style="background: var(--surface); padding: 1rem; border-radius: 8px;">
+                        <div style="font-size: 0.7rem; opacity: 0.5;">ACTIVE MODULES</div>
+                        <div style="font-size: 1.5rem; font-weight: 900; color: var(--accent);">${moduleCount} <span style="font-size: 0.8rem; opacity: 0.5; color: #fff;">(30s each)</span></div>
+                    </div>
+                    <div style="background: var(--surface); padding: 1rem; border-radius: 8px;">
+                        <div style="font-size: 0.7rem; opacity: 0.5;">STATIC PROMOS</div>
+                        <div style="font-size: 1.5rem; font-weight: 900; color: #fff;">${staticCount}</div>
+                    </div>
+                `;
             }
-            grid.innerHTML = slides.map((s, idx) => `
-                <div class="monitor-card" style="flex:none; ${e.data.currentIndex === idx ? 'border-color:var(--accent); box-shadow: 0 0 20px var(--accent)' : ''}" onclick="sendMaster('JUMP', '${s.id}')">
-                    <div class="monitor-thumb" style="height:120px">
-                        ${s.type === 'MODULE' 
-                            ? `<div style="background:#1e293b; height:100%; display:flex; align-items:center; justify-content:center; font-size:0.6rem; color:var(--accent); font-weight:900">MODULE: ${s.id}</div>`
-                            : `<div style="background:url('${s.bgImage}') center/cover; height:100%; position:relative">
-                                 <div style="position:absolute; inset:0; background:rgba(0,0,0,0.6); display:flex; flex-direction:column; justify-content:center; padding:10px">
-                                    <div style="font-size:0.5rem; font-weight:900; color:var(--accent)">${s.subType}</div>
-                                    <div style="font-size:0.7rem; font-weight:800; line-height:1">${s.title.slice(0, 30)}</div>
-                                 </div>
-                               </div>`
-                        }
+
+            if(grid) {
+                if (slides.length === 0) {
+                    grid.innerHTML = '<div style="grid-column:1/-1; opacity:0.5">No active slides found in 2-week lookahead.</div>';
+                    return;
+                }
+                grid.innerHTML = slides.map((s, idx) => `
+                    <div class="monitor-card" style="flex:none; ${e.data.currentIndex === idx ? 'border-color:var(--accent); box-shadow: 0 0 20px var(--accent)' : ''}" onclick="sendMaster('JUMP', '${s.id}')">
+                        <div class="monitor-thumb" style="height:120px">
+                            ${s.type === 'MODULE' 
+                                ? `<div style="background:#1e293b; height:100%; display:flex; align-items:center; justify-content:center; font-size:0.6rem; color:var(--accent); font-weight:900">MODULE: ${s.id}</div>`
+                                : `<div style="background:url('${s.bgImage}') center/cover; height:100%; position:relative">
+                                     <div style="position:absolute; inset:0; background:rgba(0,0,0,0.6); display:flex; flex-direction:column; justify-content:center; padding:10px">
+                                        <div style="font-size:0.5rem; font-weight:900; color:var(--accent)">${s.subType}</div>
+                                        <div style="font-size:0.7rem; font-weight:800; line-height:1">${s.title.slice(0, 30)}</div>
+                                     </div>
+                                   </div>`
+                            }
+                        </div>
+                        <div class="monitor-label">
+                            <span>${idx + 1}. ${s.subType}</span>
+                            <span style="opacity:0.5">${s.date || 'PERMANENT'}</span>
+                        </div>
                     </div>
-                    <div class="monitor-label">
-                        <span>${idx + 1}. ${s.subType}</span>
-                        <span style="opacity:0.5">${s.date || 'PERMANENT'}</span>
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            }
         }
         if (e.data.type === 'DATA_HOT_RELOADED') {
             if (document.getElementById('full-grid-view').style.display === 'flex') renderPlaylistGrid();

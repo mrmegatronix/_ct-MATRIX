@@ -588,18 +588,9 @@ function isSlideActive(slide) {
       const diffDays = Math.round((evDay - today) / (1000 * 3600 * 24));
 
       const subType = (slide.subType || '').toLowerCase();
-      const isFood = subType.includes('food') || subType.includes('promo') || subType.includes('special') || slide.type === 'PROMO';
-      const isPriority = subType.includes('band') || subType.includes('music') || subType.includes('karaoke') || 
-                         subType.includes('nrl') || subType.includes('rugby') || subType.includes('league') || subType.includes('sport');
 
       if (diffDays < 0) return false; // Past event
-
-      if (isPriority) {
-        if (diffDays > 14) return false; // Priority items show 2 weeks ahead
-      } else {
-        // Food Specials and others only show 7 days ahead (current week)
-        if (diffDays > 7) return false; 
-      }
+      if (diffDays > 14) return false; // All items show up to 14 days ahead
     }
   }
 

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV Anchor Diagram</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .slide-container {
+      width: 1920px;
+      height: 1080px;
+      background: #111;
+      position: relative;
+      transform: scale(0.6); /* Scale down for viewing on smaller screens */
+      transform-origin: center center;
+      border: 4px dashed #333;
+    }
+    
+    .anchor {
+      position: absolute;
+      background: rgba(6, 182, 212, 0.2);
+      border: 2px solid #06b6d4;
+      color: #06b6d4;
+      padding: 10px;
+      font-weight: 700;
+      font-size: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .anchor span.col {
+      font-size: 16px;
+      opacity: 0.8;
+      margin-top: 5px;
+    }
+
+    /* Background and Accent (Non-positional) */
+    .bg-info {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 20px;
+      color: #aaa;
+    }
+
+    /* Layout Mapping based on standard signage */
+    .date-day { top: 5%; left: 5%; width: 25%; height: 10%; }
+    .event-type { top: 15%; left: 5%; width: 40%; height: 8%; font-size: 30px; }
+    .event-name { top: 25%; left: 5%; width: 60%; height: 15%; font-size: 40px; font-weight: 900; background: rgba(234, 179, 8, 0.2); border-color: #eab308; color: #eab308; }
+    .details { top: 45%; left: 5%; width: 60%; height: 20%; }
+    .time-price { top: 70%; left: 5%; width: 40%; height: 10%; }
+    .location { top: 85%; left: 5%; width: 40%; height: 8%; }
+    
+    .foreground-img { top: 10%; right: 5%; width: 25%; height: 50%; border-style: dashed; }
+    .bubble-text { top: 5%; right: 30%; width: 15%; height: 15%; border-radius: 50%; }
+    .feature-qr { top: 65%; right: 5%; width: 15%; height: 25%; }
+    .footer { bottom: 2%; left: 5%; width: 90%; height: 6%; background: rgba(255,255,255,0.1); border-color: #fff; color: #fff; }
+    .footer-qr { bottom: 2%; right: 2%; width: 5%; height: 6%; }
+
+    .metadata {
+      position: absolute;
+      bottom: 120px;
+      right: 50px;
+      text-align: right;
+      font-size: 18px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="slide-container">
+    <div class="bg-info">
+      Col 17: Slide Background<br>
+      Col 11: Accent Hex Colour<br>
+      Col 16: Slide Duration<br>
+      Col 9: Slide Type<br>
+      Col 23, 24: Transition & Zoom
+    </div>
+
+    <div class="anchor date-day">
+      <div>Date & Day</div>
+      <span class="col">Col 0: Date | Col 1: Day</span>
+    </div>
+
+    <div class="anchor event-type">
+      <div>Event Type (Subtitle)</div>
+      <span class="col">Col 2: Event Type</span>
+    </div>
+
+    <div class="anchor event-name">
+      <div>Event Name (Main Title)</div>
+      <span class="col">Col 3: Event Name</span>
+    </div>
+
+    <div class="anchor details">
+      <div>Details / Description</div>
+      <span class="col">Col 4: Details</span>
+    </div>
+
+    <div class="anchor time-price">
+      <div>Time & Price</div>
+      <span class="col">Col 5: Time | Col 6: Price</span>
+    </div>
+
+    <div class="anchor location">
+      <div>Location</div>
+      <span class="col">Col 7: Location</span>
+    </div>
+
+    <div class="anchor foreground-img">
+      <div>Foreground Image</div>
+      <span class="col">Col 18: Foreground Image</span>
+    </div>
+
+    <div class="anchor bubble-text">
+      <div>Bubble Text</div>
+      <span class="col">Col 19: Bubble Text</span>
+    </div>
+
+    <div class="anchor feature-qr">
+      <div>Feature QR Code</div>
+      <span class="col">Col 13: Feature QR</span>
+    </div>
+
+    <div class="anchor footer">
+      <div>Slide Footer Text / Hyperlink</div>
+      <span class="col">Col 8: Slide Footer | Col 15: Footer Hyperlink</span>
+    </div>
+
+    <div class="metadata">
+      <strong>Scheduling & Logic</strong><br>
+      Col 10: Hidden Notes<br>
+      Col 12: Countdown Finish<br>
+      Col 20-22: Lock Slide, Day, Time
+    </div>
+  </div>
+</body>
+</html>
