@@ -1,152 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CSV Anchor Diagram</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      background: #000;
-      color: #fff;
-      font-family: 'Inter', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      overflow: hidden;
-    }
-    .slide-container {
-      width: 1920px;
-      height: 1080px;
-      background: #111;
-      position: relative;
-      transform: scale(0.6); /* Scale down for viewing on smaller screens */
-      transform-origin: center center;
-      border: 4px dashed #333;
-    }
-    
-    .anchor {
-      position: absolute;
-      background: rgba(6, 182, 212, 0.2);
-      border: 2px solid #06b6d4;
-      color: #06b6d4;
-      padding: 10px;
-      font-weight: 700;
-      font-size: 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-    }
-
-    .anchor span.col {
-      font-size: 16px;
-      opacity: 0.8;
-      margin-top: 5px;
-    }
-
-    /* Background and Accent (Non-positional) */
-    .bg-info {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      font-size: 20px;
-      color: #aaa;
-    }
-
-    /* Layout Mapping based on standard signage */
-    .date-day { top: 5%; left: 5%; width: 25%; height: 10%; }
-    .event-type { top: 15%; left: 5%; width: 40%; height: 8%; font-size: 30px; }
-    .event-name { top: 25%; left: 5%; width: 60%; height: 15%; font-size: 40px; font-weight: 900; background: rgba(234, 179, 8, 0.2); border-color: #eab308; color: #eab308; }
-    .details { top: 45%; left: 5%; width: 60%; height: 20%; }
-    .time-price { top: 70%; left: 5%; width: 40%; height: 10%; }
-    .location { top: 85%; left: 5%; width: 40%; height: 8%; }
-    
-    .foreground-img { top: 10%; right: 5%; width: 25%; height: 50%; border-style: dashed; }
-    .bubble-text { top: 5%; right: 30%; width: 15%; height: 15%; border-radius: 50%; }
-    .feature-qr { top: 65%; right: 5%; width: 15%; height: 25%; }
-    .footer { bottom: 2%; left: 5%; width: 90%; height: 6%; background: rgba(255,255,255,0.1); border-color: #fff; color: #fff; }
-    .footer-qr { bottom: 2%; right: 2%; width: 5%; height: 6%; }
-
-    .metadata {
-      position: absolute;
-      bottom: 120px;
-      right: 50px;
-      text-align: right;
-      font-size: 18px;
-      color: #888;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix CSV Mapping Diagram</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        h1 { color: #facc15; }
+        .slide-container { position: relative; width: 1280px; height: 720px; background: #333; border: 4px solid #555; overflow: hidden; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .bg-layer { position: absolute; inset: 0; background: url('_backgrounds/quiz.png') center/cover; opacity: 0.5; display: flex; align-items: center; justify-content: center; }
+        
+        .box { position: absolute; background: rgba(0, 0, 0, 0.7); border: 2px dashed #facc15; color: #facc15; display: flex; align-items: center; justify-content: center; font-weight: bold; text-align: center; text-shadow: 1px 1px 2px black; }
+        .box span { padding: 5px; background: rgba(0,0,0,0.8); }
+        
+        .title-box { top: 10%; left: 5%; width: 50%; height: 10%; font-size: 2rem; }
+        .date-box { top: 5%; left: 5%; width: 30%; height: 5%; font-size: 1.5rem; color: #38bdf8; border-color: #38bdf8; }
+        .subtitle-box { top: 22%; left: 5%; width: 50%; height: 5%; font-size: 1.2rem; color: #a855f7; border-color: #a855f7; }
+        .info-box { top: 30%; left: 5%; width: 50%; height: 20%; font-size: 1.5rem; color: #4ade80; border-color: #4ade80; }
+        
+        .time-box { top: 10%; right: 5%; width: 20%; height: 8%; font-size: 1.5rem; color: #fb923c; border-color: #fb923c; }
+        .price-box { top: 20%; right: 5%; width: 20%; height: 8%; font-size: 1.5rem; color: #ef4444; border-color: #ef4444; }
+        
+        .qr-box { bottom: 10%; right: 5%; width: 200px; height: 200px; color: #fff; border-color: #fff; }
+        .footer-qr-box { bottom: 5%; left: 5%; width: 100px; height: 100px; color: #aaa; border-color: #aaa; font-size: 0.8rem; }
+        
+        .bg-text { font-size: 3rem; color: #555; text-shadow: none; z-index: 10; border: none; background: transparent; }
+        
+        .legend { margin-top: 30px; background: #222; padding: 20px; border-radius: 8px; width: 1240px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .legend-item { display: flex; align-items: center; gap: 10px; }
+        .legend-color { width: 20px; height: 20px; border: 2px dashed; }
+    </style>
 </head>
 <body>
-  <div class="slide-container">
-    <div class="bg-info">
-      Col 17: Slide Background<br>
-      Col 11: Accent Hex Colour<br>
-      Col 16: Slide Duration<br>
-      Col 9: Slide Type<br>
-      Col 23, 24: Transition & Zoom
+    <h1>ct-MATRIX CSV Mapping Diagram</h1>
+    <p>Visual representation of where each CSV column is rendered on the 1080p slide display.</p>
+
+    <div class="slide-container">
+        <div class="bg-layer">
+            <div class="bg-text">Column 17: Background Image Path (e.g. _backgrounds/quiz.png)<br>Column 18: Font Color Overrides</div>
+        </div>
+        
+        <div class="box date-box"><span>Column 0: Date</span></div>
+        <div class="box title-box"><span>Column 3: Title</span></div>
+        <div class="box subtitle-box"><span>Column 2: Subtitle / Event Type</span></div>
+        <div class="box info-box"><span>Column 4: Info / Description<br>Column 6: Sub Info 2<br>Column 7: Sub Info 3</span></div>
+        
+        <div class="box time-box"><span>Column 5: Time</span></div>
+        <div class="box price-box"><span>Column 8: Price / Extra Info</span></div>
+        
+        <div class="box qr-box"><span>Column 13: Feature QR URL<br>Column 15: Primary Media / Video</span></div>
+        <div class="box footer-qr-box"><span>Column 14:<br>Footer QR</span></div>
+        
+        <div class="box" style="bottom: 5%; right: 25%; width: 20%; height: 5%; border-color: #f43f5e; color: #f43f5e; font-size: 1rem;">
+            <span>Column 16: Custom Slide Duration (Seconds)</span>
+        </div>
     </div>
 
-    <div class="anchor date-day">
-      <div>Date & Day</div>
-      <span class="col">Col 0: Date | Col 1: Day</span>
+    <div class="legend">
+        <div class="legend-item"><div class="legend-color" style="border-color: #38bdf8;"></div>Column 0: Date</div>
+        <div class="legend-item"><div class="legend-color" style="border-color: #a855f7;"></div>Column 1/2: Day / Event Type (Subtitle)</div>
+        <div class="legend-item"><div class="legend-color" style="border-color: #facc15;"></div>Column 3: Title</div>
+        <div class="legend-item"><div class="legend-color" style="border-color: #4ade80;"></div>Column 4, 6, 7: Main Info & Sub Info</div>
+        <div class="legend-item"><div class="legend-color" style="border-color: #fb923c;"></div>Column 5: Time</div>
+        <div class="legend-item"><div class="legend-color" style="border-color: #ef4444;"></div>Column 8: Price</div>
+        <div class="legend-item"><div class="legend-color" style="border-color: #fff;"></div>Column 13: Main QR Code URL</div>
+        <div class="legend-item"><div class="legend-color" style="border-color: #aaa;"></div>Column 14: Footer QR Code URL</div>
+        <div class="legend-item"><div class="legend-color" style="border-color: transparent; background: #555;"></div>Column 17: Custom Background Image</div>
+        <div class="legend-item"><div class="legend-color" style="border-color: #f43f5e;"></div>Column 16: Slide Duration Override (secs)</div>
     </div>
-
-    <div class="anchor event-type">
-      <div>Event Type (Subtitle)</div>
-      <span class="col">Col 2: Event Type</span>
-    </div>
-
-    <div class="anchor event-name">
-      <div>Event Name (Main Title)</div>
-      <span class="col">Col 3: Event Name</span>
-    </div>
-
-    <div class="anchor details">
-      <div>Details / Description</div>
-      <span class="col">Col 4: Details</span>
-    </div>
-
-    <div class="anchor time-price">
-      <div>Time & Price</div>
-      <span class="col">Col 5: Time | Col 6: Price</span>
-    </div>
-
-    <div class="anchor location">
-      <div>Location</div>
-      <span class="col">Col 7: Location</span>
-    </div>
-
-    <div class="anchor foreground-img">
-      <div>Foreground Image</div>
-      <span class="col">Col 18: Foreground Image</span>
-    </div>
-
-    <div class="anchor bubble-text">
-      <div>Bubble Text</div>
-      <span class="col">Col 19: Bubble Text</span>
-    </div>
-
-    <div class="anchor feature-qr">
-      <div>Feature QR Code</div>
-      <span class="col">Col 13: Feature QR</span>
-    </div>
-
-    <div class="anchor footer">
-      <div>Slide Footer Text / Hyperlink</div>
-      <span class="col">Col 8: Slide Footer | Col 15: Footer Hyperlink</span>
-    </div>
-
-    <div class="metadata">
-      <strong>Scheduling & Logic</strong><br>
-      Col 10: Hidden Notes<br>
-      Col 12: Countdown Finish<br>
-      Col 20-22: Lock Slide, Day, Time
-    </div>
-  </div>
 </body>
 </html>

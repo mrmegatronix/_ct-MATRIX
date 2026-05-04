@@ -925,7 +925,7 @@ function renderActiveSlide() {
     });
 
     if (!window.MATRIX.STATE.isPaused) {
-      const delay = slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY;
+      const delay = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
       window.MATRIX.STATE.timer = setTimeout(nextSlide, delay);
       
       const bar = document.getElementById('progress-bar');

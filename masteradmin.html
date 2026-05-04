@@ -475,7 +475,7 @@
                 let moduleCount = 0;
                 let staticCount = 0;
                 slides.forEach(s => {
-                    const dur = s.duration ? parseInt(s.duration) : (s.type === 'MODULE' ? 30 : 15);
+                    const dur = s.duration ? parseInt(s.duration) : 30; // 30s default for all
                     totalSecs += dur;
                     if(s.type === 'MODULE') moduleCount++; else staticCount++;
                 });
@@ -489,11 +489,11 @@
                     </div>
                     <div style="background: var(--surface); padding: 1rem; border-radius: 8px;">
                         <div style="font-size: 0.7rem; opacity: 0.5;">TOTAL SLIDES</div>
-                        <div style="font-size: 1.5rem; font-weight: 900; color: #fff;">${slides.length}</div>
+                        <div style="font-size: 1.5rem; font-weight: 900; color: #fff;">${slides.length} <span style="font-size: 0.8rem; opacity: 0.5;">(~30s per slide)</span></div>
                     </div>
                     <div style="background: var(--surface); padding: 1rem; border-radius: 8px;">
                         <div style="font-size: 0.7rem; opacity: 0.5;">ACTIVE MODULES</div>
-                        <div style="font-size: 1.5rem; font-weight: 900; color: var(--accent);">${moduleCount} <span style="font-size: 0.8rem; opacity: 0.5; color: #fff;">(30s each)</span></div>
+                        <div style="font-size: 1.5rem; font-weight: 900; color: var(--accent);">${moduleCount}</div>
                     </div>
                     <div style="background: var(--surface); padding: 1rem; border-radius: 8px;">
                         <div style="font-size: 0.7rem; opacity: 0.5;">STATIC PROMOS</div>
