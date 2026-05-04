@@ -13,7 +13,7 @@ window.MATRIX = {
     WEEKS_LOOKAHEAD: 2,
     SHOW_BANNER: true,
     ADMIN_PIN: '1234',
-    GSHEETS_URL: 'live_headers_check.csv' // Switched from GSheet to Local Live CSV as per user request
+    GSHEETS_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjplY4qgdlDPmFO4sKUoWHnBPoeqf-rY3Tc0Y50wgDbDutbTn4j_hXhW3aXhYVjvfbIlwcIOF07250/pub?gid=1948723750&single=true&output=csv'
   },
   STATE: {
     slides: [],
@@ -392,7 +392,7 @@ function buildSlideQueue(data) {
               title: ev.title,
               subtitle: ev.notes,
               price: ev.price, 
-              qr: ev.qr,
+              qr: ev.qr || ev.footerLink,
               meta: ev.day || '', 
               date: ev.date || (virtualDate ? virtualDate.toISOString().split('T')[0] : null),
               days: daysArray, 
