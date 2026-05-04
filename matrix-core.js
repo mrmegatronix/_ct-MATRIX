@@ -1013,16 +1013,13 @@ function parseMatrixDate(dateStr) {
     return new Date(y, m - 1, d);
   }
   
-    // 2. Slash format: Default to DD/MM/YYYY (NZ/UK) as per live CSV data
-    const parts = str.split('/').map(Number);
-    if (parts.length === 3) {
-      const [d, m, y] = parts;
-      // If month > 12, it's likely M/D/YYYY (US), but we prioritize D/M/YYYY
-      if (m > 12) {
-        return new Date(y, d - 1, m); // Treat as US if middle is > 12
-      }
-      return new Date(y, m - 1, d); // Default NZ
-    }
+  // 2. Slash format: Google Sheets CSV exports M/D/YYYY (US format)
+  const parts = str.split('/').map(Number);
+  if (parts.length === 3) {
+    const [a, b, y] = parts;
+    // Google Sheets ALWAYS exports M/D/YYYY — first number is month
+    return new Date(y, a - 1, b);
+  }
   
   // 3. Fallback to native (with caution)
   const d = new Date(str);
