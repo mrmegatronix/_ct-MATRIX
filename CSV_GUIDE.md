@@ -66,12 +66,15 @@ For **Slide Background** (Col 17) and **Foreground Image** (Col 18), use the fol
 
 ---
 
-## 📋 Scrolling Menu Recipe
-To create a premium scrolling menu (panning from top to bottom):
-1. **Column 17 (Slide Background)**: Enter your menu image URL (e.g., `ads/menu.jpg`).
-2. **Column 23 (Transition)**: Enter **`PanDown`**.
-3. **Column 24 (Zoom)**: Enter **`1.2`** or **`1.5`** to ensure the image fills the width while scrolling.
-4. **Column 16 (Duration)**: Set to `45000` (45s) to allow enough time for a slow, readable scroll.
+## 📋 Premium A4 Menu Support
+To show a portrait A4 menu with a professional scrolling effect:
+1. **Column 9 (Slide Type)**: Enter **`MENU`**.
+2. **Column 17 (Slide Background)**: Enter your menu image URL (e.g., `_menus/menu.jpg`).
+3. **Automatic Logic**: Setting the type to `MENU` will automatically:
+   - Apply the **PanDown** transition (top-to-bottom scroll).
+   - Set the **Duration** to 45 seconds (plenty of time to read).
+   - Hide the main center text so your menu isn't blocked.
+   - Show a sleek sidebar on the left with a QR code for mobile viewing.
 
 ---
 

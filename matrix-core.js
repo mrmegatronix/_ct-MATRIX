@@ -277,7 +277,7 @@ function parseCSVToEvents(text) {
       price: clean[6], // Price
       location: clean[7],
       footer: clean[8],
-      slideType: clean[9],
+      slideType: (clean[9] || 'Event').toUpperCase(),
       hiddenNotes: clean[10],
       accentColor: clean[11],
       countdownFinish: clean[12],
@@ -403,11 +403,11 @@ function buildSlideQueue(data) {
               bgImage: ev.bgImage || getDefaultBackground(ev.event_type, ev.title),
               fgImage: ev.fgImage,
               bubbleText: ev.bubbleText,
-              duration: ev.duration,
+              duration: ev.duration || (ev.slideType === 'MENU' ? 45 : null),
               footerQR: ev.footerQR,
               footerLink: ev.footerLink,
-              transition: ev.transition,
-              zoom: ev.zoom
+              transition: ev.transition || (ev.slideType === 'MENU' ? 'PanDown' : ''),
+              zoom: ev.zoom || (ev.slideType === 'MENU' ? 1.3 : null)
             });
           }
     });
@@ -857,6 +857,29 @@ function renderActiveSlide() {
               <div class="social-cta animate-content-enter" style="animation-delay: 0.8s;">Scan to Follow</div>
             </div>
         `;
+      } else if (slide.type === 'MENU') {
+        const bgImg = slide.bgImage || '';
+        slideEl.innerHTML = `
+            <div class="slide-bg">
+              <img src="${bgImg}" alt="" class="menu-panning-img">
+              <div class="slide-bg-overlay" style="background: linear-gradient(to right, rgba(0,0,0,0.4) 0%, transparent 40%);"></div>
+            </div>
+            <div class="menu-overlay-ui">
+              <div class="menu-sidebar animate-tag-enter">
+                <div class="menu-badge">MENU</div>
+                <h1 class="menu-title">${slide.title || 'Today\'s Menu'}</h1>
+                <div class="menu-accent" style="background: var(--theme-color);"></div>
+                ${slide.subtitle ? `<div class="menu-desc">${slide.subtitle}</div>` : ''}
+                
+                <div class="menu-qr-box animate-content-enter">
+                  <div class="qr-label">Scan for Full Menu</div>
+                  <div class="qr-frame">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(slide.qr || slide.footerLink || window.location.href)}">
+                  </div>
+                </div>
+              </div>
+            </div>
+        `;
       } else if (slide.type === 'SPECIAL EVENT') {
         const bgImg = slide.bgImage || getDefaultBackground(slide.subType, slide.title);
         slideEl.innerHTML = `
@@ -998,8 +1021,8 @@ function renderActiveSlide() {
 
 /**
  * Robust Date Parser
- * Google Sheets CSV export ALWAYS uses M/D/YYYY (US format) regardless of locale.
- * Also handles ISO YYYY-MM-DD and explicit NZ DD/MM/YYYY (manual input).
+ * Live CSV uses DD/MM/YYYY (NZ format).
+ * Also handles ISO YYYY-MM-DD.
  */
 function parseMatrixDate(dateStr) {
   if (!dateStr) return null;
