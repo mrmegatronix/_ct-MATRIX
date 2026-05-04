@@ -521,8 +521,9 @@ function isEventCurrent(dateOrStr, subType) {
     
     const diffDays = Math.round((evDay - today) / (1000 * 60 * 60 * 24));
     
-    // 2. 14 Day lookahead for ALL events as per latest request
-    return diffDays <= 14;
+    // 2. 14 Day lookahead for ALL events, 7 days for Weekly Specials
+    const limit = (subType || '').toLowerCase().includes('weekly special') ? 7 : 14;
+    return diffDays <= limit;
 }
 
 function isWeekInRange(weekStr) {
@@ -588,9 +589,10 @@ function isSlideActive(slide) {
       const diffDays = Math.round((evDay - today) / (1000 * 3600 * 24));
 
       const subType = (slide.subType || '').toLowerCase();
+      const limit = subType.includes('weekly special') ? 7 : 14;
 
       if (diffDays < 0) return false; // Past event
-      if (diffDays > 14) return false; // All items show up to 14 days ahead
+      if (diffDays > limit) return false; 
     }
   }
 
@@ -837,6 +839,48 @@ function renderActiveSlide() {
             </div>
             <div style="position: absolute; bottom: 4rem; width: 100%; text-align: center; font-family: 'JetBrains Mono'; font-size: 1.2rem; color: ${accent}; opacity: 0.5;">
               MATRIX LIVE ALERT SYSTEM v1.0
+            </div>
+        `;
+      } else if (slide.type === 'SOCIAL LINK') {
+        const icon = (slide.title || '').toLowerCase().includes('facebook') ? '📘' : ((slide.title || '').toLowerCase().includes('instagram') ? '📸' : '📱');
+        slideEl.innerHTML = `
+            <div class="slide-bg" style="background: #000;">
+              <div style="position:absolute; inset:0; background: radial-gradient(circle at center, var(--theme-color)22 0%, #000 70%);"></div>
+            </div>
+            <div class="social-card">
+              <div class="social-icon animate-float">${icon}</div>
+              <div class="social-title animate-pop-in">${slide.title}</div>
+              <div class="social-handle animate-pop-in" style="animation-delay: 0.2s;">${slide.subtitle || ''}</div>
+              <div class="social-qr-wrapper">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(slide.qr || slide.footerLink || '')}" alt="Social QR">
+              </div>
+              <div class="social-cta animate-content-enter" style="animation-delay: 0.8s;">Scan to Follow</div>
+            </div>
+        `;
+      } else if (slide.type === 'SPECIAL EVENT') {
+        const bgImg = slide.bgImage || getDefaultBackground(slide.subType, slide.title);
+        slideEl.innerHTML = `
+            <div class="slide-bg">
+              <img src="${bgImg}" alt="">
+              <div class="slide-bg-overlay" style="background: radial-gradient(circle at center, transparent 0%, #000 90%);"></div>
+            </div>
+            <div class="special-event-card">
+              <div class="special-badge animate-tag-enter">Special Event</div>
+              <div class="special-title animate-pop-in">${slide.title}</div>
+              <div class="special-desc animate-content-enter" style="animation-delay: 0.3s;">${slide.subtitle || ''}</div>
+              
+              <div class="special-meta-box animate-content-enter" style="animation-delay: 0.5s;">
+                ${slide.date ? `<div class="special-meta-pill">📅 ${formatDate(slide.date)}</div>` : ''}
+                ${slide.time ? `<div class="special-meta-pill">⏰ ${slide.time}</div>` : ''}
+              </div>
+
+              ${(slide.qr || slide.footerLink) ? `
+                <div class="animate-content-enter" style="margin-top: 2rem; animation-delay: 0.8s;">
+                  <div style="background:#fff; padding: 15px; border-radius: 20px; display:inline-block; box-shadow: 0 0 50px var(--theme-glow);">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(slide.qr || slide.footerLink)}" style="width: 250px; height: 250px; display:block;">
+                  </div>
+                </div>
+              ` : ''}
             </div>
         `;
       } else {
