@@ -130,7 +130,7 @@ The system automatically assigns premium background assets based on the **Event 
 ---
 
 ### 💡 Pro-Tip: Multi-line Support
-All `Description`, `Title`, and `Subtitle` fields support **Shift+Enter** from Google Sheets. The system automatically converts these into `<br>` tags for display.
+All `Description`, `Title`, and `Subtitle` fields support **Shift+Enter** from Google Sheets. The system automatically converts these into `<br>` tags for display. //
 
 ### 🔗 Google Sheets Integration
 To use Google Sheets, publish your sheet as a CSV (`File > Share > Publish to web > CSV`) and paste the link into the Admin Panel "Sync" field. Ensure your sheet columns match the headers above EXACTLY.
