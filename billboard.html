@@ -118,7 +118,9 @@
       margin-bottom: 5px;
       text-shadow: 0 0 15px var(--theme-glow);
       max-width: 100%;
-      white-space: nowrap;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -128,7 +130,9 @@
       font-weight: 600;
       color: #cbd5e1;
       max-width: 90%;
-      white-space: nowrap;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
       overflow: hidden;
       text-overflow: ellipsis;
       margin-bottom: 5px;
@@ -309,15 +313,15 @@
 
       if (slide.type === 'MODULE') {
         newSlide.innerHTML = `
-          <div class="day-tag anim-delay-1">${tagText}</div>
-          <div class="title anim-delay-2">${slide.title || 'Special Feature'}</div>
-          <div class="subtitle anim-delay-3">Now Displaying</div>
+          <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; border-radius: 8px;">
+            <iframe src="${slide.url}" style="width: 1920px; height: 1080px; border: none; transform: scale(0.20833); pointer-events: none; position: absolute;" scrolling="no"></iframe>
+          </div>
         `;
       } else {
         newSlide.innerHTML = `
           <div class="day-tag anim-delay-1">${tagText}</div>
           <div class="title anim-delay-2">${slide.title || ''}</div>
-          ${slide.subtitle ? `<div class="subtitle anim-delay-3">${slide.subtitle.replace(/<[^>]*>?/gm, '').substring(0, 50)}</div>` : ''}
+          ${(slide.billboardSubtitle || slide.subtitle) ? `<div class="subtitle anim-delay-3">${(slide.billboardSubtitle || slide.subtitle).replace(/<[^>]*>?/gm, '')}</div>` : ''}
           ${metaText ? `<div class="meta anim-delay-3">${metaText}</div>` : ''}
           ${slide.price ? `<div class="price-badge anim-delay-3">${slide.price}</div>` : ''}
         `;

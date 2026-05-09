@@ -265,13 +265,12 @@ function parseCSVToEvents(text) {
 
   // Map to events, handle newlines
   // New 22-column schema:
-  // 0:Date, 1:Day, 2:Event Type, 3:Event Name, 4:Details, 5:Time/Price,
-  // 0:Date, 1:Day, 2:Event Type, 3:Event Name, 4:Details, 5:Start Time,
-  // 6:Price, 7:Location, 8:Slide Footer, 9:Slide Type, 10:Hidden Notes,
-  // 11:Accent Hex Colour, 12:Countdown Finish, 13:Feature QR, 14:Footer QR,
-  // 15:Footer Hyperlink, 16:Slide Duration, 17:Slide Background,
-  // 18:Foreground Image, 19:Bubble Text, 20:Lock Slide, 21:Lock Day, 22:Lock Time,
-  // 23:Transition, 24:Zoom
+  // 0:Date, 1:Day, 2:Event Type, 3:Event Name, 4:Details, 5:Billboard Text, 6:Start Time,
+  // 7:Price, 8:Location, 9:Slide Footer, 10:Slide Type, 11:Hidden Notes,
+  // 12:Accent Hex Colour, 13:Countdown Finish, 14:Feature QR, 15:Footer QR,
+  // 16:Footer Hyperlink, 17:Slide Duration, 18:Slide Background,
+  // 19:Foreground Image, 20:Bubble Text, 21:Lock Slide, 22:Lock Day, 23:Lock Time,
+  // 24:Transition, 25:Zoom
   const events = result.slice(1).map(clean => {
     return {
       date: clean[0],
@@ -279,26 +278,27 @@ function parseCSVToEvents(text) {
       event_type: clean[2] || 'Event',
       title: (clean[3] || '').replace(/\n/g, '<br>'),
       notes: (clean[4] || '').replace(/\n/g, '<br>'),
-      time: clean[5], // Start Time
-      price: clean[6], // Price
-      location: clean[7],
-      footer: clean[8],
-      slideType: (clean[9] || 'Event').toUpperCase(),
-      hiddenNotes: clean[10],
-      accentColor: clean[11],
-      countdownFinish: clean[12],
-      qr: clean[13] ? clean[13].replace(/\\/g, '/') : clean[13],
-      footerQR: clean[14] ? clean[14].replace(/\\/g, '/') : clean[14],
-      footerLink: clean[15],
-      duration: clean[16] ? parseInt(clean[16]) : null,
-      bgImage: clean[17] ? clean[17].replace(/\\/g, '/') : clean[17],
-      fgImage: clean[18] ? clean[18].replace(/\\/g, '/') : clean[18],
-      bubbleText: clean[19],
-      lockSlide: clean[20],
-      lockDay: clean[21],
-      lockTime: clean[22],
-      transition: clean[23],
-      zoom: clean[24]
+      billboardNotes: (clean[5] || '').replace(/\n/g, '<br>'),
+      time: clean[6], // Start Time
+      price: clean[7], // Price
+      location: clean[8],
+      footer: clean[9],
+      slideType: (clean[10] || 'Event').toUpperCase(),
+      hiddenNotes: clean[11],
+      accentColor: clean[12],
+      countdownFinish: clean[13],
+      qr: clean[14] ? clean[14].replace(/\\/g, '/') : clean[14],
+      footerQR: clean[15] ? clean[15].replace(/\\/g, '/') : clean[15],
+      footerLink: clean[16],
+      duration: clean[17] ? parseInt(clean[17]) : null,
+      bgImage: clean[18] ? clean[18].replace(/\\/g, '/') : clean[18],
+      fgImage: clean[19] ? clean[19].replace(/\\/g, '/') : clean[19],
+      bubbleText: clean[20],
+      lockSlide: clean[21],
+      lockDay: clean[22],
+      lockTime: clean[23],
+      transition: clean[24],
+      zoom: clean[25]
     };
   }).filter(e => e.title || e.date);
 
@@ -397,6 +397,7 @@ function buildSlideQueue(data) {
               subType: ev.event_type || 'Event',
               title: ev.title,
               subtitle: ev.notes,
+              billboardSubtitle: ev.billboardNotes,
               price: ev.price, 
               qr: ev.qr || ev.footerLink,
               meta: ev.day || '', 
