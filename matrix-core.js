@@ -327,13 +327,7 @@ function getDefaultBackground(eventType, title) {
     return '_backgrounds/quiz.png';
   }
   
-  // Fallback to rotation
-  const bgs = window.MATRIX.BACKGROUNDS || [];
-  if (bgs.length > 0) {
-    const hash = (t + name).split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-    return bgs[hash % bgs.length];
-  }
-  
+  // User requested: if blank then use a black background instead (removing rotation)
   return '';
 }
 
@@ -836,16 +830,22 @@ function renderActiveSlide() {
     } else {
       const isPromo = slide.type === 'PROMO';
       const isLogo = slide.isLogo || (!slide.title && !slide.subtitle && slide.bgImage && slide.bgImage.includes('LOGO'));
-      const bgImg = slide.bgImage || getDefaultBackground(slide.subType, slide.title);
+      
+      // Process Background (Hex support)
+      const rawBg = slide.bgImage || getDefaultBackground(slide.subType, slide.title);
+      const isHex = /^#([A-Fa-f0-9]{3,8})$/.test((rawBg || '').trim());
+      const bgImg = isHex ? '' : rawBg;
+      const bgColor = isHex ? rawBg : '#000000';
+
       const color = isPromo ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide);
       const smartTag = getSmartTag(slide);
       const typeKey = (slide.subType || slide.type || 'Event').toLowerCase();
 
       if (isLogo) {
         slideEl.innerHTML = `
-          <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: #000;">
+          <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: ${bgColor};">
             <div class="logo-wrapper" style="position:relative; height: 90vh; display: flex; justify-content: center; animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
-              <img src="${bgImg}" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative; opacity: 1; filter: none; animation: none;" />
+              ${bgImg ? `<img src="${bgImg}" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative; opacity: 1; filter: none; animation: none;" />` : ''}
               <div class="flame-anchor" style="position: absolute; left: 50%; top: ${slide.flamePosition || '60%'}; width: 0; height: 0; z-index: 3; transform: scale(1.5);">
                 <div class="flame-container">
                     <div class="flame-glow"></div>
@@ -868,6 +868,16 @@ function renderActiveSlide() {
             </div>
             <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
           </div>
+          ${(slide.footer || slide.footerQR) ? `
+            <div class="footer-container animate-content-enter" style="animation-delay: 0.7s; display: flex; align-items: center; justify-content: center; gap: 2rem; position: absolute; bottom: 4rem; width: 100%; z-index: 999;">
+              ${slide.footer ? `<div class="premium-footer" style="margin-top:0">${slide.footer}</div>` : ''}
+              ${slide.footerQR ? `
+                <div class="footer-qr-container" style="background:#fff; padding: 10px; border-radius: 12px; box-shadow: 0 0 30px rgba(255,255,255,0.4); display: inline-block;">
+                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.footerQR)}" style="width: 100px; height: 100px; display:block;">
+                </div>
+              ` : ''}
+            </div>
+          ` : ''}
         `;
       } else if (slide.type === 'LIVE') {
         const accent = slide.accent || '#06b6d4';
@@ -901,10 +911,9 @@ function renderActiveSlide() {
             </div>
         `;
       } else if (slide.type === 'MENU') {
-        const bgImg = slide.bgImage || '';
         slideEl.innerHTML = `
-            <div class="slide-bg">
-              <img src="${bgImg}" alt="" class="menu-panning-img">
+            <div class="slide-bg" style="background-color: ${bgColor};">
+              ${bgImg ? `<img src="${bgImg}" alt="" class="menu-panning-img">` : ''}
               <div class="slide-bg-overlay" style="background: linear-gradient(to right, rgba(0,0,0,0.4) 0%, transparent 40%);"></div>
             </div>
             <div class="menu-overlay-ui">
@@ -924,10 +933,9 @@ function renderActiveSlide() {
             </div>
         `;
       } else if (slide.type === 'SPECIAL EVENT') {
-        const bgImg = slide.bgImage || getDefaultBackground(slide.subType, slide.title);
         slideEl.innerHTML = `
-            <div class="slide-bg">
-              <img src="${bgImg}" alt="">
+            <div class="slide-bg" style="background-color: ${bgColor};">
+              ${bgImg ? `<img src="${bgImg}" alt="">` : ''}
               <div class="slide-bg-overlay" style="background: radial-gradient(circle at center, transparent 0%, #000 90%);"></div>
             </div>
             <div class="special-event-card">
@@ -947,6 +955,17 @@ function renderActiveSlide() {
                   </div>
                 </div>
               ` : ''}
+              
+              ${(slide.footer || slide.footerQR) ? `
+                <div class="footer-container animate-content-enter" style="animation-delay: 0.7s; display: flex; align-items: center; justify-content: center; gap: 2rem; margin-top: 2rem; position: relative; z-index: 999;">
+                  ${slide.footer ? `<div class="premium-footer" style="margin-top:0">${slide.footer}</div>` : ''}
+                  ${slide.footerQR ? `
+                    <div class="footer-qr-container" style="background:#fff; padding: 10px; border-radius: 12px; box-shadow: 0 0 30px rgba(255,255,255,0.4); display: inline-block;">
+                      <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.footerQR)}" style="width: 100px; height: 100px; display:block;">
+                    </div>
+                  ` : ''}
+                </div>
+              ` : ''}
             </div>
         `;
       } else if (slide.fgImage) {
@@ -957,17 +976,15 @@ function renderActiveSlide() {
             <img src="${slide.fgImage}" alt="" style="width: 100%; height: 100%; object-fit: contain; animation: none;">
           </div>
           ${slide.footerQR ? `
-            <div style="position: absolute; bottom: 2rem; right: 2rem; z-index: 100; background:#fff; padding: 10px; border-radius: 10px; box-shadow: 0 0 30px rgba(255,255,255,0.3);">
-              <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(slide.footerQR)}" style="width: 100px; height: 100px; display:block;">
+            <div class="footer-qr-container" style="position: absolute; bottom: 2rem; right: 2rem; z-index: 100; background:#fff; padding: 10px; border-radius: 10px; box-shadow: 0 0 30px rgba(255,255,255,0.3);">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.footerQR)}" style="width: 100px; height: 100px; display:block;">
             </div>
           ` : ''}
         `;
-        console.log('[MATRIX] Fullscreen Image Slide rendered with FooterQR:', slide.footerQR);
       } else {
-        console.log('[MATRIX] Rendering Standard Slide. FooterQR:', slide.footerQR);
         slideEl.innerHTML = `
-          <div class="slide-bg">
-            <img src="${bgImg}" alt="" loading="eager" style="object-position: ${bgImg.includes('crusaders') ? 'left center' : (bgImg.includes('warriors') ? 'right center' : 'center center')};" />
+          <div class="slide-bg" style="background-color: ${bgColor};">
+            ${bgImg ? `<img src="${bgImg}" alt="" loading="eager" style="object-position: ${bgImg.includes('crusaders') ? 'left center' : (bgImg.includes('warriors') ? 'right center' : 'center center')};" />` : ''}
             <div class="slide-bg-overlay" style="background: rgba(0,0,0,0.85);"></div>
           </div>
           <div class="premium-card">
@@ -1024,14 +1041,11 @@ function renderActiveSlide() {
 
             <!-- 7. Slide Footer & Footer QR -->
             ${(slide.footer || slide.footerQR) ? `
-              <div class="animate-content-enter footer-debug-zone" style="animation-delay: 0.7s; display: flex; align-items: center; justify-content: center; gap: 2rem; margin-top: 2rem; position: relative; z-index: 999;">
+              <div class="footer-container animate-content-enter" style="animation-delay: 0.7s; display: flex; align-items: center; justify-content: center; gap: 2rem; margin-top: 2rem; position: relative; z-index: 999;">
                 ${slide.footer ? `<div class="premium-footer" style="margin-top:0">${slide.footer}</div>` : ''}
                 ${slide.footerQR ? `
                   <div class="footer-qr-container" style="background:#fff; padding: 10px; border-radius: 12px; box-shadow: 0 0 30px rgba(255,255,255,0.4); display: inline-block;">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.footerQR)}" 
-                         style="width: 120px; height: 120px; display:block;"
-                         onload="console.log('[MATRIX] Footer QR Loaded Successfully')"
-                         onerror="console.error('[MATRIX] Footer QR Failed to Load:', this.src)">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.footerQR)}" style="width: 120px; height: 120px; display:block;">
                   </div>
                 ` : ''}
               </div>
