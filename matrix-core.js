@@ -423,7 +423,7 @@ function buildSlideQueue(data) {
               bgImage: ev.bgImage || getDefaultBackground(ev.event_type, ev.title),
               fgImage: ev.fgImage,
               bubbleText: ev.bubbleText,
-              duration: ev.duration || (ev.slideType === 'MENU' ? 45 : null),
+              duration: ev.duration || 30, // Default to 30s for all slides
               footerQR: ev.footerQR,
               footerLink: ev.footerLink,
               transition: ev.transition || (ev.slideType === 'MENU' ? 'PanDown' : ''),
@@ -436,12 +436,13 @@ function buildSlideQueue(data) {
   // 2. Weekly Specials are now in the Google Sheet — no hardcoded injection needed.
 
   // 3. Project Modules (Base Infrastructure)
-  queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5 });
-  queue.push({ type: 'MODULE', id: 'ct-wea', url: '../_ct-WEA/index.html', title: "Christchurch Weather", priority: 80 });
-  queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5 });
-  queue.push({ type: 'MODULE', id: 'ct-mom', url: '../_ct-MOM/index.html', title: "Mother's Day Celebration", pinned: true, priority: 5 });
-  queue.push({ type: 'MODULE', id: 'ct-nim', url: '../_ct-NIM/index.html', title: "Nim Creative Display", priority: 85, disabled: true });
-  queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, disabled: true });
+  // Durations are set to allow multiple internal slides (30s each)
+  queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5, duration: 30 });
+  queue.push({ type: 'MODULE', id: 'ct-wea', url: '../_ct-WEA/index.html', title: "Christchurch Weather", priority: 80, duration: 30 });
+  queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5, duration: 180 }); // 6 slides * 30s
+  queue.push({ type: 'MODULE', id: 'ct-mom', url: '../_ct-MOM/index.html', title: "Mother's Day Celebration", pinned: true, priority: 5, duration: 150 }); // 5 slides * 30s
+  queue.push({ type: 'MODULE', id: 'ct-nim', url: '../_ct-NIM/index.html', title: "Nim Creative Display", priority: 85, disabled: true, duration: 30 });
+  queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, disabled: true, duration: 30 });
 
   // 5. Filter & Sort
   // Remove disabled slides
@@ -870,16 +871,9 @@ function renderActiveSlide() {
             </div>
             <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
           </div>
-          ${(slide.footer || slide.footerQR) ? `
-            <div class="footer-container animate-content-enter" style="animation-delay: 0.7s; display: flex; align-items: center; justify-content: center; gap: 2rem; position: absolute; bottom: 4rem; width: 100%; z-index: 999;">
-              ${slide.footer ? `<div class="premium-footer" style="margin-top:0">${slide.footer}</div>` : ''}
-              ${slide.footerQR ? `
-                <div class="footer-qr-container" style="background:#fff; padding: 10px; border-radius: 12px; box-shadow: 0 0 30px rgba(255,255,255,0.4); display: inline-block;">
-                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.footerQR)}" style="width: 100px; height: 100px; display:block;">
-                </div>
-              ` : ''}
-            </div>
-          ` : ''}
+          <div style="position:absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: 90%;">
+            ${renderPremiumFooterRow(slide, themeColor)}
+          </div>
         `;
       } else if (slide.type === 'LIVE') {
         const accent = slide.accent || '#06b6d4';
@@ -945,29 +939,7 @@ function renderActiveSlide() {
               <div class="special-title animate-pop-in">${slide.title}</div>
               <div class="special-desc animate-content-enter" style="animation-delay: 0.3s;">${slide.subtitle || ''}</div>
               
-              <div class="special-meta-box animate-content-enter" style="animation-delay: 0.5s;">
-                ${slide.date ? `<div class="special-meta-pill">📅 ${formatDate(slide.date)}</div>` : ''}
-                ${slide.time ? `<div class="special-meta-pill">⏰ ${slide.time}</div>` : ''}
-              </div>
-
-              ${(slide.qr || slide.footerLink) ? `
-                <div class="animate-content-enter" style="margin-top: 2rem; animation-delay: 0.8s;">
-                  <div style="background:#fff; padding: 15px; border-radius: 20px; display:inline-block; box-shadow: 0 0 50px var(--theme-glow);">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(slide.qr || slide.footerLink)}" style="width: 250px; height: 250px; display:block;">
-                  </div>
-                </div>
-              ` : ''}
-              
-              ${(slide.footer || slide.footerQR) ? `
-                <div class="footer-container animate-content-enter" style="animation-delay: 0.7s; display: flex; align-items: center; justify-content: center; gap: 2rem; margin-top: 2rem; position: relative; z-index: 999;">
-                  ${slide.footer ? `<div class="premium-footer" style="margin-top:0">${slide.footer}</div>` : ''}
-                  ${slide.footerQR ? `
-                    <div class="footer-qr-container" style="background:#fff; padding: 10px; border-radius: 12px; box-shadow: 0 0 30px rgba(255,255,255,0.4); display: inline-block;">
-                      <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.footerQR)}" style="width: 100px; height: 100px; display:block;">
-                    </div>
-                  ` : ''}
-                </div>
-              ` : ''}
+              ${renderPremiumFooterRow(slide, themeColor)}
             </div>
         `;
       } else if (slide.fgImage) {
@@ -977,11 +949,9 @@ function renderActiveSlide() {
           <div class="slide-bg" style="background: #000;">
             <img src="${slide.fgImage}" alt="" style="width: 100%; height: 100%; object-fit: contain; animation: none;">
           </div>
-          ${slide.footerQR ? `
-            <div class="footer-qr-container" style="position: absolute; bottom: 2rem; right: 2rem; z-index: 100; background:#fff; padding: 10px; border-radius: 10px; box-shadow: 0 0 30px rgba(255,255,255,0.3);">
-              <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.footerQR)}" style="width: 100px; height: 100px; display:block;">
-            </div>
-          ` : ''}
+          <div style="position:absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: 90%;">
+            ${renderPremiumFooterRow(slide, themeColor)}
+          </div>
         `;
       } else {
         slideEl.innerHTML = `
@@ -1005,63 +975,8 @@ function renderActiveSlide() {
             <!-- 3. Details -->
             ${slide.subtitle ? `<div class="premium-desc animate-content-enter" style="animation-delay: 0.3s;">${String(slide.subtitle).replace(/\n/g, '<br>')}</div>` : ''}
 
-            <!-- 4. Price -->
-            ${slide.price ? `
-              <div class="animate-content-enter" style="animation-delay: 0.4s;">
-                <div class="price-badge" style="animation: pulse-glow 3s infinite; box-shadow: 0 0 60px ${color}80;">
-                  <div class="price-badge-inner"><span class="price-text">${slide.price}</span></div>
-                </div>
-              </div>
-            ` : ''}
-
-            <!-- 5. Location -->
-            ${slide.location ? `
-              <div class="animate-content-enter" style="animation-delay: 0.5s;">
-                <div class="premium-location">${slide.location}</div>
-              </div>
-            ` : ''}
-
-            <!-- 6. Day, Date, Time -->
-            ${(() => {
-              const timeStr = slide.time || '';
-              const titleLower = (slide.title || '').toLowerCase();
-              const subtitleLower = (slide.subtitle || '').toLowerCase();
-              const timeRedundant = timeStr && (titleLower.includes(timeStr.toLowerCase()) || subtitleLower.includes(timeStr.toLowerCase()));
-              
-              if (slide.date || (slide.time && !timeRedundant) || slide.days) {
-                return `
-                  <div class="premium-meta animate-content-enter" style="animation-delay: 0.6s;">
-                    <div class="premium-meta-item">${(slide.subType || '').toLowerCase().includes('weekly') ? '⏰' : '📅'} ${
-                      (slide.date ? formatDate(slide.date) : (slide.days ? 'EVERY ' + (slide.meta || '').split(' ')[0].toUpperCase() : '')) + 
-                      (slide.time && !timeRedundant ? ' • ' + slide.time : '')
-                    }</div>
-                  </div>
-                `;
-              }
-              return '';
-            })()}
-
-            <!-- 7. Slide Footer & Footer QR -->
-            ${(slide.footer || slide.footerQR) ? `
-              <div class="footer-container animate-content-enter" style="animation-delay: 0.7s; display: flex; align-items: center; justify-content: center; gap: 2rem; margin-top: 2rem; position: relative; z-index: 999;">
-                ${slide.footer ? `<div class="premium-footer" style="margin-top:0">${slide.footer}</div>` : ''}
-                ${slide.footerQR ? `
-                  <div class="footer-qr-container" style="background:#fff; padding: 10px; border-radius: 12px; box-shadow: 0 0 30px rgba(255,255,255,0.4); display: inline-block;">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.footerQR)}" style="width: 120px; height: 120px; display:block;">
-                  </div>
-                ` : ''}
-              </div>
-            ` : ''}
-
-            <!-- 8. Feature QR (Centered) -->
-            ${(slide.qr || slide.qrUrl) ? `
-              <div class="animate-content-enter" style="margin-top: 2rem; animation-delay: 0.8s;">
-                <div class="feature-qr-wrapper" style="background:#fff; padding: 15px; border-radius: 20px; display:inline-block; box-shadow: 0 0 50px var(--theme-glow); border: 4px solid var(--theme-color);">
-                   <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(slide.qr || slide.qrUrl)}" style="width: 250px; height: 250px; display:block;">
-                   <div style="color: #000; font-weight: 900; font-size: 1.2rem; margin-top: 10px; text-transform: uppercase; letter-spacing: 2px;">SCAN TO VIEW</div>
-                </div>
-              </div>
-            ` : ''}
+            <!-- Consolidated Footer Row (Price, Meta, QR) -->
+            ${renderPremiumFooterRow(slide, color)}
           </div>
         `;
       }
@@ -1101,6 +1016,57 @@ function renderActiveSlide() {
       }, 1000); // 1-second hold to ensure modules/images load behind it
     }
   }, transitionDelay);
+}
+
+/**
+ * renderPremiumFooterRow - Consolidated UI for Price, QR, and Meta-data
+ */
+function renderPremiumFooterRow(slide, color) {
+  const qrData = slide.qr || slide.qrUrl || slide.footerQR || slide.footerLink;
+  const showQR = !!qrData;
+  const showPrice = !!slide.price;
+  
+  // Meta Logic (Time/Date/Location/Days)
+  const timeStr = slide.time || '';
+  const titleLower = (slide.title || '').toLowerCase();
+  const subtitleLower = (slide.subtitle || '').toLowerCase();
+  const timeRedundant = timeStr && (titleLower.includes(timeStr.toLowerCase()) || subtitleLower.includes(timeStr.toLowerCase()));
+  
+  const dateStr = slide.date ? formatDate(slide.date) : '';
+  const dayStr = slide.meta ? 'EVERY ' + String(slide.meta).split(' ')[0].toUpperCase() : '';
+  const locStr = slide.location ? '📍 ' + slide.location : '';
+  
+  const metaText = [dateStr || dayStr, (timeStr && !timeRedundant ? '⏰ ' + timeStr : ''), locStr].filter(Boolean).join(' • ');
+  const showMeta = metaText.length > 0;
+  const showFooter = !!slide.footer;
+
+  if (!showQR && !showPrice && !showMeta && !showFooter) return '';
+
+  return `
+    <div class="premium-footer-row animate-content-enter" style="animation-delay: 0.6s;">
+      ${showPrice ? `
+        <div class="price-badge" style="animation: pulse-glow 3s infinite; box-shadow: 0 0 60px ${color}80;">
+          <div class="price-badge-inner"><span class="price-text">${slide.price}</span></div>
+        </div>
+      ` : ''}
+
+      ${showMeta || showFooter ? `
+        <div class="footer-meta-group">
+          ${showMeta ? `<div class="premium-meta"><div class="premium-meta-item">${metaText}</div></div>` : ''}
+          ${showFooter ? `<div class="premium-footer">${slide.footer}</div>` : ''}
+        </div>
+      ` : ''}
+
+      ${showQR ? `
+        <div class="footer-qr-group">
+          <div class="footer-qr-img">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}" alt="QR">
+          </div>
+          <div class="footer-qr-label">${slide.qrLabel || (slide.qr ? 'Scan to View' : 'Join Us')}</div>
+        </div>
+      ` : ''}
+    </div>
+  `;
 }
 
 /**

@@ -947,3 +947,66 @@ body {
   80% { object-position: bottom center; }
   100% { object-position: bottom center; }
 }
+/* ==========================================================================
+   PREMIUM FOOTER ROW (Consolidated UI)
+   ========================================================================== */
+
+.premium-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3rem;
+  margin-top: auto;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.premium-footer-row .price-badge {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.footer-meta-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.footer-meta-group .premium-meta {
+  margin: 0;
+  padding: 0;
+}
+
+.footer-meta-group .premium-footer {
+  margin: 0;
+  font-size: clamp(1.4rem, 1.8vw, 2rem);
+  opacity: 0.8;
+}
+
+.footer-qr-group {
+  margin-left: auto; /* Push to the right */
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.footer-qr-img {
+  background: #fff;
+  padding: 6px;
+  border-radius: 10px;
+}
+
+.footer-qr-img img {
+  width: 90px;
+  height: 90px;
+  display: block;
+}
+
+.footer-qr-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.1rem;
+  color: var(--theme-color);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
