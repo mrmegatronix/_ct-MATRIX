@@ -285,11 +285,11 @@ function parseCSVToEvents(text) {
       footer: clean[9],
       slideType: (clean[10] || 'Event').toUpperCase(),
       hiddenNotes: clean[11],
-      accentColor: clean[12],
-      countdownFinish: clean[13],
-      qr: clean[14] ? clean[14].replace(/\\/g, '/') : clean[14],
-      footerQR: clean[15] ? clean[15].replace(/\\/g, '/') : clean[15],
-      footerLink: clean[16],
+      accentColor: (clean[12] || '').trim(),
+      countdownFinish: (clean[13] || '').trim(),
+      qr: clean[14] ? clean[14].trim().replace(/\\/g, '/') : '',
+      footerQR: clean[15] ? clean[15].trim().replace(/\\/g, '/') : '',
+      footerLink: (clean[16] || '').trim(),
       duration: clean[17] ? parseInt(clean[17]) : null,
       bgImage: clean[18] ? clean[18].replace(/\\/g, '/') : clean[18],
       fgImage: clean[19] ? clean[19].replace(/\\/g, '/') : clean[19],
@@ -380,14 +380,33 @@ function buildSlideQueue(data) {
           const isCurrent = isEventCurrent(targetDate, ev.event_type);
 
           if (isCurrent) {
-            // RUTHLESS TBC/TBA filtering - scan ALL text fields
+            // 1. RUTHLESS TBC/TBA filtering - scan ALL text fields
             const ruthlessString = [
               ev.title, ev.notes, ev.event_type, ev.location, ev.price, ev.time, ev.hiddenNotes, ev.footer
             ].join(' ').toLowerCase();
 
             if (ruthlessString.includes('tbc') || ruthlessString.includes('tba') || 
-                ruthlessString.includes('to be confirmed') || ruthlessString.includes('to be announced')) {
+                ruthlessString.includes('to be confirmed') || ruthlessString.includes('to be announced') ||
+                ruthlessString === 'tbc' || ruthlessString === 'tba') {
               return;
+            }
+
+            // 2. 8 PM CURFEW for Today's Specials/Menus
+            const now = new Date();
+            const isToday = targetDate && 
+                            targetDate.getDate() === now.getDate() && 
+                            targetDate.getMonth() === now.getMonth() && 
+                            targetDate.getFullYear() === now.getFullYear();
+            
+            if (isToday) {
+                const hour = now.getHours();
+                const type = (ev.event_type || '').toUpperCase();
+                const slideType = (ev.slideType || '').toUpperCase();
+                
+                // If it's after 8 PM (20:00) and it's a Special or Menu, skip it.
+                if (hour >= 20 && (type.includes('SPECIAL') || type.includes('MENU') || slideType === 'MENU')) {
+                    return;
+                }
             }
 
             const detId = 'ev-' + (ev.title + (ev.date || ev.day) + ev.time).replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20);
@@ -799,8 +818,8 @@ function renderActiveSlide() {
       slideEl.style.setProperty('--zoom-level', slide.zoom);
     }
 
-    // Apply dynamic theme variables
-    const themeColor = slide.type === 'PROMO' ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide);
+    // Apply dynamic theme variables - Default to GOLD if not supplied
+    const themeColor = slide.accentColor || (slide.type === 'PROMO' ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide)) || '#f59e0b';
     document.documentElement.style.setProperty('--theme-color', themeColor);
     document.documentElement.style.setProperty('--theme-glow', `${themeColor}60`);
 
@@ -930,7 +949,22 @@ function renderActiveSlide() {
               ` : ''}
             </div>
         `;
+      } else if (slide.fgImage) {
+        // FULLSCREEN IMAGE MODE (Col 19 / T)
+        // We still show the Footer QR if provided, but keep the rest clean.
+        slideEl.innerHTML = `
+          <div class="slide-bg" style="background: #000;">
+            <img src="${slide.fgImage}" alt="" style="width: 100%; height: 100%; object-fit: contain; animation: none;">
+          </div>
+          ${slide.footerQR ? `
+            <div style="position: absolute; bottom: 2rem; right: 2rem; z-index: 100; background:#fff; padding: 10px; border-radius: 10px; box-shadow: 0 0 30px rgba(255,255,255,0.3);">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(slide.footerQR)}" style="width: 100px; height: 100px; display:block;">
+            </div>
+          ` : ''}
+        `;
+        console.log('[MATRIX] Fullscreen Image Slide rendered with FooterQR:', slide.footerQR);
       } else {
+        console.log('[MATRIX] Rendering Standard Slide. FooterQR:', slide.footerQR);
         slideEl.innerHTML = `
           <div class="slide-bg">
             <img src="${bgImg}" alt="" loading="eager" style="object-position: ${bgImg.includes('crusaders') ? 'left center' : (bgImg.includes('warriors') ? 'right center' : 'center center')};" />
@@ -988,17 +1022,27 @@ function renderActiveSlide() {
               return '';
             })()}
 
-            <!-- 7. Slide Footer -->
-            ${slide.footer ? `
-              <div class="animate-content-enter" style="animation-delay: 0.7s;">
-                <div class="premium-footer">${slide.footer}</div>
+            <!-- 7. Slide Footer & Footer QR -->
+            ${(slide.footer || slide.footerQR) ? `
+              <div class="animate-content-enter footer-debug-zone" style="animation-delay: 0.7s; display: flex; align-items: center; justify-content: center; gap: 2rem; margin-top: 2rem; position: relative; z-index: 999;">
+                ${slide.footer ? `<div class="premium-footer" style="margin-top:0">${slide.footer}</div>` : ''}
+                ${slide.footerQR ? `
+                  <div class="footer-qr-container" style="background:#fff; padding: 10px; border-radius: 12px; box-shadow: 0 0 30px rgba(255,255,255,0.4); display: inline-block;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.footerQR)}" 
+                         style="width: 120px; height: 120px; display:block;"
+                         onload="console.log('[MATRIX] Footer QR Loaded Successfully')"
+                         onerror="console.error('[MATRIX] Footer QR Failed to Load:', this.src)">
+                  </div>
+                ` : ''}
               </div>
             ` : ''}
 
+            <!-- 8. Feature QR (Centered) -->
             ${(slide.qr || slide.qrUrl) ? `
-              <div class="animate-content-enter" style="margin-top: 1rem; animation-delay: 0.8s;">
-                <div style="background:#fff; padding: 10px; border-radius: 10px; display:inline-block; box-shadow: 0 0 30px var(--theme-glow);">
-                   <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(slide.qr || slide.qrUrl)}" style="width: 120px; height: 120px; display:block;">
+              <div class="animate-content-enter" style="margin-top: 2rem; animation-delay: 0.8s;">
+                <div class="feature-qr-wrapper" style="background:#fff; padding: 15px; border-radius: 20px; display:inline-block; box-shadow: 0 0 50px var(--theme-glow); border: 4px solid var(--theme-color);">
+                   <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(slide.qr || slide.qrUrl)}" style="width: 250px; height: 250px; display:block;">
+                   <div style="color: #000; font-weight: 900; font-size: 1.2rem; margin-top: 10px; text-transform: uppercase; letter-spacing: 2px;">SCAN TO VIEW</div>
                 </div>
               </div>
             ` : ''}

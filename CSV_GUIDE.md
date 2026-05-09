@@ -17,38 +17,40 @@ This document lists the required CSV headers and data structures for all modules
 
 ## 1. CT-MATRIX (Main Events)
 **Source of Truth**: Google Sheet (Published CSV URL)
-**Schema**: 25 Columns (Mandatory)
+**Schema**: 26 Columns (Mandatory)
 
 ### 📋 Copy-Paste Master Headers
-`Date,Day,Event Type,Event Name,Details,Start Time,Price,Location,Slide Footer,Slide Type,Hidden Notes,Accent Hex Colour,Countdown Finish,Feature QR,Footer QR,Footer Hyperlink,Slide Duration,Slide Background,Foreground Image,Bubble Text,Lock Slide,Lock Day,Lock Time,Transition,Zoom`
+`Date,Day,Event Type,Event Name,Details,Billboard Text,Start Time,Price,Location,Slide Footer,Slide Type,Hidden Notes,Accent Hex Colour,Countdown Finish,Feature QR,Footer QR,Footer Hyperlink,Slide Duration,Slide Background,Foreground Image,Bubble Text,Lock Slide,Lock Day,Lock Time,Transition,Zoom`
 
-| Index | Column Name | Description |
-|---|---|---|
-| 0 | **Date** | Event date (YYYY-MM-DD or DD/MM/YYYY) |
-| 1 | **Day** | Name of the day (e.g. Monday) |
-| 2 | **Event Type** | Category (Rugby, Karaoke, Quiz, Special, etc.) |
-| 3 | **Event Name** | Primary slide title (Supports Shift+Enter for new lines) |
-| 4 | **Details** | Subtitle/Description (Supports Shift+Enter) |
-| 5 | **Start Time** | Specific event start time (e.g. 7:00 PM) |
-| 6 | **Price** | Cost or special pricing (e.g. $25 or FREE) |
-| 7 | **Location** | Venue area (e.g. The Garden Bar) |
-| 8 | **Slide Footer** | Custom text at the very bottom of the slide |
-| 9 | **Slide Type** | System identifier (Event, Promo, MODULE) |
-| 10 | **Hidden Notes** | Internal admin notes (never displayed on screen) |
-| 11 | **Accent Hex Colour**| Custom theme color (e.g. #D4AF37) |
-| 12 | **Countdown Finish**| Target date/time for countdown logic |
-| 13 | **Feature QR** | Main QR code link (creates a white-backed QR card) |
-| 14 | **Footer QR** | Smaller QR code specifically for the footer area |
-| 15 | **Footer Hyperlink**| destination for footer clicks (interactive mode) |
-| 16 | **Slide Duration** | Time in milliseconds (default 30000) |
-| 17 | **Slide Background**| Path to custom BG image (e.g. ads/promo1.jpg) |
-| 18 | **Foreground Image**| Path to transparent PNG overlay (e.g. logos/logo.png) |
-| 19 | **Bubble Text** | Text for a floating badge (e.g. SELLING FAST) |
-| 20 | **Lock Slide** | If `TRUE`, this slide stays active (Failsafe) |
-| 21 | **Lock Day** | Force slide to only appear on a specific day |
-| 22 | **Lock Time** | Force slide to only appear at a specific time |
-| 23 | **Transition** | Animation style: `Fade`, `ScrollDown`, or `PanDown` |
-| 24 | **Zoom** | Background zoom factor (e.g. 1.2) |
+| Index | Letter | Column Name | Description |
+|---|---|---|---|
+| 0 | A | **Date** | Event date (YYYY-MM-DD or DD/MM/YYYY) |
+| 1 | B | **Day** | Name of the day (e.g. Monday) |
+| 2 | C | **Event Type** | Category (Rugby, Karaoke, Quiz, Special, etc.) |
+| 3 | D | **Event Name** | Primary slide title |
+| 4 | E | **Details** | Main TV Description (Supports Shift+Enter) |
+| 5 | F | **Billboard Text** | **Short description for LED Billboard** |
+| 6 | G | **Start Time** | Specific event start time (e.g. 7:00 PM) |
+| 7 | H | **Price** | Cost or special pricing (e.g. $25 or FREE) |
+| 8 | I | **Location** | Venue area (e.g. The Garden Bar) |
+| 9 | J | **Slide Footer** | Custom text at the very bottom of the slide |
+| 10 | K | **Slide Type** | System identifier (Event, Promo, MODULE) |
+| 11 | L | **Hidden Notes** | Internal admin notes (never displayed) |
+| 12 | M | **Accent Hex** | Custom theme color (e.g. #D4AF37) |
+| 13 | N | **Countdown** | Target date/time for countdown logic |
+| 14 | O | **Feature QR** | **Centered QR Code** (Main focal point) |
+| 15 | P | **Footer QR** | **Small QR Code** (Beside Footer Text) |
+| 16 | Q | **Hyperlink** | URL Source for QR codes |
+| 17 | R | **Slide Duration** | Time in seconds (default 30) |
+| 18 | S | **Background** | Image URL for Slide Background |
+| 19 | T | **FG Image** | Foreground Overlay Image |
+| 20 | U | **Bubble Text** | Text for a floating badge (e.g. SELLING FAST) |
+| 21 | V | **Lock Slide** | If `TRUE`, this slide stays active (Failsafe) |
+| 22 | W | **Lock Day** | Force slide to only appear on a specific day |
+| 23 | X | **Lock Time** | Force slide to only appear at a specific time |
+| 24 | Y | **Transition** | Animation style: `Fade`, `ScrollDown`, `PanDown` |
+| 25 | Z | **Zoom** | Background zoom factor (e.g. 1.2) |
+| 26 | - | **Spare** | Reserved for future logic |
 
 ---
 
