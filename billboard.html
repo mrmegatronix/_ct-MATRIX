@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>_ct-MATRIX | LED Billboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    /* 
+      LED Billboard CSS 
+      Target: 400x200 dimensions.
+    */
+    :root {
+      --neon-gold: #FFD700;
+      --neon-blue: #06b6d4;
+      --neon-pink: #ec4899;
+      --theme-color: #06b6d4;
+      --theme-glow: rgba(6, 182, 212, 0.6);
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0; padding: 0;
+    }
+
+    body {
+      width: 400px;
+      height: 200px;
+      background-color: #050505; /* very dark, no images */
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Subtle LED grid overlay */
+    body::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(rgba(0, 0, 0, 0.4) 1px, transparent 1px),
+                  linear-gradient(90deg, rgba(0, 0, 0, 0.4) 1px, transparent 1px);
+      background-size: 3px 3px;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* Ambient neon glow */
+    .glow-bg {
+      position: absolute;
+      width: 150%;
+      height: 150%;
+      background: radial-gradient(circle at center, var(--theme-glow) 0%, transparent 60%);
+      opacity: 0.3;
+      z-index: 0;
+      animation: pulse-ambient 4s infinite alternate ease-in-out;
+    }
+
+    #viewport {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 15px;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .slide.exit {
+      opacity: 0;
+      transform: scale(1.05);
+    }
+
+    /* Typography */
+    .day-tag {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--theme-color);
+      border: 1px solid var(--theme-color);
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 5px;
+      text-shadow: 0 0 10px var(--theme-glow);
+      box-shadow: 0 0 10px var(--theme-glow);
+    }
+
+    .title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 5px;
+      text-shadow: 0 0 15px var(--theme-glow);
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .subtitle {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      max-width: 90%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 5px;
+    }
+
+    .meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      display: flex;
+      gap: 10px;
+    }
+
+    .price-badge {
+      position: absolute;
+      bottom: 10px;
+      right: 15px;
+      background: var(--theme-color);
+      color: #000;
+      font-weight: 900;
+      font-size: 0.9rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      box-shadow: 0 0 15px var(--theme-color);
+    }
+
+    @keyframes pulse-ambient {
+      0% { transform: scale(1); opacity: 0.2; }
+      100% { transform: scale(1.1); opacity: 0.4; }
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: translateY(10px) scale(0.9); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .anim-delay-1 { animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; animation-delay: 0.1s; }
+    .anim-delay-2 { animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; animation-delay: 0.2s; }
+    .anim-delay-3 { animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; animation-delay: 0.3s; }
+
+    #progress-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 4px;
+      background: var(--theme-color);
+      width: 0%;
+      z-index: 500;
+      box-shadow: 0 0 10px var(--theme-color);
+      transition: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-bg" id="glow"></div>
+  <div id="viewport">
+    <div id="status" style="color: #666; font-family: 'JetBrains Mono'; font-size: 0.8rem;">Awaiting Data Sync...</div>
+  </div>
+  <div id="progress-bar"></div>
+
+  <script>
+    const bc = new BroadcastChannel('ct_matrix_sync');
+    let currentSlideId = null;
+
+    bc.onmessage = (e) => {
+      if (e.data.type === 'CURRENT_SLIDE_BROADCAST' && e.data.slide) {
+        renderSlide(e.data.slide, e.data.index, e.data.startTime, e.data.delay);
+      } else if (e.data.type === 'SLIDES_DUMP' && e.data.slides && e.data.currentIndex !== undefined) {
+        const slide = e.data.slides[e.data.currentIndex];
+        if (slide) renderSlide(slide, e.data.currentIndex, e.data.startTime, e.data.delay);
+      }
+    };
+
+    // Request data on load in case master is already running
+    setTimeout(() => {
+      bc.postMessage({ type: 'GET_SLIDES_DUMP' });
+    }, 500);
+
+    function getHighlightColor(slide) {
+      const subType = (slide.subType || '').toLowerCase();
+      const title = (slide.title || '').toLowerCase();
+      if (title.includes('crusaders')) return '#ef4444'; 
+      if (title.includes('warriors')) return '#10b981'; 
+      const map = {
+        'super rugby': '#ef4444',
+        'rugby': '#ef4444',
+        'nrl': '#10b981',
+        'league': '#10b981',
+        'karaoke': '#8b5cf6', 
+        'live music': '#f59e0b', 
+        'band': '#f59e0b', 
+        'food': '#1013b9', 
+        'dining': '#1013b9',
+        'quiz': '#3b82f6', 
+        'trivia': '#3b82f6', 
+        'entertainment': '#06b6d4',
+        'event': '#ffffff'
+      };
+      return map[subType] || '#f59e0b';
+    }
+
+    function renderSlide(slide, index, startTime, delay) {
+      const renderKey = slide.id + '_' + index;
+      if (currentSlideId === renderKey && slide.type !== 'LIVE') return; // prevent duplicate renders
+      currentSlideId = renderKey;
+
+      const viewport = document.getElementById('viewport');
+      
+      // Clear status text
+      const status = document.getElementById('status');
+      if (status) status.remove();
+
+      // Setup theme color
+      const themeColor = slide.type === 'PROMO' ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide);
+      document.documentElement.style.setProperty('--theme-color', themeColor);
+      
+      // RGBA glow
+      const hex = themeColor.replace('#', '');
+      const r = parseInt(hex.substring(0,2), 16) || 6;
+      const g = parseInt(hex.substring(2,4), 16) || 182;
+      const b = parseInt(hex.substring(4,6), 16) || 212;
+      document.documentElement.style.setProperty('--theme-glow', \`rgba(\${r},\${g},\${b}, 0.6)\`);
+
+      // Progress bar sync
+      const bar = document.getElementById('progress-bar');
+      if (bar) {
+        bar.style.transition = 'none';
+        
+        if (startTime && delay) {
+            const elapsed = Date.now() - startTime;
+            const remaining = delay - elapsed;
+            
+            if (remaining > 0 && remaining <= delay) {
+                const startPercent = (elapsed / delay) * 100;
+                bar.style.width = startPercent + '%';
+                
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        bar.style.transition = `width ${remaining}ms linear`;
+                        bar.style.width = '100%';
+                    });
+                });
+            } else {
+                bar.style.width = '100%';
+            }
+        } else {
+            // Fallback if no timing info
+            bar.style.width = '0%';
+            const fallbackDelay = slide.duration ? slide.duration * 1000 : 30000;
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    bar.style.transition = `width ${fallbackDelay}ms linear`;
+                    bar.style.width = '100%';
+                });
+            });
+        }
+      }
+
+      // Exit old slide
+      const oldSlide = document.querySelector('.slide.active');
+      if (oldSlide) {
+        oldSlide.classList.remove('active');
+        oldSlide.classList.add('exit');
+        setTimeout(() => oldSlide.remove(), 400);
+      }
+
+      // Format Meta (Time / Date)
+      let metaText = '';
+      if (slide.time) metaText += \`<span>⏰ \${slide.time}</span>\`;
+      
+      // Determine Tag
+      const tagText = (slide.subType || slide.type || 'EVENT').toUpperCase();
+
+      // Construct New Slide
+      const newSlide = document.createElement('div');
+      newSlide.className = 'slide';
+
+      if (slide.type === 'MODULE') {
+        newSlide.innerHTML = \`
+          <div class="day-tag anim-delay-1">\${tagText}</div>
+          <div class="title anim-delay-2">\${slide.title || 'Special Feature'}</div>
+          <div class="subtitle anim-delay-3">Now Displaying</div>
+        \`;
+      } else {
+        newSlide.innerHTML = \`
+          <div class="day-tag anim-delay-1">\${tagText}</div>
+          <div class="title anim-delay-2">\${slide.title || ''}</div>
+          \${slide.subtitle ? \`<div class="subtitle anim-delay-3">\${slide.subtitle.replace(/<[^>]*>?/gm, '').substring(0, 50)}</div>\` : ''}
+          \${metaText ? \`<div class="meta anim-delay-3">\${metaText}</div>\` : ''}
+          \${slide.price ? \`<div class="price-badge anim-delay-3">\${slide.price}</div>\` : ''}
+        \`;
+      }
+
+      viewport.appendChild(newSlide);
+
+      // Trigger enter animation
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          newSlide.classList.add('active');
+        });
+      });
+    }
+  </script>
+</body>
+</html>

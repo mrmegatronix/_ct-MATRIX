@@ -79,7 +79,13 @@ async function initMatrix() {
       case 'REFRESH': window.location.reload(); break;
       case 'LIVE_SLIDE': handleLiveSlide(e.data.payload); break;
       case 'GET_SLIDES_DUMP': 
-        bc.postMessage({ type: 'SLIDES_DUMP', slides: window.MATRIX.STATE.slides, currentIndex: window.MATRIX.STATE.currentIndex }); 
+        bc.postMessage({ 
+          type: 'SLIDES_DUMP', 
+          slides: window.MATRIX.STATE.slides, 
+          currentIndex: window.MATRIX.STATE.currentIndex,
+          startTime: window.MATRIX.STATE.currentSlideStartTime,
+          delay: window.MATRIX.STATE.currentSlideDelay
+        }); 
         break;
       case 'CONFETTI': if (window.triggerConfetti) window.triggerConfetti(); break;
     }
@@ -702,6 +708,23 @@ window.jumpToProject = jumpToProject;
 function renderActiveSlide() {
   const slide = window.MATRIX.STATE.slides[window.MATRIX.STATE.currentIndex];
   const container = document.getElementById('slide-viewport');
+  
+  const delay = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
+  const startTime = Date.now();
+
+  window.MATRIX.STATE.currentSlideStartTime = startTime;
+  window.MATRIX.STATE.currentSlideDelay = delay;
+
+  if (bc && slide) {
+      bc.postMessage({ 
+          type: 'CURRENT_SLIDE_BROADCAST', 
+          slide: slide, 
+          index: window.MATRIX.STATE.currentIndex,
+          startTime: startTime,
+          delay: delay
+      });
+  }
+  
   if (!container || !slide) return;
 
   clearTimeout(window.MATRIX.STATE.timer);
