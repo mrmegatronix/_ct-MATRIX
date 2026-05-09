@@ -251,7 +251,7 @@
       const r = parseInt(hex.substring(0,2), 16) || 6;
       const g = parseInt(hex.substring(2,4), 16) || 182;
       const b = parseInt(hex.substring(4,6), 16) || 212;
-      document.documentElement.style.setProperty('--theme-glow', \`rgba(\${r},\${g},\${b}, 0.6)\`);
+      document.documentElement.style.setProperty('--theme-glow', `rgba(${r},${g},${b}, 0.6)`);
 
       // Progress bar sync
       const bar = document.getElementById('progress-bar');
@@ -298,7 +298,7 @@
 
       // Format Meta (Time / Date)
       let metaText = '';
-      if (slide.time) metaText += \`<span>⏰ \${slide.time}</span>\`;
+      if (slide.time) metaText += `<span>⏰ ${slide.time}</span>`;
       
       // Determine Tag
       const tagText = (slide.subType || slide.type || 'EVENT').toUpperCase();
@@ -308,19 +308,19 @@
       newSlide.className = 'slide';
 
       if (slide.type === 'MODULE') {
-        newSlide.innerHTML = \`
-          <div class="day-tag anim-delay-1">\${tagText}</div>
-          <div class="title anim-delay-2">\${slide.title || 'Special Feature'}</div>
+        newSlide.innerHTML = `
+          <div class="day-tag anim-delay-1">${tagText}</div>
+          <div class="title anim-delay-2">${slide.title || 'Special Feature'}</div>
           <div class="subtitle anim-delay-3">Now Displaying</div>
-        \`;
+        `;
       } else {
-        newSlide.innerHTML = \`
-          <div class="day-tag anim-delay-1">\${tagText}</div>
-          <div class="title anim-delay-2">\${slide.title || ''}</div>
-          \${slide.subtitle ? \`<div class="subtitle anim-delay-3">\${slide.subtitle.replace(/<[^>]*>?/gm, '').substring(0, 50)}</div>\` : ''}
-          \${metaText ? \`<div class="meta anim-delay-3">\${metaText}</div>\` : ''}
-          \${slide.price ? \`<div class="price-badge anim-delay-3">\${slide.price}</div>\` : ''}
-        \`;
+        newSlide.innerHTML = `
+          <div class="day-tag anim-delay-1">${tagText}</div>
+          <div class="title anim-delay-2">${slide.title || ''}</div>
+          ${slide.subtitle ? `<div class="subtitle anim-delay-3">${slide.subtitle.replace(/<[^>]*>?/gm, '').substring(0, 50)}</div>` : ''}
+          ${metaText ? `<div class="meta anim-delay-3">${metaText}</div>` : ''}
+          ${slide.price ? `<div class="price-badge anim-delay-3">${slide.price}</div>` : ''}
+        `;
       }
 
       viewport.appendChild(newSlide);
