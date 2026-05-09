@@ -564,6 +564,8 @@ function isWeekInRange(weekStr) {
  * Get the highlight color for event type badges
  */
 function getHighlightColor(slide) {
+  if (slide.accentColor) return slide.accentColor;
+  
   const subType = (slide.subType || '').toLowerCase();
   const title = (slide.title || '').toLowerCase();
 
@@ -837,7 +839,7 @@ function renderActiveSlide() {
       const bgImg = isHex ? '' : rawBg;
       const bgColor = isHex ? rawBg : '#000000';
 
-      const color = isPromo ? (slide.highlightColor || '#f59e0b') : getHighlightColor(slide);
+      const color = themeColor; // Use the already computed themeColor which respects accentColor
       const smartTag = getSmartTag(slide);
       const typeKey = (slide.subType || slide.type || 'Event').toLowerCase();
 

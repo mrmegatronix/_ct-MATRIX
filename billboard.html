@@ -213,6 +213,7 @@
     }, 500);
 
     function getHighlightColor(slide) {
+      if (slide.accentColor) return slide.accentColor;
       const subType = (slide.subType || '').toLowerCase();
       const title = (slide.title || '').toLowerCase();
       if (title.includes('crusaders')) return '#ef4444'; 
