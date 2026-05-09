@@ -232,7 +232,7 @@
     }
 
     function renderSlide(slide, index, startTime, delay) {
-      const renderKey = slide.id + '_' + index;
+      const renderKey = slide.id + '_' + index + '_' + startTime;
       if (currentSlideId === renderKey && slide.type !== 'LIVE') return; // prevent duplicate renders
       currentSlideId = renderKey;
 
@@ -259,7 +259,7 @@
         bar.style.transition = 'none';
         
         if (startTime && delay) {
-            const elapsed = Date.now() - startTime;
+            const elapsed = Math.max(0, Date.now() - startTime);
             const remaining = delay - elapsed;
             
             if (remaining > 0 && remaining <= delay) {
@@ -288,13 +288,13 @@
         }
       }
 
-      // Exit old slide
-      const oldSlide = document.querySelector('.slide.active');
-      if (oldSlide) {
+      // Exit old slides
+      const oldSlides = document.querySelectorAll('.slide:not(.exit)');
+      oldSlides.forEach(oldSlide => {
         oldSlide.classList.remove('active');
         oldSlide.classList.add('exit');
         setTimeout(() => oldSlide.remove(), 400);
-      }
+      });
 
       // Format Meta (Time / Date)
       let metaText = '';
