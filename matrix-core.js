@@ -440,7 +440,7 @@ function buildSlideQueue(data) {
   queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5, duration: 30 });
   queue.push({ type: 'MODULE', id: 'ct-wea', url: '../_ct-WEA/index.html', title: "Christchurch Weather", priority: 80, duration: 30 });
   queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5, duration: 180 }); // 6 slides * 30s
-  queue.push({ type: 'MODULE', id: 'ct-mom', url: '../_ct-MOM/index.html', title: "Mother's Day Celebration", pinned: true, priority: 5, duration: 150 }); // 5 slides * 30s
+  queue.push({ type: 'MODULE', id: 'ct-king', url: '../_ct-KING/index.html', title: "King's Birthday Karaoke", pinned: true, priority: 5, duration: 150 }); // 5 slides * 30s
   queue.push({ type: 'MODULE', id: 'ct-nim', url: '../_ct-NIM/index.html', title: "Nim Creative Display", priority: 85, disabled: true, duration: 30 });
   queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, disabled: true, duration: 30 });
 
@@ -823,7 +823,7 @@ function renderActiveSlide() {
     if (slide.type === 'MODULE') {
       let moduleColor = '#f59e0b';
       if (slide.id === 'ct-mmr') moduleColor = '#ef4444';
-      if (slide.id === 'ct-mom') moduleColor = '#ec4899';
+      if (slide.id === 'ct-king') moduleColor = '#FFD700';
       if (slide.id === 'ct-fir') moduleColor = '#f97316';
       
       document.documentElement.style.setProperty('--theme-color', moduleColor);
