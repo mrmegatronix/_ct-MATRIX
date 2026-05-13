@@ -246,6 +246,13 @@
                 </div>
             </div>
             <div class="tree-node">
+                <div class="tree-header" onclick="toggleNode(this)">_ct-QUIZ (Weekly Quiz)</div>
+                <div class="tree-children" style="display:none">
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('QUIZ', '../_ct-QUIZ/index.html')">Module View</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('QUIZ', '../_ct-QUIZ/admin.html')">Admin Panel</a>
+                </div>
+            </div>
+            <div class="tree-node">
                 <div class="tree-header" onclick="toggleNode(this)">_ct-WEA (Weather)</div>
                 <div class="tree-children" style="display:none">
                     <a href="javascript:void(0)" class="tree-item" onclick="loadModule('WEA', '../_ct-WEA/index.html')">Live Conditions</a>
@@ -329,7 +336,11 @@
         </div>
         <div class="monitor-card" onclick="loadModule('KING', '../_ct-KING/admin.html')">
             <div class="monitor-thumb"><iframe src="../_ct-KING/index.html"></iframe></div>
-            <div class="monitor-label"><span>MOTHERS DAY</span> <span style="opacity:0.5">LIVE</span></div>
+            <div class="monitor-label"><span>KINGS BDAY</span> <span style="opacity:0.5">LIVE</span></div>
+        </div>
+        <div class="monitor-card" onclick="loadModule('QUIZ', '../_ct-QUIZ/admin.html')">
+            <div class="monitor-thumb"><iframe src="../_ct-QUIZ/index.html"></iframe></div>
+            <div class="monitor-label"><span>WEEKLY QUIZ</span> <span style="opacity:0.5">LIVE</span></div>
         </div>
         <div class="monitor-card" onclick="loadModule('WEA', '../_ct-WEA/index.html')">
             <div class="monitor-thumb"><iframe src="../_ct-WEA/index.html"></iframe></div>
@@ -378,7 +389,7 @@
 
                 <h1 style="margin-top:0">Module Configuration</h1>
                 <p style="opacity:0.5; margin-bottom:2rem">Toggle specific modules to enable or disable them from the Matrix rotation.</p>
-                ${['ACE', 'MMR', 'KING', 'WEA', 'FIR'].map(m => `
+                ${['ACE', 'MMR', 'KING', 'QUIZ', 'WEA', 'FIR'].map(m => `
                     <div class="module-card">
                         <div>
                             <div style="font-weight:900">${m} MODULE</div>
