@@ -809,6 +809,12 @@ function renderActiveSlide() {
     // Apply custom transition class
     const transitionClass = (slide.transition || '').toLowerCase().replace(/\s/g, '-');
     slideEl.className = 'slide ' + transitionClass;
+    
+    // User Request: Remove transition for King module
+    const isKing = slide.id === 'ct-king';
+    if (isKing) {
+      slideEl.classList.add('no-transition');
+    }
 
     // Apply custom zoom if specified
     if (slide.zoom) {
@@ -849,7 +855,7 @@ function renderActiveSlide() {
       if (isLogo) {
         slideEl.innerHTML = `
           <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: ${bgColor};">
-            <div class="logo-wrapper" style="position:relative; height: 90vh; display: flex; justify-content: center; animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
+            <div class="logo-wrapper" style="position:relative; height: 75vh; display: flex; justify-content: center; animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
               ${bgImg ? `<img src="${bgImg}" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative; opacity: 1; filter: none; animation: none;" />` : ''}
               <div class="flame-anchor" style="position: absolute; left: 50%; top: ${slide.flamePosition || '60%'}; width: 0; height: 0; z-index: 3; transform: scale(1.5);">
                 <div class="flame-container">
@@ -873,7 +879,7 @@ function renderActiveSlide() {
             </div>
             <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
           </div>
-          <div style="position:absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: 90%;">
+          <div style="position:absolute; bottom: 60px; left: 50%; transform: translateX(-50%); width: 90%;">
             ${renderPremiumFooterRow(slide, themeColor)}
           </div>
         `;
@@ -951,7 +957,7 @@ function renderActiveSlide() {
           <div class="slide-bg" style="background: #000;">
             <img src="${slide.fgImage}" alt="" style="width: 100%; height: 100%; object-fit: contain; animation: none;">
           </div>
-          <div style="position:absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: 90%;">
+          <div style="position:absolute; bottom: 60px; left: 50%; transform: translateX(-50%); width: 90%;">
             ${renderPremiumFooterRow(slide, themeColor)}
           </div>
         `;
@@ -986,15 +992,25 @@ function renderActiveSlide() {
 
     container.appendChild(slideEl);
     
-    requestAnimationFrame(() => {
+    if (isKing) {
+      slideEl.classList.add('active');
+    } else {
       requestAnimationFrame(() => {
-        slideEl.classList.add('active');
+        requestAnimationFrame(() => {
+          slideEl.classList.add('active');
+        });
       });
-    });
+    }
 
     if (!window.MATRIX.STATE.isPaused) {
       const delay = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
       window.MATRIX.STATE.timer = setTimeout(nextSlide, delay);
+
+      // Call fitText on title and subtitle
+      const titleEl = slideEl.querySelector('.premium-title');
+      const descEl = slideEl.querySelector('.premium-desc');
+      if (titleEl) fitText(titleEl, 60);
+      if (descEl) fitText(descEl, 40);
       
       const bar = document.getElementById('progress-bar');
       if (bar) {
@@ -1061,8 +1077,8 @@ function renderPremiumFooterRow(slide, color) {
 
       ${showQR ? `
         <div class="footer-qr-group">
-          <div class="footer-qr-img">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}" alt="QR">
+        <div class="footer-qr-img">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}" alt="QR">
           </div>
           <div class="footer-qr-label">${slide.qrLabel || (slide.qr ? 'Scan to View' : 'Join Us')}</div>
         </div>
