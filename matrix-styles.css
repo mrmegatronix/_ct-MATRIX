@@ -517,11 +517,15 @@ body {
 
 .module-frame {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  top: 50%;
+  left: 50%;
+  width: 1920px;
+  height: 1080px;
+  transform: translate(-50%, -50%) scale(var(--module-scale, 1));
+  transform-origin: center center;
   border: none;
   background: transparent;
+  overflow: hidden;
 }
 
 /* ==========================================================================

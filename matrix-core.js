@@ -127,6 +127,14 @@ async function initMatrix() {
       } catch (e) {}
     }, 60000); // Check GSheet every minute instead of every 3 seconds
   }
+
+  // 7. Reactive Module Scaling (1080p Force)
+  function resizeModules() {
+    const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    document.documentElement.style.setProperty('--module-scale', scale);
+  }
+  window.addEventListener('resize', resizeModules);
+  resizeModules();
 }
 
 /**
@@ -651,6 +659,11 @@ function isSlideActive(slide) {
   // Pre-Quiz Buildup: Wed 6:30 PM - 7:00 PM
   if (slide.id === 'promo-wed-prequiz') {
     return day === 3 && time >= 18.5 && time < 19;
+  }
+
+  // Pub Quiz Module: Wed 6:00 PM - 7:00 PM
+  if (slide.id === 'ct-quiz') {
+    return day === 3 && time >= 18 && time < 19;
   }
   
   // Last Drinks: 11:00 PM - 1:00 AM
