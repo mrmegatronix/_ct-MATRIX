@@ -32,7 +32,7 @@
     /* GRID SKELETON */
     .app-shell {
         display: grid;
-        grid-template-columns: var(--nav-w) 1fr 1fr; /* FAR LEFT NAV | LEFT FRAME | RIGHT FRAME STACK */
+        grid-template-columns: var(--nav-w) 1fr 480px; /* FAR LEFT NAV | LEFT FRAME | RIGHT FRAME STACK */
         grid-template-rows: var(--header-h) 1fr var(--bottom-h);
         height: 100vh;
     }
@@ -172,13 +172,13 @@
         flex-grow: 1; position: relative; background: #000; overflow: hidden; container-type: size;
         display: flex; align-items: center; justify-content: center;
     }
-    .scaled-frame iframe { 
+    .scaled-frame iframe {
+        width: 1920px;
+        height: 1080px;
+        border: none;
         position: absolute;
-        width: 1920px; 
-        height: 1080px; 
-        border: none; 
         transform: scale(calc(min(100cqw / 1920, 100cqh / 1080)));
-        transform-origin: top left;
+        transform-origin: center center;
         left: 50%;
         top: 50%;
         margin-left: -960px;
@@ -188,8 +188,10 @@
     /* BOTTOM BAR (C-FRAME) */
     .footer-tray {
         grid-column: 1 / -1;
+        grid-row: 3 / 4;
         background: #020617; border-top: 1px solid var(--border);
         padding: 0.75rem 1.5rem; display: flex; gap: 1.5rem; overflow-x: auto;
+        z-index: 100;
     }
 
     .monitor-card {
@@ -343,15 +345,21 @@
         </div>
     </nav>
 
-    <!-- RESTORED LEFT FRAME -->
     <div class="workspace-left" id="workspace-left">
-        <div class="panel">
+        <!-- PERSISTENT METRICS BAR -->
+        <div id="dashboard-metrics" style="background: rgba(6, 182, 212, 0.05); border-bottom: 1px solid var(--border); padding: 1rem 1.5rem;">
+            <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap: 1rem;" id="metrics-grid">
+                <div style="opacity:0.5; font-size: 0.7rem; font-weight: 800;">AWAITING ENGINE TELEMETRY...</div>
+            </div>
+        </div>
+
+        <div class="panel" style="flex: 1;">
             <div class="panel-header">
                 <span id="ctrl-title">OPERATOR WORKSPACE</span>
                 <span id="ctrl-url" style="opacity:0.3; font-family:'JetBrains Mono'">READY</span>
             </div>
             <div class="frame-wrap" id="operator-wrap">
-                <iframe id="ctrl-frame" src="about:blank"></iframe>
+                <iframe id="ctrl-frame" src="about:blank" style="width:100%; height:100%; border:none;"></iframe>
             </div>
         </div>
     </div>
@@ -434,13 +442,6 @@
         
         wrap.innerHTML = `
             <div class="dashboard-home">
-                <div id="dashboard-metrics" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem;">
-                    <h2 style="margin-top:0; color: var(--accent); font-size: 1rem;">LIVE PLAYLIST METRICS</h2>
-                    <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 0.5rem;" id="metrics-grid">
-                        <div style="opacity:0.5; font-size: 0.8rem;">Awaiting telemetry from engine...</div>
-                    </div>
-                </div>
-
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                     <div class="panel" style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px;">
                         <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.5; margin-bottom: 1rem;">SYSTEM STATUS</div>
@@ -453,6 +454,10 @@
                         <button class="ctrl-btn primary" style="width: 100%; margin-bottom: 10px;" onclick="bc.postMessage({type:'GET_SLIDES_DUMP'})">Refresh Telemetry</button>
                         <button class="ctrl-btn" style="width: 100%;" onclick="loadModule('COMMANDER', 'live-commander.html')">Open Live Commander</button>
                     </div>
+                </div>
+                
+                <div style="margin-top: 2rem; opacity: 0.3; font-size: 0.7rem; text-align: center; font-weight: 800; letter-spacing: 2px;">
+                    SELECT A MODULE FROM THE NAVIGATION TO BEGIN OPERATING
                 </div>
             </div>
         `;
@@ -544,9 +549,9 @@
         const ctx = document.getElementById('context-links');
         const basePath = url.substring(0, url.lastIndexOf('/') + 1);
         ctx.innerHTML = `
-            <a href="${basePath}index.html" target="_blank" class="ctrl-btn">MAIN</a>
-            <a href="${basePath}admin.html" target="_blank" class="ctrl-btn">ADMIN</a>
-            <a href="${basePath}remote.html" target="_blank" class="ctrl-btn">REMOTE</a>
+            <button class="ctrl-btn" onclick="loadModule('${name}', '${basePath}index.html')">MAIN</button>
+            <button class="ctrl-btn" onclick="loadModule('${name}', '${basePath}admin.html')">ADMIN</button>
+            <button class="ctrl-btn" onclick="loadModule('${name}', '${basePath}remote.html')">REMOTE</button>
         `;
         showToast('LOADED ' + name);
     }
