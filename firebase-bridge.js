@@ -1,0 +1,73 @@
+/**
+ * MATRIX FIREBASE BRIDGE
+ * Synchronizes local BroadcastChannel events with Firebase Realtime Database
+ */
+
+import { db, ref, onValue, set, update } from './firebase-config.js';
+
+const bc = new BroadcastChannel('ct_matrix_sync');
+const STATE_PATH = 'matrix_state';
+const COMMAND_PATH = 'matrix_command';
+
+// 1. LISTEN TO FIREBASE (FOR BILLBOARD)
+// When the cloud state changes, notify the local system
+onValue(ref(db, STATE_PATH), (snapshot) => {
+    const data = snapshot.val();
+    
+    // Update UI Status if on Admin
+    const dot = document.getElementById('cloud-dot');
+    if (dot) dot.style.background = '#10b981'; // Green for active
+
+    if (data && data.remoteSource !== getClientId()) {
+        console.log('[FIREBASE] Remote State Sync:', data);
+        bc.postMessage({ type: 'SYNC_STATE', state: data });
+    }
+});
+
+// Listen for one-time commands (JUMP, NEXT, PREV)
+onValue(ref(db, COMMAND_PATH), (snapshot) => {
+    const cmd = snapshot.val();
+    if (cmd && cmd.timestamp > (window.lastCommandTime || 0) && cmd.source !== getClientId()) {
+        window.lastCommandTime = cmd.timestamp;
+        console.log('[FIREBASE] Remote Command:', cmd);
+        bc.postMessage(cmd);
+    }
+});
+
+// 2. LISTEN TO LOCAL BC (FOR ADMIN)
+// When an admin action happens, push it to Firebase
+bc.onmessage = (e) => {
+    const type = e.data.type;
+    
+    // We only bridge commands that originated locally
+    if (e.data.isFirebaseBridge) return;
+
+    if (['NEXT', 'PREV', 'JUMP', 'MODULE_FILTER', 'LIVE_SLIDE', 'CONFETTI', 'REFRESH'].includes(type)) {
+        console.log('[FIREBASE] Bridging Local Command to Cloud:', type);
+        
+        // Add metadata to prevent loops
+        const payload = { 
+            ...e.data, 
+            source: getClientId(), 
+            timestamp: Date.now(),
+            isFirebaseBridge: true 
+        };
+
+        // Update the global command node
+        set(ref(db, COMMAND_PATH), payload);
+
+        // If it's a persistent state change, update state node too
+        if (['MODULE_FILTER', 'LIVE_SLIDE'].includes(type)) {
+            update(ref(db, STATE_PATH + '/' + type), e.data);
+        }
+    }
+};
+
+function getClientId() {
+    if (!window.matrixClientId) {
+        window.matrixClientId = 'client_' + Math.random().toString(36).substr(2, 9);
+    }
+    return window.matrixClientId;
+}
+
+console.log('[FIREBASE] Bridge initialized as:', getClientId());

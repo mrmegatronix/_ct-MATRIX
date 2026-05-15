@@ -89,8 +89,15 @@ async function initMatrix() {
         }); 
         break;
       case 'CONFETTI': if (window.triggerConfetti) window.triggerConfetti(); break;
+      case 'SYNC_STATE': handleCloudState(e.data.state); break;
     }
   };
+
+  function handleCloudState(state) {
+    console.log('[MATRIX] Cloud State Applied:', state);
+    if (state.LIVE_SLIDE) handleLiveSlide(state.LIVE_SLIDE.payload);
+    if (state.MODULE_FILTER) handleModuleFilter(state.MODULE_FILTER.id, state.MODULE_FILTER.active);
+  }
 
   applyUISettings();
 

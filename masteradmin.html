@@ -262,6 +262,10 @@
             </div>
         </div>
         <div style="display:flex; align-items:center; gap: 20px;">
+            <div id="cloud-status" style="display:flex; align-items:center; gap: 6px; font-size: 0.55rem; font-weight: 800; color: var(--text-dim); margin-right: 20px;">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: #444;" id="cloud-dot"></span>
+                <span>CLOUD SYNC</span>
+            </div>
             <button class="ctrl-btn primary" onclick="loadWorkspaceView('HOME')" style="padding: 6px 12px; font-size: 0.6rem;">🏠 Home Dashboard</button>
             <div id="context-links" style="display:flex; gap: 8px;">
                 <span style="opacity:0.2; font-size: 0.6rem; letter-spacing: 1.5px;">ACTIVE CONTEXT LINKS INACTIVE</span>
@@ -697,5 +701,6 @@
         }
     };
 </script>
+<script type="module" src="firebase-bridge.js"></script>
 </body>
 </html>
