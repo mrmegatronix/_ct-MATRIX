@@ -85,7 +85,8 @@ async function initMatrix() {
           slides: window.MATRIX.STATE.slides, 
           currentIndex: window.MATRIX.STATE.currentIndex,
           startTime: window.MATRIX.STATE.currentSlideStartTime,
-          delay: window.MATRIX.STATE.currentSlideDelay
+          delay: window.MATRIX.STATE.currentSlideDelay,
+          lastSync: new Date().toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false })
         }); 
         break;
       case 'CONFETTI': if (window.triggerConfetti) window.triggerConfetti(); break;
