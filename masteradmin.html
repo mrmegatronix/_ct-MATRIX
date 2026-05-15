@@ -139,6 +139,7 @@
     }
 
     .panel { background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
+    .inter-control-bar {
         border-top: 1px solid var(--border);
         border-bottom: 1px solid var(--border);
         padding: 10px;
@@ -165,12 +166,23 @@
         justify-content: center;
     }
     .frame-wrap iframe { 
+        width: 100%; height: 100%; border: none;
+    }
+    .scaled-frame {
+        flex-grow: 1; position: relative; background: #000; overflow: hidden; container-type: size;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .scaled-frame iframe { 
         position: absolute;
         width: 1920px; 
         height: 1080px; 
         border: none; 
         transform: scale(calc(min(100cqw / 1920, 100cqh / 1080)));
-        transform-origin: center;
+        transform-origin: top left;
+        left: 50%;
+        top: 50%;
+        margin-left: -960px;
+        margin-top: -540px;
     }
 
     /* BOTTOM BAR (C-FRAME) */
@@ -245,8 +257,12 @@
     <header class="header-top">
         <div style="display:flex; align-items:center; gap: 2.5rem;">
             <div style="font-weight:900; letter-spacing: -1.5px; font-size: 1.4rem; color: var(--accent);">MATRIX <span style="font-weight:400; opacity:0.3">COMMAND</span></div>
+            <div id="persistent-telemetry" style="display:flex; gap: 20px; border-left: 1px solid var(--border); padding-left: 2rem;">
+                <!-- Telemetry injected here -->
+            </div>
         </div>
         <div style="display:flex; align-items:center; gap: 20px;">
+            <button class="ctrl-btn primary" onclick="loadWorkspaceView('HOME')" style="padding: 6px 12px; font-size: 0.6rem;">🏠 Home Dashboard</button>
             <div id="context-links" style="display:flex; gap: 8px;">
                 <span style="opacity:0.2; font-size: 0.6rem; letter-spacing: 1.5px;">ACTIVE CONTEXT LINKS INACTIVE</span>
             </div>
@@ -261,6 +277,13 @@
             <div class="nav-link active" id="nav-home" onclick="loadWorkspaceView('HOME')">Dashboard Home</div>
             <div class="nav-link" id="nav-playlist" onclick="loadWorkspaceView('PLAYLIST')">Playlist Grid</div>
             <div class="nav-link" onclick="loadModule('COMMANDER', 'live-commander.html')" style="color: var(--accent)">Live Slide Commander</div>
+        </div>
+
+        <div>
+            <div class="nav-section-title">ROTATION CONTROLS</div>
+            <div id="sidebar-toggles" style="padding: 0.5rem; display: flex; flex-direction: column; gap: 8px;">
+                <!-- Toggles injected here -->
+            </div>
         </div>
 
         <div id="module-tree">
@@ -289,9 +312,16 @@
                 </div>
             </div>
             <div class="tree-node">
-                <div class="tree-header" onclick="toggleNode(this)">_ct-NIM (Slide Creator)</div>
+                <div class="tree-header" onclick="toggleNode(this)">_ct-KING (Birthday)</div>
                 <div class="tree-children" style="display:none">
-                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('NIM', '../_ct-NIM/index.html')">Media Maker</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('KING', '../_ct-KING/index.html')">Module View</a>
+                </div>
+            </div>
+            <div class="tree-node">
+                <div class="tree-header" onclick="toggleNode(this)">_ct-QUIZ (Pub Quiz)</div>
+                <div class="tree-children" style="display:none">
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('QUIZ', '../_ct-QUIZ/index.html')">Module View</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('QUIZ', '../_ct-QUIZ/admin.html')">Admin Panel</a>
                 </div>
             </div>
             <div class="tree-node">
@@ -329,7 +359,7 @@
             <div class="panel-header" style="color:#fff; background: #000">
                 <span>LIVE MONITOR (A-FRAME)</span>
             </div>
-            <div class="frame-wrap">
+            <div class="scaled-frame">
                 <iframe id="preview-frame" src="index.html"></iframe>
             </div>
         </div>
@@ -346,7 +376,7 @@
             <div class="panel-header" style="background: #020617; color: var(--accent)">
                 <span>BILLBOARD FEED (REDUNDANT)</span>
             </div>
-            <div class="frame-wrap">
+            <div class="scaled-frame">
                 <iframe id="billboard-frame" src="index.html"></iframe>
             </div>
         </div>
@@ -368,9 +398,9 @@
             <div class="monitor-thumb"><iframe src="../_ct-MMR/index.html"></iframe></div>
             <div class="monitor-label"><span>MEAT RAFFLE</span> <span style="opacity:0.5">LIVE</span></div>
         </div>
-        <div class="monitor-card" onclick="loadModule('NIM', '../_ct-NIM/index.html')">
-            <div class="monitor-thumb"><iframe src="../_ct-NIM/index.html"></iframe></div>
-            <div class="monitor-label"><span>SLIDE CREATOR</span> <span style="opacity:0.5">NIM</span></div>
+        <div class="monitor-card" onclick="loadModule('KING', '../_ct-KING/index.html')">
+            <div class="monitor-thumb"><iframe src="../_ct-KING/index.html"></iframe></div>
+            <div class="monitor-label"><span>KING BDAY</span> <span style="opacity:0.5">LIVE</span></div>
         </div>
         <div class="monitor-card" onclick="loadModule('QUIZ', '../_ct-QUIZ/admin.html')">
             <div class="monitor-thumb"><iframe src="../_ct-QUIZ/index.html"></iframe></div>
@@ -420,6 +450,7 @@
 
     function renderDashboardHome() {
         const wrap = document.getElementById('operator-wrap');
+        
         wrap.innerHTML = `
             <div class="dashboard-home">
                 <div id="dashboard-metrics" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 1.5rem; border-radius: 16px; margin-bottom: 2rem;">
@@ -427,36 +458,55 @@
                     <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 0.5rem;" id="metrics-grid">
                         <div style="opacity:0.5; font-size: 0.8rem;">Awaiting telemetry from engine...</div>
                     </div>
-                    <div style="font-size: 0.7rem; opacity: 0.5; margin-top: 10px;">NOTE: Each module has a strict 30s window. Time per static slide is 15s (unless overridden). Last Database Sync: Just now.</div>
                 </div>
 
-                <h1 style="margin-top:0">Module Configuration</h1>
-                <p style="opacity:0.5; margin-bottom:2rem">Toggle specific modules to enable or disable them from the Matrix rotation.</p>
-                ${['ACE', 'MMR', 'KING', 'QUIZ', 'WEA', 'FIR'].map(m => `
-                    <div class="module-card">
-                        <div style="display:flex; gap: 2rem; align-items: center;">
-                            <div>
-                                <div style="font-weight:900">${m} MODULE</div>
-                                <div style="font-size:0.7rem; opacity:0.4">Status: Active in rotation</div>
-                            </div>
-                            <div style="border-left: 1px solid var(--border); padding-left: 1.5rem;">
-                                <div style="font-size: 0.55rem; opacity: 0.4; text-transform: uppercase;">Slide Metrics</div>
-                                <div style="font-size: 0.75rem; font-weight: 800; color: var(--accent);">~30s Duration</div>
-                            </div>
-                        </div>
-                        <label class="toggle">
-                            <input type="checkbox" checked onchange="toggleModule('${m}', this.checked)">
-                            <span class="slider"></span>
-                        </label>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div class="panel" style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px;">
+                        <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.5; margin-bottom: 1rem;">SYSTEM STATUS</div>
+                        <div style="font-size: 1rem; font-weight: 900; color: #10b981; margin-bottom: 0.5rem;">● MATRIX CORE ONLINE</div>
+                        <div style="font-size: 0.8rem; opacity: 0.5;">BroadcastChannel 'ct_matrix_sync' active.</div>
+                        <div style="font-size: 0.8rem; opacity: 0.5; margin-top: 4px;">Hardware: 1080p Billboard System.</div>
                     </div>
-                `).join('')}
+                    <div class="panel" style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px;">
+                        <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.5; margin-bottom: 1rem;">QUICK ACTIONS</div>
+                        <button class="ctrl-btn primary" style="width: 100%; margin-bottom: 10px;" onclick="bc.postMessage({type:'GET_SLIDES_DUMP'})">Refresh Telemetry</button>
+                        <button class="ctrl-btn" style="width: 100%;" onclick="loadModule('COMMANDER', 'live-commander.html')">Open Live Commander</button>
+                    </div>
+                </div>
             </div>
         `;
         document.getElementById('ctrl-title').innerText = 'DASHBOARD HOME';
-        document.getElementById('ctrl-url').innerText = 'CONFIG';
+        document.getElementById('ctrl-url').innerText = 'CORE';
         
         // Request metrics telemetry
         bc.postMessage({ type: 'GET_SLIDES_DUMP' });
+        renderSidebarToggles();
+    }
+
+    function renderSidebarToggles() {
+        const side = document.getElementById('sidebar-toggles');
+        if(!side) return;
+
+        let config = { disabledModules: [] };
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            if (stored) config = JSON.parse(stored);
+        } catch(e) {}
+        const disabled = config.disabledModules || [];
+
+        side.innerHTML = ['ACE', 'MMR', 'KING', 'QUIZ', 'WEA', 'FIR'].map(m => {
+            const fullId = 'ct-' + m.toLowerCase();
+            const isChecked = !disabled.includes(fullId);
+            return `
+                <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.03); padding:6px 10px; border-radius:6px; border:1px solid var(--border);">
+                    <span style="font-size:0.65rem; font-weight:800; color:${isChecked ? 'var(--accent)' : 'var(--text-dim)'}">${m}</span>
+                    <label class="toggle" style="width:30px; height:16px;">
+                        <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleModule('${m}', this.checked); renderSidebarToggles();">
+                        <span class="slider" style="border-radius:16px;"></span>
+                    </label>
+                </div>
+            `;
+        }).join('');
     }
 
     function toggleModule(id, state) {
@@ -466,7 +516,9 @@
 
     function loadModule(name, url) {
         const wrap = document.getElementById('operator-wrap');
-        wrap.innerHTML = `<iframe id="ctrl-frame" src="${url}"></iframe>`;
+        const sep = url.includes('?') ? '&' : '?';
+        const finalUrl = url + sep + 'compact=true';
+        wrap.innerHTML = `<iframe id="ctrl-frame" src="${finalUrl}"></iframe>`;
         document.getElementById('ctrl-title').innerText = name + ' OPERATOR';
         document.getElementById('ctrl-url').innerText = url.split('/').pop().toUpperCase();
         
@@ -549,7 +601,26 @@
             const metrics = document.getElementById('metrics-grid');
             const slides = e.data.slides || [];
             
-            // Render Metrics if on HOME view
+            // Render Metrics persistently in header
+            const headerMetrics = document.getElementById('persistent-telemetry');
+            if(headerMetrics) {
+                let totalSecs = 0;
+                slides.forEach(s => totalSecs += (s.duration ? parseInt(s.duration) : 30));
+                const mins = Math.floor(totalSecs / 60);
+                const secs = totalSecs % 60;
+                headerMetrics.innerHTML = `
+                    <div style="display:flex; flex-direction:column; justify-content:center;">
+                        <div style="font-size: 0.5rem; opacity: 0.5; font-weight: 800;">PLAYLIST LENGTH</div>
+                        <div style="font-size: 0.8rem; font-weight: 900; color: #fff;">${mins}m ${secs}s</div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; justify-content:center;">
+                        <div style="font-size: 0.5rem; opacity: 0.5; font-weight: 800;">ACTIVE SLIDES</div>
+                        <div style="font-size: 0.8rem; font-weight: 900; color: var(--accent);">${slides.length}</div>
+                    </div>
+                `;
+            }
+
+            // Render Dashboard Home View Metrics if visible
             if(metrics) {
                 let totalSecs = 0;
                 let moduleCount = 0;

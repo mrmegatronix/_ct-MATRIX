@@ -78,6 +78,7 @@ async function initMatrix() {
       case 'SYNC_DATA': window.initMatrix(); break; 
       case 'REFRESH': window.location.reload(); break;
       case 'LIVE_SLIDE': handleLiveSlide(e.data.payload); break;
+      case 'MODULE_FILTER': handleModuleFilter(e.data.id, e.data.active); break;
       case 'GET_SLIDES_DUMP': 
         bc.postMessage({ 
           type: 'SLIDES_DUMP', 
@@ -156,6 +157,25 @@ function updateConfig(newConfig) {
   window.MATRIX.CONFIG = { ...window.MATRIX.CONFIG, ...newConfig };
   localStorage.setItem('matrix_config', JSON.stringify(window.MATRIX.CONFIG));
   applyUISettings();
+}
+
+function handleModuleFilter(id, active) {
+    if (!window.MATRIX.CONFIG.disabledModules) window.MATRIX.CONFIG.disabledModules = [];
+    
+    // Normalize ID to match queue IDs (e.g., 'ACE' -> 'ct-ace')
+    const fullId = 'ct-' + id.toLowerCase();
+    
+    if (active) {
+        window.MATRIX.CONFIG.disabledModules = window.MATRIX.CONFIG.disabledModules.filter(m => m !== fullId);
+    } else {
+        if (!window.MATRIX.CONFIG.disabledModules.includes(fullId)) {
+            window.MATRIX.CONFIG.disabledModules.push(fullId);
+        }
+    }
+    localStorage.setItem('matrix_config', JSON.stringify(window.MATRIX.CONFIG));
+    
+    // Rebuild queue with new filters
+    window.initMatrix();
 }
 
 function applyUISettings() {
@@ -446,17 +466,21 @@ function buildSlideQueue(data) {
   // 3. Project Modules (Base Infrastructure)
   // Durations are set to allow multiple internal slides (30s each)
   queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5, duration: 30 });
-  queue.push({ type: 'MODULE', id: 'ct-wea', url: '../_ct-WEA/index.html', title: "Christchurch Weather", priority: 80, duration: 30 });
+  queue.push({ type: 'MODULE', id: 'ct-wea', url: '../_ct-WEA/index.html', title: "Christchurch Weather", priority: 80, duration: 60 });
   queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5, duration: 180 }); // 6 slides * 30s
   queue.push({ type: 'MODULE', id: 'ct-king', url: '../_ct-KING/index.html', title: "King's Birthday Karaoke", pinned: true, priority: 5, duration: 150 }); // 5 slides * 30s
   queue.push({ type: 'MODULE', id: 'ct-quiz', url: '../_ct-QUIZ/index.html', title: "Weekly Pub Quiz", priority: 10, duration: 30 });
-  queue.push({ type: 'MODULE', id: 'ct-nim', url: '../_ct-NIM/index.html', title: "Nim Creative Display", priority: 85, disabled: true, duration: 30 });
   queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, disabled: true, duration: 30 });
 
-  // 5. Filter & Sort
-  // Remove disabled slides
-  let filteredQueue = queue.filter(s => !s.disabled);
+  // 4. Apply Module Filters
+  const disabledModules = window.MATRIX.CONFIG.disabledModules || [];
+  let filteredQueue = queue.filter(s => {
+    if (s.disabled) return false;
+    if (s.type === 'MODULE' && disabledModules.includes(s.id)) return false;
+    return true;
+  });
 
+  // 5. Filter & Sort
   // Sort by Priority (Ascending) then Pinned (Descending)
   filteredQueue.sort((a, b) => {
     const priA = a.priority || 50;

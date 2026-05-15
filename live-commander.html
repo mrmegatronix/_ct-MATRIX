@@ -39,6 +39,17 @@
     .btn-primary { background: var(--accent); color: #000; }
     .btn-secondary { background: #1e293b; color: #fff; }
     .btn:hover { transform: translateY(-2px); opacity: 0.9; }
+    /* Compact Mode */
+    body.compact { padding: 1rem; }
+    body.compact .card { padding: 1.2rem; border-radius: 12px; max-width: 100%; border-width: 1px; }
+    body.compact .title { font-size: 1rem; margin-bottom: 1rem; }
+    body.compact .label { font-size: 0.6rem; margin-bottom: 4px; }
+    body.compact input, body.compact textarea, body.compact select { 
+        padding: 8px; font-size: 0.85rem; margin-bottom: 0.8rem; border-radius: 8px; 
+    }
+    body.compact textarea { height: 70px; }
+    body.compact .btn { padding: 10px; font-size: 0.8rem; border-radius: 8px; }
+    body.compact .btn-group { margin-top: 0.5rem; }
   </style>
 </head>
 <body>
@@ -74,6 +85,9 @@
 
 <script>
     const bc = new BroadcastChannel('ct_matrix_sync');
+    if (window.location.search.includes('compact=true')) {
+        document.body.classList.add('compact');
+    }
 
     function pushLiveSlide() {
         const payload = {
