@@ -32,7 +32,7 @@
     /* GRID SKELETON */
     .app-shell {
         display: grid;
-        grid-template-columns: var(--nav-w) 1fr;
+        grid-template-columns: var(--nav-w) 1fr 1fr; /* FAR LEFT NAV | LEFT FRAME | RIGHT FRAME STACK */
         grid-template-rows: var(--header-h) 1fr var(--bottom-h);
         height: 100vh;
     }
@@ -45,6 +45,24 @@
         border-bottom: 1px solid var(--border);
         display: flex; align-items: center; justify-content: space-between;
         padding: 0 1.5rem; z-index: 1000;
+    }
+
+    .logout-btn {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #ef4444;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .logout-btn:hover {
+        background: #ef4444;
+        color: #000;
     }
 
     .master-controls {
@@ -101,16 +119,26 @@
     }
     .tree-item:hover { color: var(--accent); border-left-color: var(--accent); background: rgba(6, 182, 212, 0.05); }
 
-    /* MONITOR STACK */
-    .monitor-stack {
-        display: grid;
-        grid-template-rows: 1fr auto 1fr;
-        background: var(--border);
-        gap: 1px;
+    .workspace-left {
+        grid-row: 2 / 3;
+        grid-column: 2 / 3;
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
     }
 
-    .inter-control-bar {
-        background: var(--surface);
+    .workspace-right-stack {
+        grid-row: 2 / 3;
+        grid-column: 3 / 4;
+        display: grid;
+        grid-template-rows: 1fr auto 1fr; /* SPLIT HORIZONTALLY WITH CONTROLS INBETWEEN */
+        background: var(--border);
+        gap: 1px;
+        overflow: hidden;
+    }
+
+    .panel { background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
         border-top: 1px solid var(--border);
         border-bottom: 1px solid var(--border);
         padding: 10px;
@@ -218,11 +246,15 @@
         <div style="display:flex; align-items:center; gap: 2.5rem;">
             <div style="font-weight:900; letter-spacing: -1.5px; font-size: 1.4rem; color: var(--accent);">MATRIX <span style="font-weight:400; opacity:0.3">COMMAND</span></div>
         </div>
-        <div id="context-links" style="display:flex; gap: 8px;">
-            <span style="opacity:0.2; font-size: 0.6rem; letter-spacing: 1.5px;">ACTIVE CONTEXT LINKS INACTIVE</span>
+        <div style="display:flex; align-items:center; gap: 20px;">
+            <div id="context-links" style="display:flex; gap: 8px;">
+                <span style="opacity:0.2; font-size: 0.6rem; letter-spacing: 1.5px;">ACTIVE CONTEXT LINKS INACTIVE</span>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
     </header>
 
+    <!-- FAR LEFT NAVI FRAME -->
     <nav class="nav-side">
         <div>
             <div class="nav-section-title">GLOBAL DASHBOARD</div>
@@ -237,7 +269,6 @@
                 <div class="tree-header" onclick="toggleNode(this)">_ct-MATRIX (Core)</div>
                 <div class="tree-children">
                     <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MATRIX', 'index.html')">Display Engine</a>
-                    <!-- FIXED: TARGET _BLANK TO PREVENT RECURSION -->
                     <a href="masteradmin.html" target="_blank" class="tree-item">Master Admin Panel</a>
                 </div>
             </div>
@@ -248,7 +279,6 @@
                 <div class="tree-children" style="display:none">
                     <a href="javascript:void(0)" class="tree-item" onclick="loadModule('ACE', '../_ct-ACE/index.html')">Module View</a>
                     <a href="javascript:void(0)" class="tree-item" onclick="loadModule('ACE', '../_ct-ACE/admin.html')">Admin Panel</a>
-                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('ACE', '../_ct-ACE/remote.html')">Remote Controller</a>
                 </div>
             </div>
             <div class="tree-node">
@@ -259,17 +289,9 @@
                 </div>
             </div>
             <div class="tree-node">
-                <div class="tree-header" onclick="toggleNode(this)">_ct-KING (King's Birthday)</div>
+                <div class="tree-header" onclick="toggleNode(this)">_ct-NIM (Slide Creator)</div>
                 <div class="tree-children" style="display:none">
-                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('KING', '../_ct-KING/index.html')">Module View</a>
-                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('KING', '../_ct-KING/admin.html')">Admin Panel</a>
-                </div>
-            </div>
-            <div class="tree-node">
-                <div class="tree-header" onclick="toggleNode(this)">_ct-QUIZ (Weekly Quiz)</div>
-                <div class="tree-children" style="display:none">
-                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('QUIZ', '../_ct-QUIZ/index.html')">Module View</a>
-                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('QUIZ', '../_ct-QUIZ/admin.html')">Admin Panel</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('NIM', '../_ct-NIM/index.html')">Media Maker</a>
                 </div>
             </div>
             <div class="tree-node">
@@ -278,13 +300,17 @@
                     <a href="javascript:void(0)" class="tree-item" onclick="loadModule('WEA', '../_ct-WEA/index.html')">Live Conditions</a>
                 </div>
             </div>
+            <div class="tree-node">
+                <div class="tree-header" onclick="toggleNode(this)">_ct-FIR (Fireplace)</div>
+                <div class="tree-children" style="display:none">
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('FIR', '../_ct-FIR/index.html')">Looping Fire</a>
+                </div>
+            </div>
         </div>
-
-        <!-- OLD LIVE COMMANDER REMOVED FROM SIDEBAR -->
     </nav>
 
-    <main class="workspace-main" id="workspace-main">
-        <!-- OPERATOR PANE (D-FRAME) -->
+    <!-- RESTORED LEFT FRAME -->
+    <div class="workspace-left" id="workspace-left">
         <div class="panel">
             <div class="panel-header">
                 <span id="ctrl-title">OPERATOR WORKSPACE</span>
@@ -294,38 +320,37 @@
                 <iframe id="ctrl-frame" src="about:blank"></iframe>
             </div>
         </div>
+    </div>
 
-        <!-- MONITOR STACK (A-FRAME + BILLBOARD) -->
-        <div class="monitor-stack">
-            <!-- MONITOR PANE (A-FRAME) -->
-            <div class="panel">
-                <div class="panel-header" style="color:#fff; background: #000">
-                    <span>LIVE MONITOR (A-FRAME)</span>
-                    <div class="ctrl-btn primary" style="padding: 4px 10px; font-size: 0.55rem;">DIRECT FEED</div>
-                </div>
-                <div class="frame-wrap">
-                    <iframe id="preview-frame" src="index.html"></iframe>
-                </div>
+    <!-- RIGHT FRAME SPLIT HORIZONTALLY -->
+    <div class="workspace-right-stack" id="workspace-right">
+        <!-- TOP RIGHT PANEL (PREVIEW) -->
+        <div class="panel">
+            <div class="panel-header" style="color:#fff; background: #000">
+                <span>LIVE MONITOR (A-FRAME)</span>
             </div>
-
-            <!-- INTER-FRAME CONTROL BAR -->
-            <div class="inter-control-bar">
-                <button class="ctrl-btn" onclick="sendMaster('PREV')">PREV</button>
-                <button class="ctrl-btn primary" onclick="sendMaster('NEXT')" style="padding: 10px 24px;">NEXT SLIDE</button>
-                <button class="ctrl-btn" onclick="sendMaster('TOGGLE')">PAUSE/PLAY</button>
-            </div>
-
-            <!-- BILLBOARD FEED PANE -->
-            <div class="panel">
-                <div class="panel-header" style="background: #020617; color: var(--accent)">
-                    <span>BILLBOARD FEED (REDUNDANT)</span>
-                </div>
-                <div class="frame-wrap">
-                    <iframe id="billboard-frame" src="index.html"></iframe>
-                </div>
+            <div class="frame-wrap">
+                <iframe id="preview-frame" src="index.html"></iframe>
             </div>
         </div>
-    </main>
+
+        <!-- SLIDE CONTROLS INBETWEEN -->
+        <div class="inter-control-bar">
+            <button class="ctrl-btn" onclick="sendMaster('PREV')">PREV</button>
+            <button class="ctrl-btn primary" onclick="sendMaster('NEXT')" style="padding: 10px 24px;">NEXT SLIDE</button>
+            <button class="ctrl-btn" onclick="sendMaster('TOGGLE')">PAUSE/PLAY</button>
+        </div>
+
+        <!-- BOTTOM RIGHT PANEL (REDUNDANT/FEED) -->
+        <div class="panel">
+            <div class="panel-header" style="background: #020617; color: var(--accent)">
+                <span>BILLBOARD FEED (REDUNDANT)</span>
+            </div>
+            <div class="frame-wrap">
+                <iframe id="billboard-frame" src="index.html"></iframe>
+            </div>
+        </div>
+    </div>
 
     <!-- FULL GRID OVERLAY -->
     <div id="full-grid-view" class="panel" style="display:none; grid-column: 2; grid-row: 2;">
@@ -343,9 +368,9 @@
             <div class="monitor-thumb"><iframe src="../_ct-MMR/index.html"></iframe></div>
             <div class="monitor-label"><span>MEAT RAFFLE</span> <span style="opacity:0.5">LIVE</span></div>
         </div>
-        <div class="monitor-card" onclick="loadModule('KING', '../_ct-KING/admin.html')">
-            <div class="monitor-thumb"><iframe src="../_ct-KING/index.html"></iframe></div>
-            <div class="monitor-label"><span>KINGS BDAY</span> <span style="opacity:0.5">LIVE</span></div>
+        <div class="monitor-card" onclick="loadModule('NIM', '../_ct-NIM/index.html')">
+            <div class="monitor-thumb"><iframe src="../_ct-NIM/index.html"></iframe></div>
+            <div class="monitor-label"><span>SLIDE CREATOR</span> <span style="opacity:0.5">NIM</span></div>
         </div>
         <div class="monitor-card" onclick="loadModule('QUIZ', '../_ct-QUIZ/admin.html')">
             <div class="monitor-thumb"><iframe src="../_ct-QUIZ/index.html"></iframe></div>
@@ -355,7 +380,10 @@
             <div class="monitor-thumb"><iframe src="../_ct-WEA/index.html"></iframe></div>
             <div class="monitor-label"><span>WEATHER</span> <span style="opacity:0.5">LIVE</span></div>
         </div>
-        <!-- FIR and NIM disabled in tray -->
+        <div class="monitor-card" onclick="loadModule('FIR', '../_ct-FIR/index.html')">
+            <div class="monitor-thumb"><iframe src="../_ct-FIR/index.html"></iframe></div>
+            <div class="monitor-label"><span>FIREPLACE</span> <span style="opacity:0.5">LIVE</span></div>
+        </div>
     </footer>
 </div>
 
@@ -370,17 +398,23 @@
 
     function loadWorkspaceView(v) {
         const grid = document.getElementById('full-grid-view');
-        const workspace = document.getElementById('workspace-main');
-        const operatorWrap = document.getElementById('operator-wrap');
+        const left = document.getElementById('workspace-left');
+        const right = document.getElementById('workspace-right');
         
         if(v === 'PLAYLIST') { 
-            grid.style.display = 'flex'; workspace.style.display = 'none'; 
+            grid.style.display = 'flex'; 
+            left.style.display = 'none'; 
+            right.style.display = 'none';
             renderPlaylistGrid();
         } else if(v === 'HOME') {
-            grid.style.display = 'none'; workspace.style.display = 'grid';
+            grid.style.display = 'none'; 
+            left.style.display = 'flex'; 
+            right.style.display = 'grid';
             renderDashboardHome();
         } else {
-            grid.style.display = 'none'; workspace.style.display = 'grid';
+            grid.style.display = 'none'; 
+            left.style.display = 'flex'; 
+            right.style.display = 'grid';
         }
     }
 
@@ -470,15 +504,35 @@
     function pressKey(k) {
         if(k === 'C') pinBuffer = '';
         else if(k === 'E') {
-            const correct = localStorage.getItem('matrix_admin_pin') || '1234';
-            if(pinBuffer === correct) { 
-                document.getElementById('auth-screen').style.display = 'none'; 
-                sessionStorage.setItem('matrix_authed', 'true'); 
-                loadWorkspaceView('HOME');
+            checkPin();
+        } else if(pinBuffer.length < 4) {
+            pinBuffer += k;
+            document.getElementById('pin-display').innerText = '•'.repeat(pinBuffer.length);
+            // AUTO LOGIN WHEN 4 DIGITS ENTERED
+            if(pinBuffer.length === 4) {
+                setTimeout(checkPin, 300); // Slight delay for visual feedback
             }
-            else { pinBuffer = ''; showToast('DENIED'); }
-        } else if(pinBuffer.length < 8) pinBuffer += k;
-        document.getElementById('pin-display').innerText = '•'.repeat(pinBuffer.length);
+        }
+    }
+
+    function checkPin() {
+        const correct = '5551'; // UPDATED PIN
+        if(pinBuffer === correct) { 
+            document.getElementById('auth-screen').style.display = 'none'; 
+            sessionStorage.setItem('matrix_authed', 'true'); 
+            loadWorkspaceView('HOME');
+            showToast('AUTHORIZED');
+        }
+        else { 
+            pinBuffer = ''; 
+            document.getElementById('pin-display').innerText = '';
+            showToast('DENIED'); 
+        }
+    }
+
+    function logout() {
+        sessionStorage.removeItem('matrix_authed');
+        window.location.reload();
     }
 
     function renderPlaylistGrid() {
