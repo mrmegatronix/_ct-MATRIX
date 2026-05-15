@@ -1134,7 +1134,6 @@ function renderPremiumFooterRow(slide, color) {
             <div class="footer-qr-img">
               <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=L&data=${encodeURIComponent(qrData)}" alt="QR">
             </div>
-            <div class="footer-qr-label">${slide.qrLabel || (slide.qr ? 'Scan to View' : 'Join Us')}</div>
           </div>
         ` : ''}
       </div>
