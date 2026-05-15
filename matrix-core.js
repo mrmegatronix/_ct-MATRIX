@@ -488,8 +488,14 @@ function buildSlideQueue(data) {
   });
 
   // 5. Filter & Sort
-  // Sort by Priority (Ascending) then Pinned (Descending)
+  // Group EVENT slides first, then MODULE slides. 
+  // Within groups, sort by Priority (Ascending) then Pinned (Descending).
   filteredQueue.sort((a, b) => {
+    // Grouping: EVENT (0) comes before MODULE (1)
+    const groupA = (a.type === 'MODULE' ? 1 : 0);
+    const groupB = (b.type === 'MODULE' ? 1 : 0);
+    if (groupA !== groupB) return groupA - groupB;
+
     const priA = a.priority || 50;
     const priB = b.priority || 50;
     if (priA !== priB) return priA - priB;
