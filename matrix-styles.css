@@ -175,9 +175,9 @@ body {
 /* --- Day Tag Badge --- */
 .day-tag {
   display: inline-block;
-  padding: 0.8rem 2.5rem;
+  padding: 0.6rem 2rem;
   border-radius: 100px;
-  font-size: clamp(2rem, 3vw, 3.5rem);
+  font-size: clamp(1.8rem, 2.5vw, 3rem);
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.15em;
@@ -199,10 +199,11 @@ body {
   text-shadow: 0 0 50px var(--theme-glow);
   filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 1));
   letter-spacing: -0.04em;
-  max-width: 90%;
+  max-width: 95%;
   margin: 0 auto;
   transition: all 0.5s ease;
-  word-break: keep-all;
+  word-break: normal;
+  overflow-wrap: break-word;
   text-align: center;
 }
 
@@ -222,10 +223,11 @@ body {
   color: rgba(243, 244, 246, 0.9);
   font-weight: 600;
   line-height: 1.4;
-  max-width: 80%;
+  max-width: 90%;
   margin: 0 auto;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.8));
   text-wrap: balance;
+  overflow-wrap: break-word;
   text-align: center;
 }
 
@@ -963,20 +965,43 @@ body {
    ========================================================================== */
 
 .premium-footer-row {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1fr;
+  align-items: center;
+  gap: 2rem;
+  width: 95%;
+  margin: 0 auto 2.5rem auto; /* Added bottom margin to clear progress bar */
+  padding: 1.5rem 3rem;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 2.5rem;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  box-sizing: border-box;
+}
+
+.footer-left, .footer-right {
+  flex: 1;
   display: flex;
   align-items: center;
+}
+
+.footer-left { justify-content: flex-start; }
+.footer-right { justify-content: flex-end; }
+
+.footer-center {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 3rem;
-  width: 100%;
-  margin-top: auto;
-  padding: 1.5rem 2.5rem;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 2rem;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-  box-sizing: border-box;
+  gap: 0.8rem;
+}
+
+.time-pill {
+  background: rgba(255, 255, 255, 0.15) !important;
+  font-size: clamp(1.8rem, 2.5vw, 3rem) !important;
 }
 
 .premium-footer-row .price-badge {
@@ -1014,8 +1039,8 @@ body {
 }
 
 .footer-qr-img img {
-  width: 120px; /* Increased for 1080p fidelity */
-  height: 120px;
+  width: 160px; /* Increased for distance scanning fidelity */
+  height: 160px;
   display: block;
 }
 

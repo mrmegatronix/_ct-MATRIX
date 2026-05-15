@@ -1071,31 +1071,35 @@ function renderPremiumFooterRow(slide, color) {
   const showMeta = metaText.length > 0;
   const showFooter = !!slide.footer;
 
-  if (!showQR && !showPrice && !showMeta && !showFooter) return '';
-
   return `
     <div class="premium-footer-row animate-content-enter" style="animation-delay: 0.6s;">
-      ${showPrice ? `
-        <div class="price-badge" style="animation: pulse-glow 3s infinite; box-shadow: 0 0 60px ${color}80;">
-          <div class="price-badge-inner"><span class="price-text">${slide.price}</span></div>
-        </div>
-      ` : ''}
+      <!-- Left: Date/Meta -->
+      <div class="footer-left">
+        ${showMeta ? `<div class="premium-meta"><div class="premium-meta-item">${dateStr || dayStr}</div></div>` : ''}
+      </div>
 
-      ${showMeta || showFooter ? `
-        <div class="footer-meta-group">
-          ${showMeta ? `<div class="premium-meta"><div class="premium-meta-item">${metaText}</div></div>` : ''}
-          ${showFooter ? `<div class="premium-footer">${slide.footer}</div>` : ''}
-        </div>
-      ` : ''}
-
-      ${showQR ? `
-        <div class="footer-qr-group">
-        <div class="footer-qr-img">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(qrData)}" alt="QR">
+      <!-- Center: Price & Time -->
+      <div class="footer-center">
+        ${showPrice ? `
+          <div class="price-badge" style="animation: pulse-glow 3s infinite; box-shadow: 0 0 60px ${color}80;">
+            <div class="price-badge-inner"><span class="price-text">${slide.price}</span></div>
           </div>
-          <div class="footer-qr-label">${slide.qrLabel || (slide.qr ? 'Scan to View' : 'Join Us')}</div>
-        </div>
-      ` : ''}
+        ` : ''}
+        ${timeStr && !timeRedundant ? `<div class="premium-meta-item time-pill">⏰ ${timeStr}</div>` : ''}
+        ${showFooter ? `<div class="premium-footer">${slide.footer}</div>` : ''}
+      </div>
+
+      <!-- Right: QR Code (Less Dense ECC Level L) -->
+      <div class="footer-right">
+        ${showQR ? `
+          <div class="footer-qr-group">
+            <div class="footer-qr-img">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=L&data=${encodeURIComponent(qrData)}" alt="QR">
+            </div>
+            <div class="footer-qr-label">${slide.qrLabel || (slide.qr ? 'Scan to View' : 'Join Us')}</div>
+          </div>
+        ` : ''}
+      </div>
     </div>
   `;
 }
