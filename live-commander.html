@@ -98,15 +98,31 @@
             mode: document.getElementById('live-mode').value
         };
         bc.postMessage({ type: 'LIVE_SLIDE', payload });
-        alert('LIVE SLIDE PUSHED TO MATRIX');
+        
+        // Visual feedback
+        const btn = event.target;
+        const originalText = btn.innerText;
+        btn.innerText = '✓ PUSHED TO CLOUD';
+        btn.style.background = '#10b981';
+        setTimeout(() => {
+            btn.innerText = originalText;
+            btn.style.background = '';
+        }, 2000);
     }
 
     function clearLiveSlide() {
         bc.postMessage({ type: 'LIVE_SLIDE', payload: { active: false } });
         document.getElementById('live-title').value = '';
         document.getElementById('live-detail').value = '';
-        alert('LIVE SLIDE CLEARED');
+        
+        const btn = event.target;
+        const originalText = btn.innerText;
+        btn.innerText = '✓ CLEARED';
+        setTimeout(() => {
+            btn.innerText = originalText;
+        }, 2000);
     }
 </script>
+<script type="module" src="firebase-bridge.js"></script>
 </body>
 </html>
