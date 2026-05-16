@@ -673,41 +673,16 @@ function isSlideActive(slide) {
     if (t.includes('tbc') || s.includes('tbc') || t.includes('to be confirmed') || s.includes('to be confirmed')) {
       return false; // Skip unconfirmed bands
     }
-    // Only show bands from 8 PM to 11 PM
-    if (time < 20 || time >= 23) {
-      return false;
-    }
   }
 
-  // Karaoke Promo Slide - Only show on days with Karaoke scheduled
-  if (slide.id === 'promo-karaoke') {
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    const hasKaraokeToday = window.MATRIX.STATE.slides.some(s => {
-       if (s.subType && s.subType.toLowerCase() === 'karaoke' && s.date) {
-          const sDate = new Date(s.date);
-          sDate.setHours(0,0,0,0);
-          return sDate.getTime() === today.getTime();
-       }
-       return false;
-    });
-    if (!hasKaraokeToday) return false;
-  }
-
-  // Pre-Quiz Buildup: Wed 6:30 PM - 7:00 PM
-  if (slide.id === 'promo-wed-prequiz') {
-    return day === 3 && time >= 18.5 && time < 19;
-  }
+  
 
   // Pub Quiz Module: Wed 6:00 PM - 7:00 PM
   if (slide.id === 'ct-quiz') {
     return day === 3 && time >= 18 && time < 19;
   }
   
-  // Last Drinks: 11:00 PM - 1:00 AM
-  if (slide.id === 'promo-last-drinks') {
-    return time >= 23 || time < 1;
-  }
+  
 
   // Generic custom scheduling if properties exist
   if (slide.startTime !== undefined && slide.endTime !== undefined) {
