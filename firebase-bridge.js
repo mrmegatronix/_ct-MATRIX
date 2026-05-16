@@ -13,15 +13,17 @@ const COMMAND_PATH = 'matrix_command';
 // When the cloud state changes, notify the local system
 onValue(ref(db, STATE_PATH), (snapshot) => {
     const data = snapshot.val();
-    
+    if (!data) return;
+
     // Update UI Status if on Admin
     const dot = document.getElementById('cloud-dot');
     if (dot) dot.style.background = '#10b981'; // Green for active
 
-    if (data && data.remoteSource !== getClientId()) {
-        console.log('[FIREBASE] Remote State Sync:', data);
-        bc.postMessage({ type: 'SYNC_STATE', state: data });
-    }
+    // Loop prevention: check the root meta or child meta
+    if (data._last_updated_by === getClientId()) return;
+
+    console.log('[FIREBASE] Remote State Sync:', data);
+    bc.postMessage({ type: 'SYNC_STATE', state: data, isFirebaseBridge: true });
 });
 
 // Listen for one-time commands (JUMP, NEXT, PREV)
@@ -30,7 +32,7 @@ onValue(ref(db, COMMAND_PATH), (snapshot) => {
     if (cmd && cmd.timestamp > (window.lastCommandTime || 0) && cmd.source !== getClientId()) {
         window.lastCommandTime = cmd.timestamp;
         console.log('[FIREBASE] Remote Command:', cmd);
-        bc.postMessage(cmd);
+        bc.postMessage({ ...cmd, isFirebaseBridge: true });
     }
 });
 
@@ -45,11 +47,11 @@ bc.onmessage = (e) => {
     if (['NEXT', 'PREV', 'JUMP', 'MODULE_FILTER', 'LIVE_SLIDE', 'CONFETTI', 'REFRESH'].includes(type)) {
         console.log('[FIREBASE] Bridging Local Command to Cloud:', type);
         
-        // Add metadata to prevent loops
+        const timestamp = Date.now();
         const payload = { 
             ...e.data, 
             source: getClientId(), 
-            timestamp: Date.now(),
+            timestamp: timestamp,
             isFirebaseBridge: true 
         };
 
@@ -58,7 +60,10 @@ bc.onmessage = (e) => {
 
         // If it's a persistent state change, update state node too
         if (['MODULE_FILTER', 'LIVE_SLIDE'].includes(type)) {
-            update(ref(db, STATE_PATH + '/' + type), e.data);
+            // Include meta at root of state for loop prevention
+            update(ref(db, STATE_PATH), { _last_updated_by: getClientId() });
+            // Update specific sub-node
+            update(ref(db, STATE_PATH + '/' + type), payload);
         }
     }
 };
