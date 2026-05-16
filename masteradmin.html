@@ -188,8 +188,13 @@
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%) scale(calc(min(100cqw / 1920, 100cqh / 1080)));
+        /* Enhanced Scaling Logic with fallback */
+        --scale-w: calc(100cqw / 1920);
+        --scale-h: calc(100cqh / 1080);
+        --final-scale: min(var(--scale-w), var(--scale-h));
+        transform: translate(-50%, -50%) scale(var(--final-scale, 0.25));
         transform-origin: center center;
+        background: #000;
     }
 
     /* BOTTOM BAR (C-FRAME) */
@@ -717,19 +722,10 @@
             }
         }
         if (e.data.type === 'CURRENT_SLIDE_BROADCAST') {
-            const metrics = document.getElementById('metrics-grid');
-            if (metrics) {
-                const nowPlaying = e.data.slide ? (e.data.slide.title || e.data.slide.id || 'N/A') : 'AWAITING...';
-                // Update just the Now Playing card if it exists
-                const card = metrics.querySelector('div:first-child > div:last-child');
-                if (card && card.previousElementSibling.innerText === 'NOW PLAYING') {
-                    card.innerText = nowPlaying;
-                    card.parentElement.style.borderColor = 'var(--accent)';
-                } else {
-                   // Fallback: Request full dump if metrics structure changed
-                   bc.postMessage({ type: 'GET_SLIDES_DUMP' });
-                }
-            }
+            updateDashboardMetrics(e.data);
+        }
+        if (e.data.type === 'SLIDES_DUMP') {
+            updateDashboardMetrics(e.data);
         }
         if (e.data.type === 'DATA_HOT_RELOADED') {
             if (document.getElementById('full-grid-view').style.display === 'flex') renderPlaylistGrid();
@@ -743,11 +739,50 @@
         setTimeout(() => t.classList.remove('show'), 2000);
     }
 
+    function updateDashboardMetrics(data) {
+        const grid = document.getElementById('metrics-grid');
+        if (!grid) return;
+
+        const slides = data.slides || [];
+        const current = data.slide || (slides[data.index] || null);
+        const nowPlaying = current ? (current.title || current.subType || 'AD SLIDE') : 'STATION IDLE';
+        
+        grid.innerHTML = `
+            <div class="panel" style="padding:0.5rem 1rem; border: 1px solid var(--accent); border-radius:8px;">
+                <div style="font-size:0.5rem; opacity:0.5; font-weight:900;">NOW PLAYING</div>
+                <div style="font-size:0.75rem; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${nowPlaying}</div>
+            </div>
+            <div class="panel" style="padding:0.5rem 1rem; border: 1px solid var(--border); border-radius:8px;">
+                <div style="font-size:0.5rem; opacity:0.5; font-weight:900;">PLAYLIST SIZE</div>
+                <div style="font-size:0.75rem; font-weight:900;">${slides.length} SLIDES</div>
+            </div>
+            <div class="panel" style="padding:0.5rem 1rem; border: 1px solid var(--border); border-radius:8px;">
+                <div style="font-size:0.5rem; opacity:0.5; font-weight:900;">SYNC STATUS</div>
+                <div style="font-size:0.75rem; font-weight:900; color:#10b981">LIVE CHANNEL</div>
+            </div>
+            <div class="panel" style="padding:0.5rem 1rem; border: 1px solid var(--border); border-radius:8px;">
+                <div style="font-size:0.5rem; opacity:0.5; font-weight:900;">LAST UPDATE</div>
+                <div style="font-size:0.75rem; font-weight:900;">${data.lastSync || new Date().toLocaleTimeString()}</div>
+            </div>
+            <div class="panel" style="padding:0.5rem 1rem; border: 1px solid var(--border); border-radius:8px;">
+                <div style="font-size:0.5rem; opacity:0.5; font-weight:900;">ENGINE VERSION</div>
+                <div style="font-size:0.75rem; font-weight:900;">v2.0.0-PRO</div>
+            </div>
+        `;
+    }
+
     window.onload = () => {
         if(sessionStorage.getItem('matrix_authed') === 'true') { 
             document.getElementById('auth-screen').style.display = 'none'; 
             loadWorkspaceView('HOME');
         }
+        
+        // Ensure preview frames are loaded
+        setTimeout(() => {
+            document.getElementById('preview-frame').src = 'index.html';
+            document.getElementById('billboard-frame').src = 'index.html';
+            bc.postMessage({ type: 'GET_SLIDES_DUMP' });
+        }, 500);
     };
 </script>
 <script type="module" src="firebase-bridge.js"></script>
