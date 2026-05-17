@@ -208,33 +208,28 @@
         position: relative; 
         background: #000; 
         overflow: hidden; 
-        container-type: size;
         display: flex; 
         align-items: center; 
         justify-content: center;
     }
     .scaled-frame iframe {
-        width: 1920px;
-        height: 1080px;
         border: none;
         position: absolute;
         top: 50%;
         left: 50%;
-        /* Enhanced Scaling Logic with fallback */
-        --scale-w: calc(100cqw / 1920);
-        --scale-h: calc(100cqh / 1080);
-        --final-scale: min(var(--scale-w), var(--scale-h));
-        transform: translate(-50%, -50%) scale(var(--final-scale, 0.25));
         transform-origin: center center;
         background: #000;
+        transition: transform 0.1s ease-out;
+    }
+    #preview-frame {
+        width: 1920px;
+        height: 1080px;
+        transform: translate(-50%, -50%) scale(0.25);
     }
     #billboard-frame {
         width: 400px;
         height: 200px;
-        --scale-w: calc(100cqw / 400);
-        --scale-h: calc(100cqh / 200);
-        --final-scale: min(var(--scale-w), var(--scale-h));
-        transform: translate(-50%, -50%) scale(var(--final-scale, 0.5));
+        transform: translate(-50%, -50%) scale(0.5);
     }
 
     /* BOTTOM BAR (C-FRAME) */
@@ -892,6 +887,35 @@
         setTimeout(() => t.classList.remove('show'), 2000);
     }
 
+    function scaleFrames() {
+        const previewFrame = document.getElementById('preview-frame');
+        const billboardFrame = document.getElementById('billboard-frame');
+        
+        if (previewFrame && previewFrame.parentElement) {
+            const wrap = previewFrame.parentElement;
+            const w = wrap.clientWidth || wrap.offsetWidth;
+            const h = wrap.clientHeight || wrap.offsetHeight;
+            if (w > 0 && h > 0) {
+                const scale = Math.min(w / 1920, h / 1080);
+                previewFrame.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            }
+        }
+        
+        if (billboardFrame && billboardFrame.parentElement) {
+            const wrap = billboardFrame.parentElement;
+            const w = wrap.clientWidth || wrap.offsetWidth;
+            const h = wrap.clientHeight || wrap.offsetHeight;
+            if (w > 0 && h > 0) {
+                const scale = Math.min(w / 400, h / 200);
+                billboardFrame.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            }
+        }
+    }
+
+    window.addEventListener('resize', scaleFrames);
+    window.addEventListener('load', scaleFrames);
+    setInterval(scaleFrames, 500);
+
     window.onload = () => {
         if(sessionStorage.getItem('matrix_authed') === 'true') { 
             document.getElementById('auth-screen').style.display = 'none'; 
@@ -902,6 +926,7 @@
         setTimeout(() => {
             document.getElementById('preview-frame').src = 'index.html';
             document.getElementById('billboard-frame').src = 'billboard.html';
+            scaleFrames();
             bc.postMessage({ type: 'GET_SLIDES_DUMP' });
         }, 500);
     };
