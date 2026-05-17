@@ -258,7 +258,59 @@
       const b = parseInt(hex.substring(4,6), 16) || 11;
       document.documentElement.style.setProperty('--theme-glow', `rgba(${r},${g},${b}, 0.6)`);
 
-      // ... [Keep existing progress bar logic] ...
+      // Progress bar sync
+      const bar = document.getElementById('progress-bar');
+      if (bar) {
+        bar.style.transition = 'none';
+        
+        if (startTime && delay) {
+            const elapsed = Date.now() - startTime;
+            const remaining = delay - elapsed;
+            
+            if (remaining > 0 && remaining <= delay) {
+                const startPercent = (elapsed / delay) * 100;
+                bar.style.width = startPercent + '%';
+                
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        bar.style.transition = `width ${remaining}ms linear`;
+                        bar.style.width = '100%';
+                    });
+                });
+            } else {
+                bar.style.width = '100%';
+            }
+        } else {
+            // Fallback if no timing info
+            bar.style.width = '0%';
+            const fallbackDelay = slide.duration ? slide.duration * 1000 : 30000;
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    bar.style.transition = `width ${fallbackDelay}ms linear`;
+                    bar.style.width = '100%';
+                });
+            });
+        }
+      }
+
+      // Exit old slide
+      const oldSlide = document.querySelector('.slide.active');
+      if (oldSlide) {
+        oldSlide.classList.remove('active');
+        oldSlide.classList.add('exit');
+        setTimeout(() => oldSlide.remove(), 400);
+      }
+
+      // Format Meta (Time / Date)
+      let metaText = '';
+      const metaItems = [];
+      if (slide.time) metaItems.push(`<span>⏰ ${slide.time}</span>`);
+      if (slide.date) metaItems.push(`<span>📅 ${slide.date}</span>`);
+      if (slide.location) metaItems.push(`<span>📍 ${slide.location}</span>`);
+      metaText = metaItems.join(' • ');
+      
+      // Determine Tag
+      const tagText = (slide.subType || slide.type || 'EVENT').toUpperCase();
 
       // Construct New Slide
       const newSlide = document.createElement('div');
@@ -316,6 +368,35 @@
           newSlide.classList.add('active');
         });
       });
+
+      // Countdown dynamic tick
+      if (slide.countdownFinish) {
+          const el = document.getElementById(`cd-${slide.id}`);
+          if (el) {
+              function updateCD() {
+                  const target = new Date(slide.countdownFinish).getTime();
+                  const diff = target - Date.now();
+                  if (isNaN(target) || diff <= 0) {
+                      el.innerText = "EVENT ACTIVE";
+                      return;
+                  }
+                  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                  const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                  const secs = Math.floor((diff % (1000 * 60)) / 1000);
+                  el.innerText = `${days}d ${hours}h ${mins}m ${secs}s`;
+              }
+              updateCD();
+              const timer = setInterval(updateCD, 1000);
+              const observer = new MutationObserver(() => {
+                  if (!document.getElementById(`cd-${slide.id}`)) {
+                      clearInterval(timer);
+                      observer.disconnect();
+                  }
+              });
+              observer.observe(viewport, { childList: true });
+          }
+      }
     }
   </script>
 </body>
