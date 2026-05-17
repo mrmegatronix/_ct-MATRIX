@@ -901,7 +901,7 @@
         // Ensure preview frames are loaded
         setTimeout(() => {
             document.getElementById('preview-frame').src = 'index.html';
-            document.getElementById('billboard-frame').src = 'index.html';
+            document.getElementById('billboard-frame').src = 'billboard.html';
             bc.postMessage({ type: 'GET_SLIDES_DUMP' });
         }, 500);
     };
