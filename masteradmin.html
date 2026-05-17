@@ -228,6 +228,14 @@
         transform-origin: center center;
         background: #000;
     }
+    #billboard-frame {
+        width: 400px;
+        height: 200px;
+        --scale-w: calc(100cqw / 400);
+        --scale-h: calc(100cqh / 200);
+        --final-scale: min(var(--scale-w), var(--scale-h));
+        transform: translate(-50%, -50%) scale(var(--final-scale, 0.5));
+    }
 
     /* BOTTOM BAR (C-FRAME) */
     .footer-tray {
@@ -490,6 +498,7 @@
         <div class="panel" style="flex: 1;">
             <div class="panel-header">
                 <span id="ctrl-title">C-FRAME (OPERATOR)</span>
+                <div id="context-links" style="display:flex; gap: 8px;"></div>
                 <span id="ctrl-url" style="opacity:0.3; font-family:'JetBrains Mono'">READY</span>
             </div>
             <div class="frame-wrap" id="operator-wrap">
@@ -523,7 +532,7 @@
                 <span>B-FRAME (BILLBOARD FEED)</span>
             </div>
             <div class="scaled-frame">
-                <iframe id="billboard-frame" src="index.html"></iframe>
+                <iframe id="billboard-frame" src="billboard.html"></iframe>
             </div>
         </div>
     </div>
@@ -598,6 +607,9 @@
         document.getElementById('ctrl-title').innerText = 'DASHBOARD HOME';
         document.getElementById('ctrl-url').innerText = 'CORE';
         
+        const ctx = document.getElementById('context-links');
+        if (ctx) ctx.innerHTML = '';
+        
         // Request metrics telemetry
         bc.postMessage({ type: 'GET_SLIDES_DUMP' });
         renderSidebarToggles();
@@ -668,6 +680,18 @@
         setTimeout(renderMonitorTray, 500);
     }
 
+    const MODULE_PAGES = {
+        'MATRIX': { main: 'index.html', admin: 'masteradmin.html' },
+        'ACE': { main: 'index.html', admin: 'admin.html' },
+        'MMR': { main: 'index.html', admin: 'admin.html' },
+        'KING': { main: 'index.html', admin: 'admin.html' },
+        'QUIZ': { main: 'index.html', admin: 'admin.html' },
+        'WEA': { main: 'index.html' },
+        'FIR': { main: 'index.html' },
+        'NIM': { main: 'index.html' },
+        'COMMANDER': { main: 'live-commander.html' }
+    };
+
     function loadModule(name, url) {
         const wrap = document.getElementById('operator-wrap');
         const sep = url.includes('?') ? '&' : '?';
@@ -677,12 +701,25 @@
         document.getElementById('ctrl-url').innerText = url.split('/').pop().toUpperCase();
         
         const ctx = document.getElementById('context-links');
-        const basePath = url.substring(0, url.lastIndexOf('/') + 1);
-        ctx.innerHTML = `
-            <button class="ctrl-btn" onclick="loadModule('${name}', '${basePath}index.html')">MAIN</button>
-            <button class="ctrl-btn" onclick="loadModule('${name}', '${basePath}admin.html')">ADMIN</button>
-            <button class="ctrl-btn" onclick="loadModule('${name}', '${basePath}remote.html')">REMOTE</button>
-        `;
+        if (ctx) {
+            const basePath = url.substring(0, url.lastIndexOf('/') + 1);
+            const pages = MODULE_PAGES[name] || { main: 'index.html' };
+            let buttonsHtml = '';
+            
+            if (pages.main) {
+                const isActive = url.includes(pages.main);
+                buttonsHtml += `<button class="ctrl-btn ${isActive ? 'primary' : ''}" onclick="loadModule('${name}', '${basePath}${pages.main}')">MAIN</button>`;
+            }
+            if (pages.admin) {
+                const isActive = url.includes(pages.admin);
+                buttonsHtml += `<button class="ctrl-btn ${isActive ? 'primary' : ''}" onclick="loadModule('${name}', '${basePath}${pages.admin}')">ADMIN</button>`;
+            }
+            if (pages.remote) {
+                const isActive = url.includes(pages.remote);
+                buttonsHtml += `<button class="ctrl-btn ${isActive ? 'primary' : ''}" onclick="loadModule('${name}', '${basePath}${pages.remote}')">REMOTE</button>`;
+            }
+            ctx.innerHTML = buttonsHtml;
+        }
         showToast('LOADED ' + name);
     }
 
@@ -841,10 +878,7 @@
             }
         }
         if (e.data.type === 'CURRENT_SLIDE_BROADCAST') {
-            updateDashboardMetrics(e.data);
-        }
-        if (e.data.type === 'SLIDES_DUMP') {
-            updateDashboardMetrics(e.data);
+            bc.postMessage({ type: 'GET_SLIDES_DUMP' });
         }
         if (e.data.type === 'DATA_HOT_RELOADED') {
             if (document.getElementById('full-grid-view').style.display === 'flex') renderPlaylistGrid();
@@ -856,12 +890,6 @@
         const t = document.getElementById('toast');
         t.innerText = msg; t.classList.add('show');
         setTimeout(() => t.classList.remove('show'), 2000);
-    }
-
-    function updateDashboardMetrics(data) {
-        // Consolidated into header persistent-telemetry. 
-        // We can use this function to trigger a fresh GET_SLIDES_DUMP if needed.
-        bc.postMessage({ type: 'GET_SLIDES_DUMP' });
     }
 
     window.onload = () => {
