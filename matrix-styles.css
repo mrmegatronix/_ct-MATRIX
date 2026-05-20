@@ -165,7 +165,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 4rem 6rem 6rem 6rem; /* Top Right Bottom Left - added more bottom padding to clear progress bar */
+  padding: 4rem 6rem 280px 6rem; /* Top Right Bottom (large to clear absolute footer) Left */
   text-align: center;
   gap: 1.8rem;
   animation: slide-in-epic 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -192,7 +192,7 @@ body {
 /* --- Title --- */
 .premium-title {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(5.5rem, 8vw, 9.5rem);
+  font-size: clamp(5rem, 7.5vw, 8.5rem);
   font-weight: 900;
   line-height: 1.1;
   color: #fff;
@@ -219,7 +219,7 @@ body {
 
 /* --- Description / Notes --- */
 .premium-desc {
-  font-size: clamp(3rem, 4vw, 5rem);
+  font-size: clamp(2rem, 2.5vw, 3rem);
   color: rgba(243, 244, 246, 0.9);
   font-weight: 600;
   line-height: 1.4;
@@ -800,10 +800,11 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 5%;
+  padding: 4rem 6rem 280px 6rem;
   text-align: center;
   gap: 2rem;
   animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  box-sizing: border-box;
 }
 
 .special-badge {
@@ -821,7 +822,7 @@ body {
 
 .special-title {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(7rem, 11vw, 13rem);
+  font-size: clamp(5.5rem, 7.5vw, 9.5rem);
   font-weight: 900;
   line-height: 0.9;
   color: #fff;
@@ -830,7 +831,7 @@ body {
 }
 
 .special-desc {
-  font-size: clamp(3.5rem, 5vw, 6rem);
+  font-size: clamp(2.2rem, 3vw, 3.8rem);
   font-weight: 600;
   color: #fff;
   max-width: 85%;
@@ -965,12 +966,16 @@ body {
    ========================================================================== */
 
 .premium-footer-row {
+  position: absolute;
+  bottom: 30px;
+  left: 5%;
+  right: 5%;
+  width: 90%;
+  z-index: 30;
   display: grid;
   grid-template-columns: 1fr 1.5fr 1fr;
   align-items: center;
   gap: 2rem;
-  width: 95%;
-  margin: 0 auto 2.5rem auto; /* Added bottom margin to clear progress bar */
   padding: 1.5rem 3rem;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(30px);

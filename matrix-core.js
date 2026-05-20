@@ -905,9 +905,7 @@ function renderActiveSlide() {
             </div>
             <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
           </div>
-          <div style="position:absolute; bottom: 60px; left: 50%; transform: translateX(-50%); width: 90%;">
-            ${renderPremiumFooterRow(slide, themeColor)}
-          </div>
+          ${renderPremiumFooterRow(slide, themeColor)}
         `;
       } else if (slide.type === 'LIVE') {
         const accent = slide.accent || '#06b6d4';
@@ -970,11 +968,10 @@ function renderActiveSlide() {
             </div>
             <div class="special-event-card">
               <div class="special-badge animate-tag-enter">Special Event</div>
-              <div class="special-title animate-pop-in">${slide.title}</div>
+              <h1 class="special-title animate-pop-in">${slide.title}</h1>
               <div class="special-desc animate-content-enter" style="animation-delay: 0.3s;">${slide.subtitle || ''}</div>
-              
-              ${renderPremiumFooterRow(slide, themeColor)}
             </div>
+            ${renderPremiumFooterRow(slide, themeColor)}
         `;
       } else if (slide.fgImage) {
         // FULLSCREEN IMAGE MODE (Col 19 / T)
@@ -983,9 +980,7 @@ function renderActiveSlide() {
           <div class="slide-bg" style="background: #000;">
             <img src="${slide.fgImage}" alt="" style="width: 100%; height: 100%; object-fit: contain; animation: none;">
           </div>
-          <div style="position:absolute; bottom: 60px; left: 50%; transform: translateX(-50%); width: 90%;">
-            ${renderPremiumFooterRow(slide, themeColor)}
-          </div>
+          ${renderPremiumFooterRow(slide, themeColor)}
         `;
       } else {
         slideEl.innerHTML = `
@@ -1008,10 +1003,9 @@ function renderActiveSlide() {
 
             <!-- 3. Details -->
             ${slide.subtitle ? `<div class="premium-desc animate-content-enter" style="animation-delay: 0.3s;">${String(slide.subtitle).replace(/\n/g, '<br>')}</div>` : ''}
-
-            <!-- Consolidated Footer Row (Price, Meta, QR) -->
-            ${renderPremiumFooterRow(slide, color)}
           </div>
+          <!-- Consolidated Footer Row (Price, Meta, QR) -->
+          ${renderPremiumFooterRow(slide, color)}
         `;
       }
     }
@@ -1036,7 +1030,7 @@ function renderActiveSlide() {
       const titleEl = slideEl.querySelector('.premium-title');
       const descEl = slideEl.querySelector('.premium-desc');
       if (titleEl) fitText(titleEl, 60);
-      if (descEl) fitText(descEl, 40);
+      if (descEl) fitText(descEl, 32);
       
       const bar = document.getElementById('progress-bar');
       if (bar) {
