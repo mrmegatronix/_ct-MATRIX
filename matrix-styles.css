@@ -192,7 +192,7 @@ body {
 /* --- Title --- */
 .premium-title {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(5rem, 7.5vw, 8.5rem);
+  font-size: clamp(6.5rem, 9.5vw, 11rem);
   font-weight: 900;
   line-height: 1.1;
   color: #fff;
@@ -822,7 +822,7 @@ body {
 
 .special-title {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(5.5rem, 7.5vw, 9.5rem);
+  font-size: clamp(7rem, 10vw, 12rem);
   font-weight: 900;
   line-height: 0.9;
   color: #fff;
