@@ -1022,15 +1022,48 @@ function renderActiveSlide() {
       });
     }
 
+    // Call fitText on title and subtitle (always run, even if paused/preview)
+    const titleEl = slideEl.querySelector('.premium-title, .special-title, .social-title');
+    const descEl = slideEl.querySelector('.premium-desc, .special-desc, .social-handle');
+    if (titleEl) fitText(titleEl, 60);
+    if (descEl) fitText(descEl, 32);
+
+    // Vertical overspill check (always run, even if paused/preview)
+    const cardEl = slideEl.querySelector('.premium-card, .special-event-card, .social-card');
+    if (cardEl) {
+      const footerEl = slideEl.querySelector('.premium-footer-row');
+      const viewportHeight = window.innerHeight;
+      const maxBottom = footerEl ? footerEl.getBoundingClientRect().top - 20 : viewportHeight - 50;
+
+      let titleFontEl = titleEl;
+      let descFontEl = descEl;
+      let titleFontSize = titleFontEl ? parseInt(window.getComputedStyle(titleFontEl).fontSize) : 0;
+      let descFontSize = descFontEl ? parseInt(window.getComputedStyle(descFontEl).fontSize) : 0;
+
+      const minTitleSize = 45;
+      const minDescSize = 24;
+
+      let loopCount = 0;
+      while (cardEl.getBoundingClientRect().bottom > maxBottom && loopCount < 50) {
+        let shrunk = false;
+        if (titleFontEl && titleFontSize > minTitleSize) {
+          titleFontSize -= 3;
+          titleFontEl.style.fontSize = titleFontSize + 'px';
+          shrunk = true;
+        }
+        if (descFontEl && descFontSize > minDescSize) {
+          descFontSize -= 2;
+          descFontEl.style.fontSize = descFontSize + 'px';
+          shrunk = true;
+        }
+        if (!shrunk) break;
+        loopCount++;
+      }
+    }
+
     if (!window.MATRIX.STATE.isPaused) {
       const delay = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
       window.MATRIX.STATE.timer = setTimeout(nextSlide, delay);
-
-      // Call fitText on title and subtitle
-      const titleEl = slideEl.querySelector('.premium-title');
-      const descEl = slideEl.querySelector('.premium-desc');
-      if (titleEl) fitText(titleEl, 60);
-      if (descEl) fitText(descEl, 32);
       
       const bar = document.getElementById('progress-bar');
       if (bar) {
