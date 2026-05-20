@@ -165,7 +165,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 4rem 6rem 280px 6rem; /* Top Right Bottom (large to clear absolute footer) Left */
+  padding: 4rem 6rem 220px 6rem; /* Top Right Bottom (large to clear absolute footer) Left */
   text-align: center;
   gap: 1.8rem;
   animation: slide-in-epic 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -247,27 +247,27 @@ body {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0.8rem 2rem;
-  border-radius: 1.5rem;
-  font-size: clamp(2rem, 3vw, 3.5rem);
+  padding: 0.5rem 1.5rem;
+  border-radius: 1.2rem;
+  font-size: clamp(1.4rem, 2vw, 2.2rem);
   font-weight: 600;
 }
 
 .premium-location {
-  font-size: clamp(2.2rem, 3.2vw, 3.8rem);
+  font-size: clamp(1.8rem, 2.6vw, 2.8rem);
   font-weight: 700;
   color: #fff;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   background: rgba(0, 0, 0, 0.4);
-  padding: 0.5rem 2rem;
+  padding: 0.5rem 1.5rem;
   border-radius: 1rem;
   display: inline-block;
   margin-top: 0.5rem;
 }
 
 .premium-footer {
-  font-size: clamp(1.8rem, 2.5vw, 3rem);
+  font-size: clamp(1.2rem, 1.6vw, 1.8rem);
   font-weight: 500;
   color: rgba(255, 255, 255, 0.6);
   font-family: 'JetBrains Mono', monospace;
@@ -484,7 +484,7 @@ body {
 .price-badge {
   display: inline-block;
   position: relative;
-  border-radius: 1.5rem;
+  border-radius: 1.2rem;
   padding: 3px;
   background: linear-gradient(135deg, rgba(255,255,255,0.8), var(--theme-color));
   overflow: hidden;
@@ -493,8 +493,8 @@ body {
 
 .price-badge-inner {
   position: relative;
-  padding: 1rem 2.5rem;
-  border-radius: calc(1.5rem - 3px);
+  padding: 0.6rem 1.8rem;
+  border-radius: calc(1.2rem - 3px);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   background: rgba(0, 0, 0, 0.5);
@@ -507,7 +507,7 @@ body {
 
 .price-text {
   font-family: 'Inter', sans-serif;
-  font-size: clamp(2.5rem, 3vw, 3.5rem);
+  font-size: clamp(1.6rem, 2.2vw, 2.4rem);
   font-weight: 900;
   color: #fff;
   filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.8));
@@ -800,7 +800,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 4rem 6rem 280px 6rem;
+  padding: 4rem 6rem 220px 6rem;
   text-align: center;
   gap: 2rem;
   animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -976,12 +976,12 @@ body {
   grid-template-columns: 1fr 1.5fr 1fr;
   align-items: center;
   gap: 2rem;
-  padding: 1.5rem 3rem;
+  padding: 1rem 2.5rem;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 2.5rem;
+  border-radius: 2rem;
   box-shadow: 0 20px 50px rgba(0,0,0,0.5);
   box-sizing: border-box;
 }
@@ -1001,12 +1001,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.8rem;
+  gap: 0.6rem;
 }
 
 .time-pill {
   background: rgba(255, 255, 255, 0.15) !important;
-  font-size: clamp(1.8rem, 2.5vw, 3rem) !important;
+  font-size: clamp(1.4rem, 2vw, 2.2rem) !important;
 }
 
 .premium-footer-row .price-badge {
@@ -1027,7 +1027,7 @@ body {
 
 .footer-meta-group .premium-footer {
   margin: 0;
-  font-size: clamp(1.4rem, 1.8vw, 2rem);
+  font-size: clamp(1.2rem, 1.6vw, 1.8rem);
   opacity: 0.8;
 }
 
@@ -1044,8 +1044,8 @@ body {
 }
 
 .footer-qr-img img {
-  width: 160px; /* Increased for distance scanning fidelity */
-  height: 160px;
+  width: 110px; /* Reduced to keep footer compact and elegant */
+  height: 110px;
   display: block;
 }
 

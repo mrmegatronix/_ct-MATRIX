@@ -1022,11 +1022,11 @@ function renderActiveSlide() {
       });
     }
 
-    // Call fitText on title and subtitle (always run, even if paused/preview)
+    // Call fitText on title and social-handle (always run, even if paused/preview)
     const titleEl = slideEl.querySelector('.premium-title, .special-title, .social-title');
-    const descEl = slideEl.querySelector('.premium-desc, .special-desc, .social-handle');
+    const handleEl = slideEl.querySelector('.social-handle');
     if (titleEl) fitText(titleEl, 60);
-    if (descEl) fitText(descEl, 32);
+    if (handleEl) fitText(handleEl, 32);
 
     // Vertical overspill check (always run, even if paused/preview)
     const cardEl = slideEl.querySelector('.premium-card, .special-event-card, .social-card');
