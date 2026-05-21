@@ -1039,7 +1039,7 @@ function renderActiveSlide() {
       const maxBottom = footerEl ? footerEl.getBoundingClientRect().top - 20 : viewportHeight - 50;
 
       let titleFontEl = titleEl;
-      let descFontEl = descEl;
+      let descFontEl = slideEl.querySelector('.premium-desc, .special-desc, .social-handle');
       let titleFontSize = titleFontEl ? parseInt(window.getComputedStyle(titleFontEl).fontSize) : 0;
       let descFontSize = descFontEl ? parseInt(window.getComputedStyle(descFontEl).fontSize) : 0;
 
