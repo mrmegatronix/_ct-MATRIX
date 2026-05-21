@@ -601,7 +601,18 @@
 
     function toggleNode(el) {
         const c = el.nextElementSibling;
-        c.style.display = c.style.display === 'none' ? 'block' : 'none';
+        const isOpening = c.style.display === 'none' || c.style.display === '';
+        
+        // Collapse all tree children
+        document.querySelectorAll('.tree-children').forEach(child => {
+            child.style.display = 'none';
+        });
+        
+        if (isOpening) {
+            c.style.display = 'block';
+        } else {
+            c.style.display = 'none';
+        }
     }
 
     function loadWorkspaceView(v) {
@@ -690,7 +701,7 @@
 
             return `
                 <div class="monitor-card" onclick="loadModule('${m.id}', '${m.id === 'MATRIX' ? 'index.html' : `../${m.path}/${m.id === 'KING' || m.id === 'WEA' || m.id === 'FIR' ? 'index.html' : 'admin.html'}`}')">
-                    <div class="monitor-thumb"><iframe src="../${m.path}/index.html"></iframe></div>
+                    <div class="monitor-thumb"><iframe src="../${m.path}/index.html" scrolling="no"></iframe></div>
                     <div class="monitor-label"><span>${m.name}</span> <span style="opacity:0.5">LIVE</span></div>
                 </div>
             `;

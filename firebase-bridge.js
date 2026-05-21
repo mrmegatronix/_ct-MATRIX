@@ -76,22 +76,22 @@ if (window.self === window.top) {
         }
     };
 
-    function getClientId() {
-        let id = localStorage.getItem('matrix_client_id');
-        if (!id) {
-            id = 'client_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('matrix_client_id', id);
-        }
-        return id;
-    }
-
-    function getTabId() {
-        if (!window.matrixTabId) {
-            window.matrixTabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        }
-        return window.matrixTabId;
-    }
-
     console.log('[FIREBASE] Bridge initialized as:', getClientId());
+}
+
+function getClientId() {
+    let id = localStorage.getItem('matrix_client_id');
+    if (!id) {
+        id = 'client_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('matrix_client_id', id);
+    }
+    return id;
+}
+
+function getTabId() {
+    if (!window.matrixTabId) {
+        window.matrixTabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+    return window.matrixTabId;
 }
 

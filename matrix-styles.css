@@ -165,22 +165,26 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 4rem 6rem 220px 6rem; /* Top Right Bottom (large to clear absolute footer) Left */
+  padding: 14vh 6rem 200px 6rem; /* Top clears pinned tag, bottom clears pinned footer */
   text-align: center;
-  gap: 2.5rem;
+  gap: 1.5rem;
   animation: slide-in-epic 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
-/* Pinned Position Wrappers for Premium Cards — flex-flow based */
+/* Event Type Tag — PINNED to top of slide */
 .premium-tag-wrapper {
+  position: absolute;
+  top: 4vh;
+  left: 0;
   width: 100%;
   display: flex;
   justify-content: center;
   z-index: 15;
-  flex-shrink: 0;
 }
 
+/* Title — flows in centre, max 75% width, overflow clipped */
 .premium-title-wrapper {
   width: 75%;
   max-width: 75%;
@@ -190,8 +194,10 @@ body {
   z-index: 15;
   flex-shrink: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
+/* Accent divider bar */
 .premium-accent-wrapper {
   width: 100%;
   display: flex;
@@ -200,6 +206,7 @@ body {
   flex-shrink: 0;
 }
 
+/* Description — flows below accent, max 75% width, overflow clipped */
 .premium-desc-wrapper {
   width: 75%;
   max-width: 75%;
@@ -209,6 +216,7 @@ body {
   z-index: 15;
   flex-shrink: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
 /* --- Day Tag Badge --- */
@@ -839,11 +847,12 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 4rem 6rem 220px 6rem;
+  padding: 14vh 6rem 200px 6rem; /* Match premium-card: top clears tag, bottom clears footer */
   text-align: center;
-  gap: 3.5rem;
+  gap: 1.5rem;
   animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .special-badge {

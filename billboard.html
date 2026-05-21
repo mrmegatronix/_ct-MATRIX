@@ -262,34 +262,38 @@
       const bar = document.getElementById('progress-bar');
       if (bar) {
         bar.style.transition = 'none';
-        
-        if (startTime && delay) {
-            const elapsed = Date.now() - startTime;
-            const remaining = delay - elapsed;
-            
-            if (remaining > 0 && remaining <= delay) {
-                const startPercent = (elapsed / delay) * 100;
-                bar.style.width = startPercent + '%';
-                
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        bar.style.transition = `width ${remaining}ms linear`;
-                        bar.style.width = '100%';
-                    });
-                });
-            } else {
-                bar.style.width = '100%';
-            }
+        if (slide.type === 'MODULE') {
+          bar.style.display = 'none';
         } else {
-            // Fallback if no timing info
-            bar.style.width = '0%';
-            const fallbackDelay = slide.duration ? slide.duration * 1000 : 30000;
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    bar.style.transition = `width ${fallbackDelay}ms linear`;
-                    bar.style.width = '100%';
-                });
-            });
+          bar.style.display = '';
+          if (startTime && delay) {
+              const elapsed = Date.now() - startTime;
+              const remaining = delay - elapsed;
+              
+              if (remaining > 0 && remaining <= delay) {
+                  const startPercent = (elapsed / delay) * 100;
+                  bar.style.width = startPercent + '%';
+                  
+                  requestAnimationFrame(() => {
+                      requestAnimationFrame(() => {
+                          bar.style.transition = `width ${remaining}ms linear`;
+                          bar.style.width = '100%';
+                      });
+                  });
+              } else {
+                  bar.style.width = '100%';
+              }
+          } else {
+              // Fallback if no timing info
+              bar.style.width = '0%';
+              const fallbackDelay = slide.duration ? slide.duration * 1000 : 30000;
+              requestAnimationFrame(() => {
+                  requestAnimationFrame(() => {
+                      bar.style.transition = `width ${fallbackDelay}ms linear`;
+                      bar.style.width = '100%';
+                  });
+              });
+          }
         }
       }
 
