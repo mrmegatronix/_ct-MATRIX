@@ -1123,37 +1123,27 @@ function renderActiveSlide() {
     if (titleEl) fitText(titleEl, 40);
     if (handleEl) fitText(handleEl, 32);
 
-    // Vertical overspill check — shrink fonts if card overflows past footer
-    // Strategy: shrink the TITLE first (it has more room), only touch description as last resort
+    // Vertical overspill check — only shrink DESCRIPTION if card overflows past footer
+    // Titles are NEVER touched — they stay exactly as CSS + fitText set them
+    // Description floor = slightly above footer text size (~35px) for TV readability
     const cardEl = slideEl.querySelector('.premium-card, .special-event-card, .social-card');
     if (cardEl && cardEl.offsetWidth > 0) {
       const footerEl = slideEl.querySelector('.premium-footer-row');
       const maxBottom = footerEl ? footerEl.getBoundingClientRect().top - 20 : window.innerHeight - 50;
 
-      let titleFontEl = titleEl;
       let descFontEl = slideEl.querySelector('.premium-desc, .special-desc, .social-handle');
-      let titleFontSize = titleFontEl ? parseInt(window.getComputedStyle(titleFontEl).fontSize) : 0;
       let descFontSize = descFontEl ? parseInt(window.getComputedStyle(descFontEl).fontSize) : 0;
 
-      const minTitleSize = 50;  // TV-readable minimum for titles
-      const minDescSize = 60;   // TV-readable minimum for descriptions
+      const minDescSize = 45; // Slightly larger than footer text (~35px)
 
       let loopCount = 0;
       while (cardEl.getBoundingClientRect().bottom > maxBottom && loopCount < 50) {
-        let shrunk = false;
-        // Phase 1: Shrink title first (it's usually the largest element)
-        if (titleFontEl && titleFontSize > minTitleSize) {
-          titleFontSize -= 3;
-          titleFontEl.style.fontSize = titleFontSize + 'px';
-          shrunk = true;
-        }
-        // Phase 2: Only shrink description if title is already at minimum
-        else if (descFontEl && descFontSize > minDescSize) {
+        if (descFontEl && descFontSize > minDescSize) {
           descFontSize -= 2;
           descFontEl.style.fontSize = descFontSize + 'px';
-          shrunk = true;
+        } else {
+          break;
         }
-        if (!shrunk) break;
         loopCount++;
       }
     }
