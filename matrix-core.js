@@ -1124,6 +1124,7 @@ function renderActiveSlide() {
     if (handleEl) fitText(handleEl, 32);
 
     // Vertical overspill check — shrink fonts if card overflows past footer
+    // Strategy: shrink the TITLE first (it has more room), only touch description as last resort
     const cardEl = slideEl.querySelector('.premium-card, .special-event-card, .social-card');
     if (cardEl && cardEl.offsetWidth > 0) {
       const footerEl = slideEl.querySelector('.premium-footer-row');
@@ -1134,18 +1135,20 @@ function renderActiveSlide() {
       let titleFontSize = titleFontEl ? parseInt(window.getComputedStyle(titleFontEl).fontSize) : 0;
       let descFontSize = descFontEl ? parseInt(window.getComputedStyle(descFontEl).fontSize) : 0;
 
-      const minTitleSize = 35;
-      const minDescSize = 18;
+      const minTitleSize = 50;  // TV-readable minimum for titles
+      const minDescSize = 60;   // TV-readable minimum for descriptions
 
       let loopCount = 0;
       while (cardEl.getBoundingClientRect().bottom > maxBottom && loopCount < 50) {
         let shrunk = false;
+        // Phase 1: Shrink title first (it's usually the largest element)
         if (titleFontEl && titleFontSize > minTitleSize) {
           titleFontSize -= 3;
           titleFontEl.style.fontSize = titleFontSize + 'px';
           shrunk = true;
         }
-        if (descFontEl && descFontSize > minDescSize) {
+        // Phase 2: Only shrink description if title is already at minimum
+        else if (descFontEl && descFontSize > minDescSize) {
           descFontSize -= 2;
           descFontEl.style.fontSize = descFontSize + 'px';
           shrunk = true;
