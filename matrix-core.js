@@ -1128,15 +1128,11 @@ function renderActiveSlide() {
     if (titleEl) fitText(titleEl, 40);
     if (handleEl) fitText(handleEl, 32);
 
-    // Vertical overspill check (always run, even if paused/preview)
+    // Vertical overspill check — shrink fonts if card overflows past footer
     const cardEl = slideEl.querySelector('.premium-card, .special-event-card, .social-card');
     if (cardEl && cardEl.offsetWidth > 0) {
       const footerEl = slideEl.querySelector('.premium-footer-row');
-      const viewportHeight = window.innerHeight;
-      const maxBottom = footerEl ? footerEl.getBoundingClientRect().top - 20 : viewportHeight - 50;
-
-      const titleWrapper = slideEl.querySelector('.premium-title-wrapper');
-      const descWrapper = slideEl.querySelector('.premium-desc-wrapper');
+      const maxBottom = footerEl ? footerEl.getBoundingClientRect().top - 20 : window.innerHeight - 50;
 
       let titleFontEl = titleEl;
       let descFontEl = slideEl.querySelector('.premium-desc, .special-desc, .social-handle');
@@ -1147,59 +1143,18 @@ function renderActiveSlide() {
       const minDescSize = 18;
 
       let loopCount = 0;
-      while (loopCount < 50) {
-        let needsShrink = false;
-
-        if (titleWrapper && titleFontEl) {
-          if (titleFontEl.scrollHeight > titleWrapper.offsetHeight && titleFontSize > minTitleSize) {
-            needsShrink = true;
-          }
-        }
-        if (descWrapper && descFontEl) {
-          if (descFontEl.scrollHeight > descWrapper.offsetHeight && descFontSize > minDescSize) {
-            needsShrink = true;
-          }
-        }
-
-        if (!titleWrapper && !descWrapper) {
-          const children = Array.from(cardEl.children);
-          if (children.length > 0) {
-            const maxChildBottom = Math.max(...children.map(c => c.getBoundingClientRect().bottom));
-            if (maxChildBottom > maxBottom) {
-              needsShrink = true;
-            }
-          }
-        }
-
-        if (!needsShrink) break;
-
+      while (cardEl.getBoundingClientRect().bottom > maxBottom && loopCount < 50) {
         let shrunk = false;
-        if (titleFontEl && titleFontSize > minTitleSize && 
-            (!titleWrapper || titleFontEl.scrollHeight > titleWrapper.offsetHeight)) {
+        if (titleFontEl && titleFontSize > minTitleSize) {
           titleFontSize -= 3;
           titleFontEl.style.fontSize = titleFontSize + 'px';
           shrunk = true;
         }
-        if (descFontEl && descFontSize > minDescSize && 
-            (!descWrapper || descFontEl.scrollHeight > descWrapper.offsetHeight)) {
+        if (descFontEl && descFontSize > minDescSize) {
           descFontSize -= 2;
           descFontEl.style.fontSize = descFontSize + 'px';
           shrunk = true;
         }
-
-        if (!titleWrapper && !descWrapper) {
-          if (titleFontEl && titleFontSize > minTitleSize) {
-            titleFontSize -= 3;
-            titleFontEl.style.fontSize = titleFontSize + 'px';
-            shrunk = true;
-          }
-          if (descFontEl && descFontSize > minDescSize) {
-            descFontSize -= 2;
-            descFontEl.style.fontSize = descFontSize + 'px';
-            shrunk = true;
-          }
-        }
-
         if (!shrunk) break;
         loopCount++;
       }
