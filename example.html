@@ -4,69 +4,945 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matrix CSV Mapping Diagram</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1a1a1a; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        h1 { color: #facc15; }
-        .slide-container { position: relative; width: 1280px; height: 720px; background: #333; border: 4px solid #555; overflow: hidden; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .bg-layer { position: absolute; inset: 0; background: url('_backgrounds/quiz.png') center/cover; opacity: 0.5; display: flex; align-items: center; justify-content: center; }
+        :root {
+            --bg-dark: #090d16;
+            --card-bg: rgba(17, 24, 39, 0.75);
+            --border-color: rgba(255, 255, 255, 0.12);
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --accent-gold: #f59e0b;
+            --accent-blue: #38bdf8;
+            --accent-green: #10b981;
+            --accent-purple: #a855f7;
+            --accent-red: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            max-width: 800px;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 900;
+            margin: 0 0 12px 0;
+            background: linear-gradient(135deg, #ffffff 30%, var(--accent-gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* 16:9 Slide Canvas Mockup (scaled for screen preview) */
+        .slide-wrapper {
+            position: relative;
+            width: 1280px;
+            height: 720px;
+            background: #000;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        /* Slide Background Layer (Col 18) */
+        .slide-bg-mock {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle, transparent 20%, #000 100%), linear-gradient(135deg, rgba(3, 7, 18, 0.85), rgba(15, 23, 42, 0.6)), url('_backgrounds/quiz.png') center/cover;
+            opacity: 0.8;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        /* Background Visual Highlight overlay trigger */
+        #bg-layer-mock {
+            position: absolute;
+            inset: 12px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 18px;
+            z-index: 2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        #bg-layer-mock.highlighted {
+            border-color: var(--accent-gold);
+            background: rgba(245, 158, 11, 0.04);
+            box-shadow: inset 0 0 50px rgba(245, 158, 11, 0.1);
+        }
+
+        .bg-layer-tag {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--accent-gold);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        /* Slide Foreground Overlay Layer (Col 19) */
+        #fg-layer-mock {
+            position: absolute;
+            inset: 22px;
+            border: 2px dashed rgba(16, 185, 129, 0);
+            border-radius: 14px;
+            z-index: 3;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        #fg-layer-mock.highlighted {
+            border: 2px dashed var(--accent-green);
+            background: rgba(16, 185, 129, 0.04);
+            box-shadow: inset 0 0 35px rgba(16, 185, 129, 0.08);
+        }
+
+        .fg-layer-tag {
+            position: absolute;
+            top: 20px;
+            left: 25px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--accent-green);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: none;
+        }
+        #fg-layer-mock.highlighted .fg-layer-tag {
+            display: block;
+        }
+
+        /* Top Bar Overlay mapping (Behavior/Control columns) */
+        .top-meta-overlay {
+            position: absolute;
+            top: 35px;
+            left: 5%;
+            right: 5%;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .meta-tag-box {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1.5px dashed rgba(255, 255, 255, 0.25);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-muted);
+        }
+        .meta-tag-box.highlighted {
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        #meta-duration.highlighted { border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
+        #meta-transition.highlighted { border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
+        #meta-locks.highlighted { border-color: var(--accent-blue); box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
+
+        /* Premium Central Event Card Mock */
+        .premium-card-mock {
+            position: absolute;
+            top: 42%;
+            left: 5%;
+            transform: translateY(-50%);
+            width: 55%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+            box-sizing: border-box;
+        }
+
+        /* Col 2: Event Type Badge */
+        #badge-mock {
+            display: inline-block;
+            padding: 8px 24px;
+            border-radius: 100px;
+            font-size: 1.05rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: rgba(245, 158, 11, 0.1);
+            border: 2px dashed var(--accent-gold);
+            color: var(--accent-gold);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #badge-mock.highlighted {
+            background: rgba(245, 158, 11, 0.25);
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.5);
+            transform: scale(1.05);
+        }
+
+        /* Col 3: Title */
+        #title-mock {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin: 0;
+            width: 100%;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #title-mock.highlighted {
+            border-color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.25);
+        }
+
+        /* Col 12: Accent Bar */
+        #accent-bar-mock {
+            width: 160px;
+            height: 8px;
+            background: var(--accent-gold);
+            border: 1.5px dashed #ffffff;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #accent-bar-mock.highlighted {
+            background: #ffffff;
+            box-shadow: 0 0 25px var(--accent-gold);
+            transform: scaleX(1.1);
+        }
+
+        /* Col 4: Description */
+        #desc-mock {
+            font-size: 1.4rem;
+            line-height: 1.4;
+            color: var(--text-muted);
+            width: 100%;
+            border: 2px dashed var(--accent-purple);
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        #desc-mock.highlighted {
+            border-color: #c084fc;
+            color: #f3e8ff;
+            background: rgba(168, 85, 247, 0.12);
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.35);
+        }
+
+        /* Footer Row Mockup */
+        .footer-row-mock {
+            position: absolute;
+            bottom: 30px;
+            left: 5%;
+            right: 5%;
+            width: 90%;
+            z-index: 10;
+            display: grid;
+            grid-template-columns: 1.2fr 1.6fr 1.2fr;
+            align-items: center;
+            gap: 20px;
+            padding: 15px 30px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Footer Left: Date / Day (Cols 0, 1) */
+        #footer-left-mock {
+            border: 2.5px dashed var(--accent-blue);
+            padding: 12px;
+            border-radius: 12px;
+            color: var(--accent-blue);
+            font-weight: 700;
+            font-size: 1.15rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+        #footer-left-mock.highlighted {
+            border-color: #60a5fa;
+            background: rgba(59, 130, 246, 0.15);
+            color: #fff;
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Footer Center: Price, Time, Disclaimer */
+        .footer-center-mock {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-badges-mock {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Col 7: Price Badge */
+        #price-badge-mock {
+            border: 2px dashed var(--accent-red);
+            color: var(--accent-red);
+            padding: 6px 18px;
+            border-radius: 10px;
+            font-weight: 900;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #price-badge-mock.highlighted {
+            border-color: #f87171;
+            background: rgba(239, 68, 68, 0.15);
+            color: #fff;
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.35);
+            transform: scale(1.05);
+        }
+
+        /* Col 6: Start Time Pill */
+        #time-pill-mock {
+            border: 2.5px dashed var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 6px 18px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #time-pill-mock.highlighted {
+            border-color: #fbbf24;
+            background: rgba(245, 158, 11, 0.15);
+            color: #fff;
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.35);
+            transform: scale(1.05);
+        }
+
+        /* Col 9: Slide Footer Text */
+        #footer-text-mock {
+            border: 1.5px dashed rgba(255, 255, 255, 0.3);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            padding: 4px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        #footer-text-mock.highlighted {
+            border-color: #fff;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Footer Right: QR codes (Cols 14, 15, 16) */
+        #footer-right-mock {
+            border: 2px dashed rgba(255, 255, 255, 0.4);
+            padding: 8px 14px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            justify-self: end;
+        }
+        #footer-right-mock.highlighted {
+            border-color: var(--accent-gold);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+
+        .qr-placeholder-mock {
+            width: 55px;
+            height: 55px;
+            background: #fff;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .qr-label-mock {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: left;
+        }
+
+        /* Legend Panel */
+        .legend-container {
+            width: 1280px;
+            background: rgba(17, 24, 39, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.6);
+            box-sizing: border-box;
+        }
+
+        .legend-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 15px;
+        }
+
+        .legend-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            margin: 0;
+            color: var(--accent-gold);
+        }
+
+        .legend-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .legend-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .legend-row:hover, .legend-row.highlighted {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Specific visual themes for hovered elements */
+        .legend-row.highlighted-blue { border-color: var(--accent-blue); background: rgba(56, 189, 248, 0.06); }
+        .legend-row.highlighted-gold { border-color: var(--accent-gold); background: rgba(245, 158, 11, 0.06); }
+        .legend-row.highlighted-purple { border-color: var(--accent-purple); background: rgba(168, 85, 247, 0.06); }
+        .legend-row.highlighted-red { border-color: var(--accent-red); background: rgba(239, 68, 68, 0.06); }
+        .legend-row.highlighted-green { border-color: var(--accent-green); background: rgba(16, 185, 129, 0.06); }
+        .legend-row.highlighted-white { border-color: #fff; background: rgba(255, 255, 255, 0.08); }
+
+        .col-badge {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .col-letter {
+            color: var(--text-muted);
+            margin-right: 4px;
+        }
+
+        .col-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .col-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .col-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.35;
+        }
+
+        .visual-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
         
-        .box { position: absolute; background: rgba(0, 0, 0, 0.7); border: 2px dashed #facc15; color: #facc15; display: flex; align-items: center; justify-content: center; font-weight: bold; text-align: center; text-shadow: 1px 1px 2px black; }
-        .box span { padding: 5px; background: rgba(0,0,0,0.8); }
-        
-        .title-box { top: 10%; left: 5%; width: 50%; height: 10%; font-size: 2rem; }
-        .date-box { top: 5%; left: 5%; width: 30%; height: 5%; font-size: 1.5rem; color: #38bdf8; border-color: #38bdf8; }
-        .subtitle-box { top: 22%; left: 5%; width: 50%; height: 5%; font-size: 1.2rem; color: #a855f7; border-color: #a855f7; }
-        .info-box { top: 30%; left: 5%; width: 50%; height: 20%; font-size: 1.5rem; color: #4ade80; border-color: #4ade80; }
-        
-        .time-box { top: 10%; right: 5%; width: 20%; height: 8%; font-size: 1.5rem; color: #fb923c; border-color: #fb923c; }
-        .price-box { top: 20%; right: 5%; width: 20%; height: 8%; font-size: 1.5rem; color: #ef4444; border-color: #ef4444; }
-        
-        .qr-box { bottom: 10%; right: 5%; width: 200px; height: 200px; color: #fff; border-color: #fff; }
-        .footer-qr-box { bottom: 5%; left: 5%; width: 100px; height: 100px; color: #aaa; border-color: #aaa; font-size: 0.8rem; }
-        
-        .bg-text { font-size: 3rem; color: #555; text-shadow: none; z-index: 10; border: none; background: transparent; }
-        
-        .legend { margin-top: 30px; background: #222; padding: 20px; border-radius: 8px; width: 1240px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .legend-item { display: flex; align-items: center; gap: 10px; }
-        .legend-color { width: 20px; height: 20px; border: 2px dashed; }
+        .visual-indicator.blue { background-color: var(--accent-blue); box-shadow: 0 0 8px var(--accent-blue); }
+        .visual-indicator.gold { background-color: var(--accent-gold); box-shadow: 0 0 8px var(--accent-gold); }
+        .visual-indicator.purple { background-color: var(--accent-purple); box-shadow: 0 0 8px var(--accent-purple); }
+        .visual-indicator.red { background-color: var(--accent-red); box-shadow: 0 0 8px var(--accent-red); }
+        .visual-indicator.green { background-color: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); }
+        .visual-indicator.white { background-color: #fff; box-shadow: 0 0 8px #fff; }
+        .visual-indicator.grey { background-color: #555; }
     </style>
 </head>
 <body>
-    <h1>ct-MATRIX CSV Mapping Diagram</h1>
-    <p>Visual representation of where each CSV column is rendered on the 1080p slide display.</p>
+    <header>
+        <h1>ct-MATRIX CSV Mapping Diagram</h1>
+        <p>Interactive cheat-sheet detailing how each column in the published Google Sheet maps to the slide display. Hover over any element or legend item to trace its layout placement.</p>
+    </header>
 
-    <div class="slide-container">
-        <div class="bg-layer">
-            <div class="bg-text">Column 17: Background Image Path (e.g. _backgrounds/quiz.png)<br>Column 18: Font Color Overrides</div>
+    <!-- Interactive Mock Slide -->
+    <div class="slide-wrapper">
+        <!-- Background Layer Mockup -->
+        <div class="slide-bg-mock"></div>
+
+        <!-- Col 18: Background visual trigger -->
+        <div id="bg-layer-mock" class="mock-trigger" data-cols="18 25">
+            <span class="bg-layer-tag">Col 18: Slide Background / Col 25: Zoom</span>
         </div>
-        
-        <div class="box date-box"><span>Column 0: Date</span></div>
-        <div class="box title-box"><span>Column 3: Title</span></div>
-        <div class="box subtitle-box"><span>Column 2: Subtitle / Event Type</span></div>
-        <div class="box info-box"><span>Column 4: Info / Description<br>Column 6: Sub Info 2<br>Column 7: Sub Info 3</span></div>
-        
-        <div class="box time-box"><span>Column 5: Time</span></div>
-        <div class="box price-box"><span>Column 8: Price / Extra Info</span></div>
-        
-        <div class="box qr-box"><span>Column 13: Feature QR URL<br>Column 15: Primary Media / Video</span></div>
-        <div class="box footer-qr-box"><span>Column 14:<br>Footer QR</span></div>
-        
-        <div class="box" style="bottom: 5%; right: 25%; width: 20%; height: 5%; border-color: #f43f5e; color: #f43f5e; font-size: 1rem;">
-            <span>Column 16: Custom Slide Duration (Seconds)</span>
+
+        <!-- Col 19: Foreground overlay image trigger -->
+        <div id="fg-layer-mock" class="mock-trigger" data-cols="19">
+            <span class="fg-layer-tag">Col 19: Foreground Image Overlay</span>
+        </div>
+
+        <!-- Top metadata configuration triggers (Duration, Transitions, Locks) -->
+        <div class="top-meta-overlay">
+            <div id="meta-duration" class="meta-tag-box mock-trigger" data-cols="17">⏱️ Col 17: Slide Duration</div>
+            <div id="meta-transition" class="meta-tag-box mock-trigger" data-cols="24">🎬 Col 24: Transition</div>
+            <div id="meta-locks" class="meta-tag-box mock-trigger" data-cols="21 22 23">🔒 Cols 21-23: Locks (Slide/Day/Time)</div>
+        </div>
+
+        <!-- Premium Event Card Mockup -->
+        <div class="premium-card-mock">
+            <!-- Event Type Badge (Cols 2, 0, 6) -->
+            <div id="badge-mock" class="mock-trigger" data-cols="2 0 6">
+                Tonight: Sports
+            </div>
+
+            <!-- Title (Col 3) -->
+            <h1 id="title-mock" class="mock-trigger" data-cols="3">
+                Col 3: Event Name
+            </h1>
+
+            <!-- Accent Bar (Col 12) -->
+            <div id="accent-bar-mock" class="mock-trigger" data-cols="12"></div>
+
+            <!-- Description (Col 4) -->
+            <div id="desc-mock" class="mock-trigger" data-cols="4">
+                Col 4: Details / Subtitle (Paragraph info text supporting Shift+Enter linebreaks).
+            </div>
+        </div>
+
+        <!-- Footer Row Mockup -->
+        <div class="footer-row-mock">
+            <!-- Footer Left: Date / Day (Cols 0, 1) -->
+            <div id="footer-left-mock" class="mock-trigger" data-cols="0 1">
+                📅 Col 0: Date / Col 1: Day
+            </div>
+
+            <!-- Footer Center: Price, Time, disclaimer (Cols 7, 6, 9) -->
+            <div class="footer-center-mock">
+                <div class="footer-badges-mock">
+                    <div id="price-badge-mock" class="mock-trigger" data-cols="7">
+                        Col 7: Price
+                    </div>
+                    <div id="time-pill-mock" class="mock-trigger" data-cols="6">
+                        ⏰ Col 6: Start Time
+                    </div>
+                </div>
+                <div id="footer-text-mock" class="mock-trigger" data-cols="9">
+                    Col 9: Slide Footer Text
+                </div>
+            </div>
+
+            <!-- Footer Right: QR Code (Cols 14, 15, 16) -->
+            <div id="footer-right-mock" class="mock-trigger" data-cols="14 15 16">
+                <div class="qr-label-mock">
+                    Cols 14-16:<br>QR Code URL
+                </div>
+                <div class="qr-placeholder-mock">QR</div>
+            </div>
         </div>
     </div>
 
-    <div class="legend">
-        <div class="legend-item"><div class="legend-color" style="border-color: #38bdf8;"></div>Column 0: Date</div>
-        <div class="legend-item"><div class="legend-color" style="border-color: #a855f7;"></div>Column 1/2: Day / Event Type (Subtitle)</div>
-        <div class="legend-item"><div class="legend-color" style="border-color: #facc15;"></div>Column 3: Title</div>
-        <div class="legend-item"><div class="legend-color" style="border-color: #4ade80;"></div>Column 4, 6, 7: Main Info & Sub Info</div>
-        <div class="legend-item"><div class="legend-color" style="border-color: #fb923c;"></div>Column 5: Time</div>
-        <div class="legend-item"><div class="legend-color" style="border-color: #ef4444;"></div>Column 8: Price</div>
-        <div class="legend-item"><div class="legend-color" style="border-color: #fff;"></div>Column 13: Main QR Code URL</div>
-        <div class="legend-item"><div class="legend-color" style="border-color: #aaa;"></div>Column 14: Footer QR Code URL</div>
-        <div class="legend-item"><div class="legend-color" style="border-color: transparent; background: #555;"></div>Column 17: Custom Background Image</div>
-        <div class="legend-item"><div class="legend-color" style="border-color: #f43f5e;"></div>Column 16: Slide Duration Override (secs)</div>
+    <!-- Interactive Grid Legend -->
+    <div class="legend-container">
+        <div class="legend-header">
+            <h2 class="legend-title">GSheet Column Reference</h2>
+            <span class="legend-subtitle">Full 26-column schema mapping (A-Z)</span>
+        </div>
+
+        <div class="legend-grid">
+            <!-- Col 0 -->
+            <div class="legend-row" data-col="0">
+                <div class="col-badge"><span class="col-letter">A</span>0</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator blue"></div>Date</span>
+                    <span class="col-desc">Event date. Renders in footer-left & drives Tonight/Today tag.</span>
+                </div>
+            </div>
+
+            <!-- Col 1 -->
+            <div class="legend-row" data-col="1">
+                <div class="col-badge"><span class="col-letter">B</span>1</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator blue"></div>Day</span>
+                    <span class="col-desc">Day name fallback (e.g. EVERY MONDAY) in footer-left.</span>
+                </div>
+            </div>
+
+            <!-- Col 2 -->
+            <div class="legend-row" data-col="2">
+                <div class="col-badge"><span class="col-letter">C</span>2</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator gold"></div>Event Type</span>
+                    <span class="col-desc">Categorization (Rugby, Karaoke, Quiz). Drives badges & fallback styles.</span>
+                </div>
+            </div>
+
+            <!-- Col 3 -->
+            <div class="legend-row" data-col="3">
+                <div class="col-badge"><span class="col-letter">D</span>3</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator white"></div>Event Name</span>
+                    <span class="col-desc">Primary slide title. Font-size autofits to prevent line wrapping.</span>
+                </div>
+            </div>
+
+            <!-- Col 4 -->
+            <div class="legend-row" data-col="4">
+                <div class="col-badge"><span class="col-letter">E</span>4</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator purple"></div>Details</span>
+                    <span class="col-desc">Main descriptive text area. Supports Shift+Enter line breaks.</span>
+                </div>
+            </div>
+
+            <!-- Col 5 -->
+            <div class="legend-row" data-col="5">
+                <div class="col-badge"><span class="col-letter">F</span>5</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator grey"></div>Billboard Text</span>
+                    <span class="col-desc">Custom short description used specifically for LED Billboard.</span>
+                </div>
+            </div>
+
+            <!-- Col 6 -->
+            <div class="legend-row" data-col="6">
+                <div class="col-badge"><span class="col-letter">G</span>6</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator gold"></div>Start Time</span>
+                    <span class="col-desc">Start time (e.g. 7:30 PM). Renders as a pill in footer-center.</span>
+                </div>
+            </div>
+
+            <!-- Col 7 -->
+            <div class="legend-row" data-col="7">
+                <div class="col-badge"><span class="col-letter">H</span>7</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator red"></div>Price</span>
+                    <span class="col-desc">Price or special entry terms. Renders as a pulsing red footer pill.</span>
+                </div>
+            </div>
+
+            <!-- Col 8 -->
+            <div class="legend-row" data-col="8">
+                <div class="col-badge"><span class="col-letter">I</span>8</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator grey"></div>Location</span>
+                    <span class="col-desc">Location filter setting or specific venue area.</span>
+                </div>
+            </div>
+
+            <!-- Col 9 -->
+            <div class="legend-row" data-col="9">
+                <div class="col-badge"><span class="col-letter">J</span>9</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator white"></div>Slide Footer</span>
+                    <span class="col-desc">Small disclaimer/footer text at the bottom-center.</span>
+                </div>
+            </div>
+
+            <!-- Col 10 -->
+            <div class="legend-row" data-col="10">
+                <div class="col-badge"><span class="col-letter">K</span>10</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator grey"></div>Slide Type</span>
+                    <span class="col-desc">Layout templates (e.g. Event, Promo, MENU, SOCIAL LINK).</span>
+                </div>
+            </div>
+
+            <!-- Col 11 -->
+            <div class="legend-row" data-col="11">
+                <div class="col-badge"><span class="col-letter">L</span>11</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator grey"></div>Hidden Notes</span>
+                    <span class="col-desc">Internal admin logs. Checked for "TBC" to auto-skip slides.</span>
+                </div>
+            </div>
+
+            <!-- Col 12 -->
+            <div class="legend-row" data-col="12">
+                <div class="col-badge"><span class="col-letter">M</span>12</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator gold"></div>Accent Hex Colour</span>
+                    <span class="col-desc">Custom hex code (e.g., #FFD700) to override theme colors.</span>
+                </div>
+            </div>
+
+            <!-- Col 13 -->
+            <div class="legend-row" data-col="13">
+                <div class="col-badge"><span class="col-letter">N</span>13</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator grey"></div>Countdown Finish</span>
+                    <span class="col-desc">Target timestamp used for visual countdown clock templates.</span>
+                </div>
+            </div>
+
+            <!-- Col 14 -->
+            <div class="legend-row" data-col="14">
+                <div class="col-badge"><span class="col-letter">O</span>14</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator gold"></div>Feature QR</span>
+                    <span class="col-desc">Main QR Code URL. Renders in the footer-right section.</span>
+                </div>
+            </div>
+
+            <!-- Col 15 -->
+            <div class="legend-row" data-col="15">
+                <div class="col-badge"><span class="col-letter">P</span>15</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator gold"></div>Footer QR</span>
+                    <span class="col-desc">Secondary / fallback QR Code URL in the footer.</span>
+                </div>
+            </div>
+
+            <!-- Col 16 -->
+            <div class="legend-row" data-col="16">
+                <div class="col-badge"><span class="col-letter">Q</span>16</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator gold"></div>Hyperlink</span>
+                    <span class="col-desc">Alternative website URL converted to footer QR code.</span>
+                </div>
+            </div>
+
+            <!-- Col 17 -->
+            <div class="legend-row" data-col="17">
+                <div class="col-badge"><span class="col-letter">R</span>17</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator blue"></div>Slide Duration</span>
+                    <span class="col-desc">Active slide display time in seconds (default: 30s).</span>
+                </div>
+            </div>
+
+            <!-- Col 18 -->
+            <div class="legend-row" data-col="18">
+                <div class="col-badge"><span class="col-letter">S</span>18</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator gold"></div>Slide Background</span>
+                    <span class="col-desc">Image filename or Hex Color to set slide background.</span>
+                </div>
+            </div>
+
+            <!-- Col 19 -->
+            <div class="legend-row" data-col="19">
+                <div class="col-badge"><span class="col-letter">T</span>19</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator green"></div>Foreground Image</span>
+                    <span class="col-desc">Fullscreen overlay poster path (ignores central text).</span>
+                </div>
+            </div>
+
+            <!-- Col 20 -->
+            <div class="legend-row" data-col="20">
+                <div class="col-badge"><span class="col-letter">U</span>20</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator grey"></div>Bubble Text</span>
+                    <span class="col-desc">Text for floating promotional badge (e.g. SELLING FAST).</span>
+                </div>
+            </div>
+
+            <!-- Col 21 -->
+            <div class="legend-row" data-col="21">
+                <div class="col-badge"><span class="col-letter">V</span>21</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator blue"></div>Lock Slide</span>
+                    <span class="col-desc">Locks slide visibility to remain in screen rotation permanently.</span>
+                </div>
+            </div>
+
+            <!-- Col 22 -->
+            <div class="legend-row" data-col="22">
+                <div class="col-badge"><span class="col-letter">W</span>22</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator blue"></div>Lock Day</span>
+                    <span class="col-desc">Constrains visibility of slide to specific day only.</span>
+                </div>
+            </div>
+
+            <!-- Col 23 -->
+            <div class="legend-row" data-col="23">
+                <div class="col-badge"><span class="col-letter">X</span>23</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator blue"></div>Lock Time</span>
+                    <span class="col-desc">Constrains visibility of slide to specific hour range.</span>
+                </div>
+            </div>
+
+            <!-- Col 24 -->
+            <div class="legend-row" data-col="24">
+                <div class="col-badge"><span class="col-letter">Y</span>24</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator blue"></div>Transition</span>
+                    <span class="col-desc">Slide load animation style (e.g., Fade, ScrollDown, PanDown).</span>
+                </div>
+            </div>
+
+            <!-- Col 25 -->
+            <div class="legend-row" data-col="25">
+                <div class="col-badge"><span class="col-letter">Z</span>25</div>
+                <div class="col-info">
+                    <span class="col-name"><div class="visual-indicator blue"></div>Zoom</span>
+                    <span class="col-desc">Background image scale zoom factor (e.g., 1.3).</span>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Script to hook up interactive hover triggers -->
+    <script>
+        const mockBoxes = document.querySelectorAll('.mock-trigger');
+        const legendRows = document.querySelectorAll('.legend-row');
+
+        // Helper to determine indicator color based on data-cols list
+        function getColorTheme(boxId) {
+            if (boxId.includes('badge') || boxId.includes('accent') || boxId.includes('time') || boxId.includes('right') || boxId.includes('bg')) {
+                return 'gold';
+            } else if (boxId.includes('title') || boxId.includes('text')) {
+                return 'white';
+            } else if (boxId.includes('desc')) {
+                return 'purple';
+            } else if (boxId.includes('left') || boxId.includes('meta')) {
+                return 'blue';
+            } else if (boxId.includes('price')) {
+                return 'red';
+            } else if (boxId.includes('fg')) {
+                return 'green';
+            }
+            return 'white';
+        }
+
+        mockBoxes.forEach(box => {
+            box.addEventListener('mouseenter', () => {
+                const cols = box.getAttribute('data-cols').split(' ');
+                const theme = getColorTheme(box.id);
+                
+                box.classList.add('highlighted');
+                
+                cols.forEach(col => {
+                    const legendRow = document.querySelector(`.legend-row[data-col="${col}"]`);
+                    if (legendRow) {
+                        legendRow.classList.add('highlighted');
+                        legendRow.classList.add(`highlighted-${theme}`);
+                    }
+                });
+            });
+
+            box.addEventListener('mouseleave', () => {
+                const cols = box.getAttribute('data-cols').split(' ');
+                box.classList.remove('highlighted');
+                
+                cols.forEach(col => {
+                    const legendRow = document.querySelector(`.legend-row[data-col="${col}"]`);
+                    if (legendRow) {
+                        // Reset classes, keeping only base
+                        legendRow.className = 'legend-row';
+                    }
+                });
+            });
+        });
+
+        legendRows.forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                const col = row.getAttribute('data-col');
+                row.classList.add('highlighted');
+                
+                mockBoxes.forEach(box => {
+                    const cols = box.getAttribute('data-cols').split(' ');
+                    if (cols.includes(col)) {
+                        const theme = getColorTheme(box.id);
+                        box.classList.add('highlighted');
+                        row.classList.add(`highlighted-${theme}`);
+                    }
+                });
+            });
+
+            row.addEventListener('mouseleave', () => {
+                row.className = 'legend-row';
+                mockBoxes.forEach(box => {
+                    box.classList.remove('highlighted');
+                });
+            });
+        });
+    </script>
 </body>
 </html>
