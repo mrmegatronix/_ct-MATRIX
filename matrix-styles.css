@@ -167,7 +167,7 @@ body {
   align-items: center;
   padding: 4rem 6rem 220px 6rem; /* Top Right Bottom (large to clear absolute footer) Left */
   text-align: center;
-  gap: 1.8rem;
+  gap: 2.5rem;
   animation: slide-in-epic 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   box-sizing: border-box;
 }
@@ -192,7 +192,7 @@ body {
 /* --- Title --- */
 .premium-title {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(8rem, 11vw, 13rem);
+  font-size: clamp(9rem, 13vw, 15rem);
   font-weight: 900;
   line-height: 1.1;
   color: #fff;
@@ -219,7 +219,7 @@ body {
 
 /* --- Description / Notes --- */
 .premium-desc {
-  font-size: clamp(1.8rem, 2vw, 2.5rem);
+  font-size: clamp(2.8rem, 3.8vw, 4.2rem);
   color: rgba(243, 244, 246, 0.9);
   font-weight: 600;
   line-height: 1.4;
@@ -802,7 +802,7 @@ body {
   align-items: center;
   padding: 4rem 6rem 220px 6rem;
   text-align: center;
-  gap: 2rem;
+  gap: 3.5rem;
   animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   box-sizing: border-box;
 }
@@ -822,7 +822,7 @@ body {
 
 .special-title {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(8.5rem, 12vw, 14rem);
+  font-size: clamp(9.5rem, 13.5vw, 16rem);
   font-weight: 900;
   line-height: 0.9;
   color: #fff;
@@ -831,7 +831,7 @@ body {
 }
 
 .special-desc {
-  font-size: clamp(1.8rem, 2.2vw, 2.8rem);
+  font-size: clamp(2.8rem, 3.8vw, 4.2rem);
   font-weight: 600;
   color: #fff;
   max-width: 85%;
