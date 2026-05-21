@@ -1028,7 +1028,7 @@ function renderActiveSlide() {
     // Call fitText on title and social-handle (always run, even if paused/preview)
     const titleEl = slideEl.querySelector('.premium-title, .special-title, .social-title');
     const handleEl = slideEl.querySelector('.social-handle');
-    if (titleEl) fitText(titleEl, 60);
+    if (titleEl) fitText(titleEl, 40);
     if (handleEl) fitText(handleEl, 32);
 
     // Vertical overspill check (always run, even if paused/preview)
@@ -1043,8 +1043,8 @@ function renderActiveSlide() {
       let titleFontSize = titleFontEl ? parseInt(window.getComputedStyle(titleFontEl).fontSize) : 0;
       let descFontSize = descFontEl ? parseInt(window.getComputedStyle(descFontEl).fontSize) : 0;
 
-      const minTitleSize = 45;
-      const minDescSize = 24;
+      const minTitleSize = 35;
+      const minDescSize = 18;
 
       let loopCount = 0;
       while (cardEl.getBoundingClientRect().bottom > maxBottom && loopCount < 50) {

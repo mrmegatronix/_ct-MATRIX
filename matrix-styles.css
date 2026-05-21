@@ -219,7 +219,7 @@ body {
 
 /* --- Description / Notes --- */
 .premium-desc {
-  font-size: clamp(2rem, 2.5vw, 3rem);
+  font-size: clamp(1.8rem, 2vw, 2.5rem);
   color: rgba(243, 244, 246, 0.9);
   font-weight: 600;
   line-height: 1.4;
@@ -831,7 +831,7 @@ body {
 }
 
 .special-desc {
-  font-size: clamp(2.2rem, 3vw, 3.8rem);
+  font-size: clamp(1.8rem, 2.2vw, 2.8rem);
   font-weight: 600;
   color: #fff;
   max-width: 85%;
