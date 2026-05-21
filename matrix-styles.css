@@ -184,10 +184,10 @@ body {
   z-index: 15;
 }
 
-/* Title — flows in centre, max 75% width, overflow clipped */
+/* Title — flows in centre, max 95% width for maximum impact */
 .premium-title-wrapper {
-  width: 75%;
-  max-width: 75%;
+  width: 95%;
+  max-width: 95%;
   display: flex;
   align-items: center;
   justify-content: center;
