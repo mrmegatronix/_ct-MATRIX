@@ -1117,40 +1117,48 @@ function renderActiveSlide() {
       });
     }
 
-    // Call fitText on title and social-handle (always run, even if paused/preview)
+    // ===== TEXT SIZING RULES =====
+    // Rule 1: Title (Col D) NEVER wraps — fitText shrinks to fit on one line
+    // Rule 2: Title must ALWAYS be larger than description
+    // Rule 3: Description (Col E) minimum = footer text size (~35px)
+
     const titleEl = slideEl.querySelector('.premium-title, .special-title, .social-title');
     const handleEl = slideEl.querySelector('.social-handle');
     if (titleEl) fitText(titleEl, 40);
     if (handleEl) fitText(handleEl, 32);
 
-    // Vertical overspill check — only shrink DESCRIPTION if content actually overlaps footer
-    // Titles are NEVER touched — they stay exactly as CSS + fitText set them
-    // NOTE: cardEl has height:100% so its boundingRect is always the viewport — 
-    //        we must check the actual LAST CONTENT element's bottom instead
+    // Overspill check — only shrink DESCRIPTION if content overlaps footer
     const cardEl = slideEl.querySelector('.premium-card, .special-event-card, .social-card');
-    if (cardEl && cardEl.offsetWidth > 0) {
+    const descFontEl = slideEl.querySelector('.premium-desc, .special-desc');
+    const FOOTER_TEXT_SIZE = 35; // Matches footer clamp(1.4rem, 2vw, 2.2rem) max
+
+    if (cardEl && cardEl.offsetWidth > 0 && descFontEl) {
       const footerEl = slideEl.querySelector('.premium-footer-row');
       const maxBottom = footerEl ? footerEl.getBoundingClientRect().top - 20 : window.innerHeight - 50;
 
-      // Find the actual last content child to measure real content bottom
       const contentChildren = cardEl.querySelectorAll('.premium-tag-wrapper, .premium-title-wrapper, .premium-accent-wrapper, .premium-desc-wrapper, .special-badge, .special-title, .special-desc');
       const lastContent = contentChildren.length > 0 ? contentChildren[contentChildren.length - 1] : null;
 
-      let descFontEl = slideEl.querySelector('.premium-desc, .special-desc, .social-handle');
-      let descFontSize = descFontEl ? parseInt(window.getComputedStyle(descFontEl).fontSize) : 0;
-
-      const minDescSize = 45; // Slightly larger than footer text (~35px)
+      let descFontSize = parseInt(window.getComputedStyle(descFontEl).fontSize);
 
       if (lastContent) {
         let loopCount = 0;
         while (lastContent.getBoundingClientRect().bottom > maxBottom && loopCount < 50) {
-          if (descFontEl && descFontSize > minDescSize) {
+          if (descFontSize > FOOTER_TEXT_SIZE) {
             descFontSize -= 2;
             descFontEl.style.fontSize = descFontSize + 'px';
           } else {
             break;
           }
           loopCount++;
+        }
+      }
+
+      // Rule 2 enforcement: title must always be bigger than description
+      if (titleEl) {
+        const titleSize = parseInt(window.getComputedStyle(titleEl).fontSize);
+        if (descFontSize >= titleSize) {
+          descFontEl.style.fontSize = Math.max(titleSize - 4, FOOTER_TEXT_SIZE) + 'px';
         }
       }
     }
