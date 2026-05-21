@@ -1123,28 +1123,35 @@ function renderActiveSlide() {
     if (titleEl) fitText(titleEl, 40);
     if (handleEl) fitText(handleEl, 32);
 
-    // Vertical overspill check — only shrink DESCRIPTION if card overflows past footer
+    // Vertical overspill check — only shrink DESCRIPTION if content actually overlaps footer
     // Titles are NEVER touched — they stay exactly as CSS + fitText set them
-    // Description floor = slightly above footer text size (~35px) for TV readability
+    // NOTE: cardEl has height:100% so its boundingRect is always the viewport — 
+    //        we must check the actual LAST CONTENT element's bottom instead
     const cardEl = slideEl.querySelector('.premium-card, .special-event-card, .social-card');
     if (cardEl && cardEl.offsetWidth > 0) {
       const footerEl = slideEl.querySelector('.premium-footer-row');
       const maxBottom = footerEl ? footerEl.getBoundingClientRect().top - 20 : window.innerHeight - 50;
+
+      // Find the actual last content child to measure real content bottom
+      const contentChildren = cardEl.querySelectorAll('.premium-tag-wrapper, .premium-title-wrapper, .premium-accent-wrapper, .premium-desc-wrapper, .special-badge, .special-title, .special-desc');
+      const lastContent = contentChildren.length > 0 ? contentChildren[contentChildren.length - 1] : null;
 
       let descFontEl = slideEl.querySelector('.premium-desc, .special-desc, .social-handle');
       let descFontSize = descFontEl ? parseInt(window.getComputedStyle(descFontEl).fontSize) : 0;
 
       const minDescSize = 45; // Slightly larger than footer text (~35px)
 
-      let loopCount = 0;
-      while (cardEl.getBoundingClientRect().bottom > maxBottom && loopCount < 50) {
-        if (descFontEl && descFontSize > minDescSize) {
-          descFontSize -= 2;
-          descFontEl.style.fontSize = descFontSize + 'px';
-        } else {
-          break;
+      if (lastContent) {
+        let loopCount = 0;
+        while (lastContent.getBoundingClientRect().bottom > maxBottom && loopCount < 50) {
+          if (descFontEl && descFontSize > minDescSize) {
+            descFontSize -= 2;
+            descFontEl.style.fontSize = descFontSize + 'px';
+          } else {
+            break;
+          }
+          loopCount++;
         }
-        loopCount++;
       }
     }
 
