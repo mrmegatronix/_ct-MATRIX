@@ -362,6 +362,31 @@
 
       viewport.appendChild(newSlide);
 
+      // Prevent clipping by auto-shrinking text if it exceeds body height (200px)
+      const contentEl = newSlide.querySelector('div[style*="flex-direction:column"]');
+      if (contentEl) {
+        const titleEl = newSlide.querySelector('.title');
+        const subtitleEl = newSlide.querySelector('.subtitle');
+        let titleSize = titleEl ? parseFloat(window.getComputedStyle(titleEl).fontSize) : 0;
+        let subtitleSize = subtitleEl ? parseFloat(window.getComputedStyle(subtitleEl).fontSize) : 0;
+        let loops = 0;
+        while (contentEl.scrollHeight > 170 && loops < 30) {
+          let shrunk = false;
+          if (titleEl && titleSize > 14) {
+            titleSize -= 1;
+            titleEl.style.fontSize = titleSize + 'px';
+            shrunk = true;
+          }
+          if (subtitleEl && subtitleSize > 9) {
+            subtitleSize -= 0.5;
+            subtitleEl.style.fontSize = subtitleSize + 'px';
+            shrunk = true;
+          }
+          if (!shrunk) break;
+          loops++;
+        }
+      }
+
       // Trigger enter animation
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {

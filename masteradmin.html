@@ -23,6 +23,23 @@
       --nav-w: 240px;
       --header-h: 80px;
       --bottom-h: 220px;
+      --card-w: 280px;
+      --card-scale: 0.1458;
+    }
+
+    @media (max-height: 850px) {
+        :root {
+            --bottom-h: 170px;
+            --card-w: 220px;
+            --card-scale: 0.1145;
+        }
+    }
+    @media (max-height: 700px) {
+        :root {
+            --bottom-h: 130px;
+            --card-w: 160px;
+            --card-scale: 0.0833;
+        }
     }
     
     * { box-sizing: border-box; }
@@ -118,36 +135,43 @@
     .nav-side {
         grid-row: 2 / 3;
         background: #020617; border-right: 1px solid var(--border);
-        padding: 0.8rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem;
+        padding: 0.4rem; 
+        overflow-y: auto; 
+        scrollbar-width: none; /* Hide scrollbar for Firefox */
+        display: flex; flex-direction: column; gap: 0.25rem;
+    }
+    .nav-side::-webkit-scrollbar {
+        display: none; /* Hide scrollbar for Chrome/Safari */
     }
 
     .nav-section-title {
         font-size: 0.55rem; text-transform: uppercase; letter-spacing: 2px;
-        color: var(--text-dim); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 6px; opacity: 0.7;
+        color: var(--text-dim); margin-bottom: 0.1rem; display: flex; align-items: center; gap: 4px; opacity: 0.7;
         font-weight: 700;
+        margin-top: 0.4rem;
     }
 
     .nav-link {
-        display: flex; align-items: center; gap: 8px;
-        padding: 8px 12px; border-radius: 8px; color: var(--text-dim);
-        text-decoration: none; font-size: 0.85rem; font-weight: 600;
-        transition: 0.2s; cursor: pointer; margin-bottom: 4px;
+        display: flex; align-items: center; gap: 6px;
+        padding: 4px 8px; border-radius: 6px; color: var(--text-dim);
+        text-decoration: none; font-size: 0.72rem; font-weight: 600;
+        transition: 0.2s; cursor: pointer; margin-bottom: 1px;
     }
     .nav-link:hover { color: #fff; background: rgba(255,255,255,0.08); }
     .nav-link.active { color: var(--accent); background: rgba(6, 182, 212, 0.1); font-weight: 800; }
 
     /* TREE STYLES - COMPACTED */
-    .tree-node { margin-bottom: 0.5rem; }
+    .tree-node { margin-bottom: 0.15rem; }
     .tree-header { 
-        padding: 8px 12px; font-size: 0.9rem; font-weight: 700; color: #fff; 
-        cursor: pointer; display: flex; align-items: center; gap: 10px;
+        padding: 4px 8px; font-size: 0.72rem; font-weight: 700; color: #fff; 
+        cursor: pointer; display: flex; align-items: center; gap: 8px;
         background: rgba(255,255,255,0.02); border-radius: 6px;
     }
-    .tree-children { padding-left: 1.2rem; margin-top: 0.2rem; }
+    .tree-children { padding-left: 0.8rem; margin-top: 0.1rem; }
     .tree-item { 
-        display: block; padding: 6px 12px; font-size: 0.85rem; color: #ccc;
+        display: block; padding: 3px 8px; font-size: 0.7rem; color: #ccc;
         text-decoration: none; border-left: 2px solid var(--border);
-        transition: 0.2s; margin-bottom: 4px;
+        transition: 0.2s; margin-bottom: 1px;
     }
     .tree-item:hover { color: var(--accent); border-left-color: var(--accent); background: rgba(6, 182, 212, 0.05); }
 
@@ -201,9 +225,8 @@
         width: 100%; height: 100%; border: none;
     }
     .scaled-frame {
-        flex-grow: 1; 
+        flex: 1; 
         width: 100%;
-        height: 100%;
         min-height: 0;
         position: relative; 
         background: #000; 
@@ -237,22 +260,44 @@
         grid-column: 1 / -1;
         grid-row: 3 / 4;
         background: #010409; border-top: 1px solid var(--border);
-        padding: 1rem; display: flex; gap: 1rem; overflow-x: auto;
+        padding: 0.5rem 1rem; display: flex; gap: 1rem; overflow-x: auto; overflow-y: hidden;
         z-index: 100;
         scrollbar-width: thin;
         scrollbar-color: var(--surface-bright) transparent;
+        align-items: center;
     }
 
     .monitor-card {
-        flex: 0 0 280px; background: var(--surface); border: 1px solid var(--border);
+        background: var(--surface); border: 1px solid var(--border);
         border-radius: 12px; overflow: hidden; transition: 0.3s; cursor: pointer;
         display: flex; flex-direction: column; position: relative;
     }
     .monitor-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    .monitor-thumb { aspect-ratio: 16/9; background: #000; overflow: hidden; position: relative; width: 100%; }
+    
+    .footer-tray .monitor-card {
+        height: calc(var(--bottom-h) - 1.2rem);
+        width: calc((var(--bottom-h) - 1.2rem - 24px) * 16 / 9);
+        flex: 0 0 auto;
+    }
+
+    #playlist-grid .monitor-card {
+        height: auto;
+        width: auto;
+        flex: none;
+    }
+
+    .monitor-thumb { 
+        flex: 1;
+        aspect-ratio: 16/9; 
+        background: #000; 
+        overflow: hidden; 
+        position: relative; 
+        width: auto;
+        container-type: inline-size;
+    }
     .monitor-thumb iframe {
         width: 1920px; height: 1080px; 
-        transform: scale(0.1458); /* 280 / 1920 */
+        transform: scale(calc(100cqw / 1920));
         transform-origin: top left; pointer-events: none;
         border: none;
     }
@@ -261,6 +306,9 @@
         background: rgba(0,0,0,0.8); padding: 4px 10px; font-size: 0.55rem;
         font-weight: 900; color: var(--accent); border-top: 1px solid var(--border);
         display: flex; justify-content: space-between;
+        height: 24px;
+        align-items: center;
+        flex-shrink: 0;
     }
 
     /* HOME VIEW DASHBOARD */
@@ -415,7 +463,7 @@
             </div>
             <button class="ctrl-btn primary" onclick="loadWorkspaceView('HOME')" style="padding: 6px 12px;">DASHBOARD</button>
             <button class="ctrl-btn" onclick="sendMaster('REFRESH')">REFRESH ALL</button>
-            <button class="ctrl-btn" onclick="bc.postMessage({type:'CONFETTI'})">CONFETTI</button>
+            <button class="ctrl-btn" onclick="sendMaster('CONFETTI')">CONFETTI</button>
             <button class="logout-btn" onclick="logout()">LOGOUT</button>
         </div>
     </header>
@@ -429,12 +477,7 @@
             <div class="nav-link" onclick="loadModule('COMMANDER', 'live-commander.html')" style="color: var(--accent)">Live Slide Commander</div>
         </div>
 
-        <div>
-            <div class="nav-section-title">ROTATION CONTROLS</div>
-            <div id="sidebar-toggles" style="padding: 0.5rem; display: flex; flex-direction: column; gap: 8px;">
-                <!-- Toggles injected here -->
-            </div>
-        </div>
+
 
         <div id="module-tree">
             <div class="nav-section-title">CORE INFRASTRUCTURE</div>
@@ -510,7 +553,7 @@
                 <span>A-FRAME (LIVE MONITOR)</span>
             </div>
             <div class="scaled-frame">
-                <iframe id="preview-frame" src="index.html"></iframe>
+                <iframe id="preview-frame" src="index.html" scrolling="no"></iframe>
             </div>
         </div>
 
@@ -527,7 +570,7 @@
                 <span>B-FRAME (BILLBOARD FEED)</span>
             </div>
             <div class="scaled-frame">
-                <iframe id="billboard-frame" src="billboard.html"></iframe>
+                <iframe id="billboard-frame" src="billboard.html" scrolling="no"></iframe>
             </div>
         </div>
     </div>
@@ -547,6 +590,14 @@
 <script>
     const bc = new BroadcastChannel('ct_matrix_sync');
     let pinBuffer = '';
+
+    function getTabId() {
+        if (window.getMatrixTabId) return window.getMatrixTabId();
+        if (!window.matrixTabId) {
+            window.matrixTabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+        return window.matrixTabId;
+    }
 
     function toggleNode(el) {
         const c = el.nextElementSibling;
@@ -623,13 +674,13 @@
         const disabled = config.disabledModules || [];
 
         const modules = [
+            { id: 'MATRIX', name: 'LIVE SLIDES', path: '_ct-MATRIX' },
             { id: 'ACE', name: 'CHASE ACE', path: '_ct-ACE' },
             { id: 'MMR', name: 'MEAT RAFFLE', path: '_ct-MMR' },
             { id: 'KING', name: 'KING BDAY', path: '_ct-KING' },
             { id: 'QUIZ', name: 'WEEKLY QUIZ', path: '_ct-QUIZ' },
             { id: 'WEA', name: 'WEATHER', path: '_ct-WEA' },
-            { id: 'FIR', name: 'FIREPLACE', path: '_ct-FIR' },
-            { id: 'NIM', name: 'NIM MAKER', path: '_ct-NIM' }
+            { id: 'FIR', name: 'FIREPLACE', path: '_ct-FIR' }
         ];
 
         tray.innerHTML = modules.map(m => {
@@ -638,7 +689,7 @@
             if(isDisabled) return ''; // Skip disabled modules to save resources
 
             return `
-                <div class="monitor-card" onclick="loadModule('${m.id}', '../${m.path}/${m.id === 'KING' || m.id === 'WEA' || m.id === 'FIR' || m.id === 'NIM' ? 'index.html' : 'admin.html'}')">
+                <div class="monitor-card" onclick="loadModule('${m.id}', '${m.id === 'MATRIX' ? 'index.html' : `../${m.path}/${m.id === 'KING' || m.id === 'WEA' || m.id === 'FIR' ? 'index.html' : 'admin.html'}`}')">
                     <div class="monitor-thumb"><iframe src="../${m.path}/index.html"></iframe></div>
                     <div class="monitor-label"><span>${m.name}</span> <span style="opacity:0.5">LIVE</span></div>
                 </div>
@@ -657,7 +708,7 @@
         } catch(e) {}
         const disabled = config.disabledModules || [];
 
-        side.innerHTML = ['ACE', 'MMR', 'KING', 'QUIZ', 'WEA', 'FIR', 'NIM'].map(m => {
+        side.innerHTML = ['MATRIX', 'ACE', 'MMR', 'KING', 'QUIZ', 'WEA', 'FIR'].map(m => {
             const fullId = 'ct-' + m.toLowerCase();
             const isChecked = !disabled.includes(fullId);
             return `
@@ -669,7 +720,7 @@
     }
 
     function toggleModule(id, state) {
-        bc.postMessage({type: 'MODULE_FILTER', id, active: state});
+        bc.postMessage({type: 'MODULE_FILTER', id, active: state, senderTabId: getTabId()});
         showToast(`${id} ${state ? 'ENABLED' : 'DISABLED'}`);
         // Delay tray re-render to allow engine to update
         setTimeout(renderMonitorTray, 500);
@@ -683,7 +734,6 @@
         'QUIZ': { main: 'index.html', admin: 'admin.html' },
         'WEA': { main: 'index.html' },
         'FIR': { main: 'index.html' },
-        'NIM': { main: 'index.html' },
         'COMMANDER': { main: 'live-commander.html' }
     };
 
@@ -718,7 +768,14 @@
         showToast('LOADED ' + name);
     }
 
-    function sendMaster(type) { bc.postMessage({type}); showToast('MASTER: ' + type); }
+    function sendMaster(type, id) {
+        const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const timestamp = Date.now();
+        const msg = { type, commandId, timestamp, senderTabId: getTabId() };
+        if (id) msg.id = id;
+        bc.postMessage(msg);
+        showToast('MASTER: ' + type + (id ? ' ' + id : ''));
+    }
 
     function pushLiveSlide() {
         const payload = {
@@ -728,12 +785,12 @@
             accent: document.getElementById('live-accent').value,
             mode: document.getElementById('live-mode').value
         };
-        bc.postMessage({ type: 'LIVE_SLIDE', payload });
+        bc.postMessage({ type: 'LIVE_SLIDE', payload, senderTabId: getTabId() });
         showToast('LIVE SLIDE PUSHED');
     }
 
     function clearLiveSlide() {
-        bc.postMessage({ type: 'LIVE_SLIDE', payload: { active: false } });
+        bc.postMessage({ type: 'LIVE_SLIDE', payload: { active: false }, senderTabId: getTabId() });
         document.getElementById('live-title').value = '';
         document.getElementById('live-detail').value = '';
         showToast('LIVE SLIDE CLEARED');
@@ -856,12 +913,18 @@
                         <div class="monitor-thumb" style="height:120px">
                             ${s.type === 'MODULE' 
                                 ? `<div style="background:#1e293b; height:100%; display:flex; align-items:center; justify-content:center; font-size:0.6rem; color:var(--accent); font-weight:900">MODULE: ${s.id}</div>`
-                                : `<div style="background:url('${s.bgImage}') center/cover; height:100%; position:relative">
-                                     <div style="position:absolute; inset:0; background:rgba(0,0,0,0.6); display:flex; flex-direction:column; justify-content:center; padding:10px">
-                                        <div style="font-size:0.5rem; font-weight:900; color:var(--accent)">${s.subType}</div>
-                                        <div style="font-size:0.7rem; font-weight:800; line-height:1">${s.title.slice(0, 30)}</div>
-                                     </div>
-                                   </div>`
+                                : (() => {
+                                    const isHex = /^#([A-Fa-f0-9]{3,8})$/.test((s.bgImage || '').trim());
+                                    const bgStyle = isHex 
+                                        ? `background: ${s.bgImage};` 
+                                        : (s.bgImage ? `background: url('${s.bgImage}') center/cover;` : `background: #090d16;`);
+                                    return `<div style="${bgStyle} height:100%; position:relative">
+                                             <div style="position:absolute; inset:0; background:rgba(0,0,0,0.6); display:flex; flex-direction:column; justify-content:center; padding:10px">
+                                                <div style="font-size:0.5rem; font-weight:900; color:var(--accent)">${s.subType}</div>
+                                                <div style="font-size:0.7rem; font-weight:800; line-height:1">${s.title ? s.title.slice(0, 30) : ''}</div>
+                                             </div>
+                                           </div>`;
+                                  })()
                             }
                         </div>
                         <div class="monitor-label">

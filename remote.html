@@ -139,30 +139,52 @@
       <a href="../_ct-ACE/index.html" class="nav-link">🃏 ACE</a>
       <a href="../_ct-WEA/index.html" class="nav-link">🌦 WEA</a>
       <a href="../_ct-FIR/index.html" class="nav-link">🔥 FIR</a>
-      <a href="../_ct-NIM/index.html" class="nav-link">🎨 NIM</a>
   </nav>
 
   <script>
     const bc = new BroadcastChannel('ct_matrix_sync');
     const bc_sub = new BroadcastChannel('mom_sync'); // For MOM confetti trigger
 
+    function getClientId() {
+      let id = localStorage.getItem('matrix_client_id');
+      if (!id) {
+        id = 'client_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('matrix_client_id', id);
+      }
+      return id;
+    }
+
+    function getTabId() {
+      if (window.getMatrixTabId) return window.getMatrixTabId();
+      if (!window.matrixTabId) {
+        window.matrixTabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      }
+      return window.matrixTabId;
+    }
+
     function send(type) {
-      bc.postMessage({ type });
+      const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      const timestamp = Date.now();
+      bc.postMessage({ type, commandId, timestamp, source: getClientId(), senderTabId: getTabId() });
       vibrate();
       showStatus('Sent: ' + type);
     }
 
     function jump(id) {
-      bc.postMessage({ type: 'PROJECT', id });
+      const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      const timestamp = Date.now();
+      bc.postMessage({ type: 'PROJECT', id, commandId, timestamp, source: getClientId(), senderTabId: getTabId() });
       vibrate();
       showStatus('Jumping to ' + id);
     }
 
     function celebrate() {
+      const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      const timestamp = Date.now();
       // Send to Matrix (maybe it has its own effect)
-      bc.postMessage({ type: 'CONFETTI' });
+      bc.postMessage({ type: 'CONFETTI', commandId, timestamp, source: getClientId(), senderTabId: getTabId() });
       // Also send to MOM specifically if it's the active iframe
-      bc_sub.postMessage({ type: 'CONFETTI' });
+      bc_sub.postMessage({ type: 'CONFETTI', commandId, timestamp });
       vibrate([100, 50, 100]);
       showStatus('CELEBRATION TRIGGERED');
     }
@@ -180,5 +202,6 @@
       setTimeout(() => el.style.opacity = '0.5', 2000);
     }
   </script>
+  <script type="module" src="firebase-bridge.js"></script>
 </body>
 </html>

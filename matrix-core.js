@@ -8,7 +8,7 @@ window.MATRIX = {
   VERSION: '2.0.0',
   CONFIG: {
     SWAP_DELAY: 30000,
-    MODULE_DELAY: 30000,
+    MODULE_DELAY: 60000,
     SYNC_CHANNEL: 'ct_matrix_sync',
     WEEKS_LOOKAHEAD: 2,
     SHOW_BANNER: true,
@@ -68,6 +68,15 @@ async function initMatrix() {
   
   // 4. Global Broadcast Listeners
   bc.onmessage = (e) => {
+    // Deduplicate action commands using commandId
+    if (e.data.commandId) {
+      if (window.MATRIX.STATE.lastProcessedCommandId === e.data.commandId) {
+        console.log('[MATRIX] Ignoring duplicate BC message:', e.data.type, e.data.commandId);
+        return;
+      }
+      window.MATRIX.STATE.lastProcessedCommandId = e.data.commandId;
+    }
+
     switch(e.data.type) {
       case 'NEXT': window.nextSlide(); break;
       case 'PREV': window.prevSlide(); break;
@@ -113,7 +122,7 @@ async function initMatrix() {
 
   // 6. Hard-lock all active slide durations to 30s (override any internal module timers if needed)
   window.MATRIX.CONFIG.SWAP_DELAY = 30000;
-  window.MATRIX.CONFIG.MODULE_DELAY = 30000;
+  window.MATRIX.CONFIG.MODULE_DELAY = 60000;
 
   // 6. GSheet Watchdog (optional but keeping for consistency)
   if (!window.MATRIX.STATE.watchdog) {
@@ -373,7 +382,11 @@ function getDefaultBackground(eventType, title) {
 function buildSlideQueue(data) {
   const queue = [];
   
+  const disabledModules = window.MATRIX.CONFIG.disabledModules || [];
+  const matrixDisabled = disabledModules.includes('ct-matrix');
+
   // 1. Add Filtered Events from all sources
+  if (!matrixDisabled) {
   data.forEach(week => {
     const events = week.events || [];
     events.forEach(ev => {
@@ -468,20 +481,20 @@ function buildSlideQueue(data) {
           }
     });
   });
+  }
 
   // 2. Weekly Specials are now in the Google Sheet — no hardcoded injection needed.
 
   // 3. Project Modules (Base Infrastructure)
   // Durations are set to allow multiple internal slides (30s each)
-  queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5, duration: 30 });
+  queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5, duration: 60 });
   queue.push({ type: 'MODULE', id: 'ct-wea', url: '../_ct-WEA/index.html', title: "Christchurch Weather", priority: 80, duration: 60 });
   queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5, duration: 180 }); // 6 slides * 30s
   queue.push({ type: 'MODULE', id: 'ct-king', url: '../_ct-KING/index.html', title: "King's Birthday Karaoke", pinned: true, priority: 5, duration: 150 }); // 5 slides * 30s
-  queue.push({ type: 'MODULE', id: 'ct-quiz', url: '../_ct-QUIZ/index.html', title: "Weekly Pub Quiz", priority: 10, duration: 30 });
-  queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, disabled: true, duration: 30 });
+  queue.push({ type: 'MODULE', id: 'ct-quiz', url: '../_ct-QUIZ/index.html', title: "Weekly Pub Quiz", priority: 10, duration: 60 });
+  queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, disabled: true, duration: 60 });
 
   // 4. Apply Module Filters
-  const disabledModules = window.MATRIX.CONFIG.disabledModules || [];
   let filteredQueue = queue.filter(s => {
     if (s.disabled) return false;
     if (s.type === 'MODULE' && disabledModules.includes(s.id)) return false;
@@ -505,6 +518,17 @@ function buildSlideQueue(data) {
 
   window.MATRIX.STATE.slides = filteredQueue;
   console.log(`[MATRIX v2] Queue built with ${filteredQueue.length} slides.`);
+  
+  if (bc) {
+    bc.postMessage({ 
+      type: 'SLIDES_DUMP', 
+      slides: window.MATRIX.STATE.slides, 
+      currentIndex: window.MATRIX.STATE.currentIndex,
+      startTime: window.MATRIX.STATE.currentSlideStartTime,
+      delay: window.MATRIX.STATE.currentSlideDelay,
+      lastSync: new Date().toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false })
+    });
+  }
   
   // If we are already running and the queue changed, we might need to re-render
   if (window.MATRIX.STATE.currentIndex === -1 && filteredQueue.length > 0) {
@@ -866,7 +890,7 @@ function renderActiveSlide() {
       document.documentElement.style.setProperty('--theme-color', moduleColor);
       document.documentElement.style.setProperty('--theme-glow', `${moduleColor}60`);
       
-      slideEl.innerHTML = `<iframe src="${slide.url}" class="module-frame" id="module-${slide.id}"></iframe>`;
+      slideEl.innerHTML = `<iframe src="${slide.url}" class="module-frame" id="module-${slide.id}" onload="try { this.contentDocument.head.insertAdjacentHTML('beforeend', '<style>#progress-bar, #progress-container, .timer-bar { display: none !important; }</style>'); } catch(e) {}"></iframe>`;
     } else {
       const isPromo = slide.type === 'PROMO';
       const isLogo = slide.isLogo || (!slide.title && !slide.subtitle && slide.bgImage && slide.bgImage.includes('LOGO'));
@@ -970,9 +994,19 @@ function renderActiveSlide() {
               <div class="slide-bg-overlay" style="background: radial-gradient(circle at center, transparent 0%, #000 90%);"></div>
             </div>
             <div class="special-event-card">
-              <div class="special-badge animate-tag-enter">Special Event</div>
-              <h1 class="special-title animate-pop-in">${slide.title}</h1>
-              <div class="special-desc animate-content-enter" style="animation-delay: 0.3s;">${slide.subtitle || ''}</div>
+              <div class="premium-tag-wrapper animate-tag-enter">
+                <div class="special-badge">Special Event</div>
+              </div>
+              <div class="premium-title-wrapper animate-pop-in">
+                <h1 class="special-title">${slide.title}</h1>
+              </div>
+              <div class="premium-accent-wrapper animate-content-enter" style="animation-delay: 0.2s;">
+                <div class="accent-bar" style="background: ${themeColor}; box-shadow: 0 0 30px ${themeColor}80;"></div>
+              </div>
+              ${slide.subtitle ? `
+              <div class="premium-desc-wrapper animate-content-enter" style="animation-delay: 0.3s;">
+                <div class="special-desc">${slide.subtitle}</div>
+              </div>` : ''}
             </div>
             ${renderPremiumFooterRow(slide, themeColor)}
         `;
@@ -993,19 +1027,24 @@ function renderActiveSlide() {
           </div>
           <div class="premium-card">
             <!-- 1. Event Type -->
-            <div class="animate-tag-enter">
+            <div class="premium-tag-wrapper animate-tag-enter">
               <span class="day-tag" data-type="${typeKey}" style="background-color: ${color}40; border-color: ${color}; box-shadow: 0 0 40px ${color}60;">${smartTag}</span>
             </div>
 
             <!-- 2. Event Name -->
-            <div class="animate-content-enter" style="animation-delay: 0.1s;">
+            <div class="premium-title-wrapper animate-content-enter" style="animation-delay: 0.1s;">
               <h1 class="premium-title">${slide.title}</h1>
             </div>
 
-            <div class="accent-bar animate-content-enter" style="background: ${color}; box-shadow: 0 0 30px ${color}80; animation-delay: 0.2s;"></div>
+            <div class="premium-accent-wrapper animate-content-enter" style="animation-delay: 0.2s;">
+              <div class="accent-bar" style="background: ${color}; box-shadow: 0 0 30px ${color}80;"></div>
+            </div>
 
             <!-- 3. Details -->
-            ${slide.subtitle ? `<div class="premium-desc animate-content-enter" style="animation-delay: 0.3s;">${String(slide.subtitle).replace(/\n/g, '<br>')}</div>` : ''}
+            ${slide.subtitle ? `
+            <div class="premium-desc-wrapper animate-content-enter" style="animation-delay: 0.3s;">
+              <div class="premium-desc">${String(slide.subtitle).replace(/\n/g, '<br>')}</div>
+            </div>` : ''}
           </div>
           <!-- Consolidated Footer Row (Price, Meta, QR) -->
           ${renderPremiumFooterRow(slide, color)}
@@ -1038,6 +1077,9 @@ function renderActiveSlide() {
       const viewportHeight = window.innerHeight;
       const maxBottom = footerEl ? footerEl.getBoundingClientRect().top - 20 : viewportHeight - 50;
 
+      const titleWrapper = slideEl.querySelector('.premium-title-wrapper');
+      const descWrapper = slideEl.querySelector('.premium-desc-wrapper');
+
       let titleFontEl = titleEl;
       let descFontEl = slideEl.querySelector('.premium-desc, .special-desc, .social-handle');
       let titleFontSize = titleFontEl ? parseInt(window.getComputedStyle(titleFontEl).fontSize) : 0;
@@ -1047,18 +1089,59 @@ function renderActiveSlide() {
       const minDescSize = 18;
 
       let loopCount = 0;
-      while (cardEl.getBoundingClientRect().bottom > maxBottom && loopCount < 50) {
+      while (loopCount < 50) {
+        let needsShrink = false;
+
+        if (titleWrapper && titleFontEl) {
+          if (titleFontEl.scrollHeight > titleWrapper.offsetHeight && titleFontSize > minTitleSize) {
+            needsShrink = true;
+          }
+        }
+        if (descWrapper && descFontEl) {
+          if (descFontEl.scrollHeight > descWrapper.offsetHeight && descFontSize > minDescSize) {
+            needsShrink = true;
+          }
+        }
+
+        if (!titleWrapper && !descWrapper) {
+          const children = Array.from(cardEl.children);
+          if (children.length > 0) {
+            const maxChildBottom = Math.max(...children.map(c => c.getBoundingClientRect().bottom));
+            if (maxChildBottom > maxBottom) {
+              needsShrink = true;
+            }
+          }
+        }
+
+        if (!needsShrink) break;
+
         let shrunk = false;
-        if (titleFontEl && titleFontSize > minTitleSize) {
+        if (titleFontEl && titleFontSize > minTitleSize && 
+            (!titleWrapper || titleFontEl.scrollHeight > titleWrapper.offsetHeight)) {
           titleFontSize -= 3;
           titleFontEl.style.fontSize = titleFontSize + 'px';
           shrunk = true;
         }
-        if (descFontEl && descFontSize > minDescSize) {
+        if (descFontEl && descFontSize > minDescSize && 
+            (!descWrapper || descFontEl.scrollHeight > descWrapper.offsetHeight)) {
           descFontSize -= 2;
           descFontEl.style.fontSize = descFontSize + 'px';
           shrunk = true;
         }
+
+        if (!titleWrapper && !descWrapper) {
+          if (titleFontEl && titleFontSize > minTitleSize) {
+            titleFontSize -= 3;
+            titleFontEl.style.fontSize = titleFontSize + 'px';
+            shrunk = true;
+          }
+          if (descFontEl && descFontSize > minDescSize) {
+            descFontSize -= 2;
+            descFontEl.style.fontSize = descFontSize + 'px';
+            shrunk = true;
+          }
+        }
+
         if (!shrunk) break;
         loopCount++;
       }

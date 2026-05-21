@@ -89,6 +89,14 @@
         document.body.classList.add('compact');
     }
 
+    function getTabId() {
+        if (window.getMatrixTabId) return window.getMatrixTabId();
+        if (!window.matrixTabId) {
+            window.matrixTabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+        return window.matrixTabId;
+    }
+
     function pushLiveSlide() {
         const payload = {
             active: true,
@@ -97,7 +105,7 @@
             accent: document.getElementById('live-accent').value,
             mode: document.getElementById('live-mode').value
         };
-        bc.postMessage({ type: 'LIVE_SLIDE', payload });
+        bc.postMessage({ type: 'LIVE_SLIDE', payload, senderTabId: getTabId() });
         
         // Visual feedback
         const btn = event.target;
@@ -111,7 +119,7 @@
     }
 
     function clearLiveSlide() {
-        bc.postMessage({ type: 'LIVE_SLIDE', payload: { active: false } });
+        bc.postMessage({ type: 'LIVE_SLIDE', payload: { active: false }, senderTabId: getTabId() });
         document.getElementById('live-title').value = '';
         document.getElementById('live-detail').value = '';
         
