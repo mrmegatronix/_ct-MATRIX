@@ -280,7 +280,7 @@ async function loadAllDataSources() {
 // Hardcoded fallback CSV — used ONLY when GSheet + cache both fail.
 // No date field = always passes isEventCurrent(), so this slide is always valid.
 const FALLBACK_CSV = `Date,Day,Event Type,Event Name,Details,Billboard Text,Start Time,Price,Location,Slide Footer,Slide Type,Hidden Notes,Accent Hex Colour,Countdown Finish,Feature QR,Footer QR,Footer Hyperlink,Slide Duration,Slide Background,Foreground Image,Bubble Text,Lock Slide,Lock Day,Lock Time,Transition,Zoom
-,Everyday,Welcome,The Flame,Your premium venue for live entertainment & dining,,,,,,EVENT,,#D4AF37,,,,,,images/GOLD-FLAME-LOGO-BLACK-CLEAN.png,,,,,Fade,`;
+,Everyday,,,,,,,,,,,,,,,,,,images/GOLD-FLAME-LOGO-BLACK-CLEAN.png,,,,,Fade,`;
 
 async function fetchCloudCSV() {
   const url = window.MATRIX.CONFIG.GSHEETS_URL;
