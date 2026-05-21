@@ -39,6 +39,7 @@ const bc = new BroadcastChannel(window.MATRIX.CONFIG.SYNC_CHANNEL);
 async function initMatrix() {
   console.log('[MATRIX v2] Booting premium display engine...');
   
+  try {
   loadPersistedState();
   
   // 1. Load Data Sources in Parallel
@@ -46,6 +47,13 @@ async function initMatrix() {
   
   // 2. Build Slide Queue
   buildSlideQueue(data);
+  } catch (bootErr) {
+    console.error('[MATRIX] Boot error during data load/queue build:', bootErr);
+    // Even if data loading failed, buildSlideQueue with empty data still adds modules
+    if (window.MATRIX.STATE.slides.length === 0) {
+      try { buildSlideQueue([]); } catch(e) { /* last resort */ }
+    }
+  }
   
   // 3. Start Rotation or Preview
   const urlParams = new URLSearchParams(window.location.search);
@@ -128,10 +136,20 @@ async function initMatrix() {
   if (!window.MATRIX.STATE.watchdog) {
     window.MATRIX.STATE.lastModifiedTags = {};
     window.MATRIX.STATE.watchdog = setInterval(async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
       try {
         const url = window.MATRIX.CONFIG.GSHEETS_URL;
-        if (!url) return;
-        const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
+        if (!url) {
+          clearTimeout(timeoutId);
+          return;
+        }
+        const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now(), { 
+          method: 'HEAD', 
+          cache: 'no-store',
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
         if (res.ok) {
           const fingerprint = (res.headers.get('Content-Length') || '') + (res.headers.get('Last-Modified') || '');
           if (window.MATRIX.STATE.lastModifiedTags['gsheet'] && window.MATRIX.STATE.lastModifiedTags['gsheet'] !== fingerprint) {
@@ -142,7 +160,11 @@ async function initMatrix() {
           }
           window.MATRIX.STATE.lastModifiedTags['gsheet'] = fingerprint;
         }
-      } catch (e) {}
+      } catch (e) {
+        // Ignore error
+      } finally {
+        clearTimeout(timeoutId);
+      }
     }, 60000); // Check GSheet every minute instead of every 3 seconds
   }
 
@@ -241,30 +263,63 @@ function setupHeaderAutoHide() {
 async function loadAllDataSources() {
   try {
     const events = await fetchCloudCSV();
-    if (events && events.length > 0) {
-      console.log(`[MATRIX] Loaded ${events[0].events.length} events from Google Sheet (single source of truth).`);
+    if (events && events.length > 0 && events[0].events && events[0].events.length > 0) {
+      console.log(`[MATRIX] Loaded ${events[0].events.length} events from data source.`);
       return events;
     }
   } catch (e) {
-    console.error('[MATRIX] Google Sheet fetch failed:', e);
+    console.error('[MATRIX] Data source fetch failed:', e);
   }
-  console.warn('[MATRIX] No data loaded from Google Sheet.');
-  return [];
+  // Ultimate safety net: always return at least the hardcoded fallback
+  console.warn('[MATRIX] All data sources empty — using hardcoded fallback.');
+  return getHardcodedFallback('loadAllDataSources-empty');
 }
 
 
 
+// Hardcoded fallback CSV — used ONLY when GSheet + cache both fail.
+// No date field = always passes isEventCurrent(), so this slide is always valid.
+const FALLBACK_CSV = `Date,Day,Event Type,Event Name,Details,Billboard Text,Start Time,Price,Location,Slide Footer,Slide Type,Hidden Notes,Accent Hex Colour,Countdown Finish,Feature QR,Footer QR,Footer Hyperlink,Slide Duration,Slide Background,Foreground Image,Bubble Text,Lock Slide,Lock Day,Lock Time,Transition,Zoom
+,Everyday,Welcome,The Flame,Your premium venue for live entertainment & dining,,,,,,EVENT,,#D4AF37,,,,,,images/GOLD-FLAME-LOGO-BLACK-CLEAN.png,,,,,Fade,`;
+
 async function fetchCloudCSV() {
   const url = window.MATRIX.CONFIG.GSHEETS_URL;
-  if (!url) return [];
+  if (!url) return getHardcodedFallback('no-url');
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 6000);
   try {
-    const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
+    const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now(), { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const csv = await res.text();
-    return parseCSVToEvents(csv);
+    if (csv && csv.trim().length > 10) {
+      try { localStorage.setItem('matrix_cached_csv', csv); } catch(e) { /* quota */ }
+      console.log('[MATRIX] GSheet loaded OK (' + csv.length + ' bytes)');
+      return parseCSVToEvents(csv);
+    }
   } catch (e) {
-    console.error('[MATRIX] Cloud GSheet failed', e);
-    return [];
+    console.warn('[MATRIX] GSheet fetch failed:', e.message || e);
+  } finally {
+    clearTimeout(timeoutId);
   }
+
+  // Fallback 1: localStorage cache
+  try {
+    const cached = localStorage.getItem('matrix_cached_csv');
+    if (cached && cached.trim().length > 10) {
+      console.log('[MATRIX] Using cached CSV fallback.');
+      return parseCSVToEvents(cached);
+    }
+  } catch (e) { /* ignore */ }
+
+  // Fallback 2: hardcoded welcome slide (always valid, no date = never filtered)
+  return getHardcodedFallback('all-sources-failed');
+}
+
+function getHardcodedFallback(reason) {
+  console.warn('[MATRIX] Using HARDCODED fallback slide. Reason:', reason);
+  return parseCSVToEvents(FALLBACK_CSV);
 }
 
 function parseCSVToEvents(text) {
@@ -582,6 +637,7 @@ function fitText(el, minSize = 40) {
     if (!el) return;
     const parent = el.parentElement;
     if (!parent) return;
+    if (parent.offsetWidth === 0) return;
     
     // Reset to base size first to measure correctly
     el.style.fontSize = '';
@@ -777,7 +833,9 @@ window.jumpToProject = jumpToProject;
  * Generates the premium TV-quality DOM structure for each slide.
  */
 function renderActiveSlide() {
-  const slide = window.MATRIX.STATE.slides[window.MATRIX.STATE.currentIndex];
+  const s = window.MATRIX.STATE;
+  if (s.currentIndex < 0 || s.currentIndex >= s.slides.length) return;
+  const slide = s.slides[s.currentIndex];
   const container = document.getElementById('slide-viewport');
   
   const delay = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
@@ -1072,7 +1130,7 @@ function renderActiveSlide() {
 
     // Vertical overspill check (always run, even if paused/preview)
     const cardEl = slideEl.querySelector('.premium-card, .special-event-card, .social-card');
-    if (cardEl) {
+    if (cardEl && cardEl.offsetWidth > 0) {
       const footerEl = slideEl.querySelector('.premium-footer-row');
       const viewportHeight = window.innerHeight;
       const maxBottom = footerEl ? footerEl.getBoundingClientRect().top - 20 : viewportHeight - 50;
@@ -1147,18 +1205,31 @@ function renderActiveSlide() {
       }
     }
 
+    const bar = document.getElementById('progress-bar');
+    if (bar) {
+      if (slide.type === 'MODULE') {
+        bar.style.display = 'none';
+      } else {
+        bar.style.display = '';
+      }
+    }
+
     if (!window.MATRIX.STATE.isPaused) {
       const delay = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
       window.MATRIX.STATE.timer = setTimeout(nextSlide, delay);
       
-      const bar = document.getElementById('progress-bar');
-      if (bar) {
+      if (bar && slide.type !== 'MODULE') {
         bar.style.transition = 'none';
         bar.style.width = '0%';
         requestAnimationFrame(() => {
           bar.style.transition = `width ${delay}ms linear`;
           bar.style.width = '100%';
         });
+      }
+    } else {
+      if (bar) {
+        bar.style.transition = 'none';
+        bar.style.width = '0%';
       }
     }
 
