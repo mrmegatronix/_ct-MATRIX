@@ -530,8 +530,11 @@ function getSmartTag(slide) {
     // Filtered out past events already, but safety check
     if (diffDays < 0) return typeLabel; 
     
-    // Apply "Tonight" or "Tomorrow"
-    if (diffDays === 0) return `Tonight: ${typeLabel}`;
+    // Apply "Tonight"/"Today" or "Tomorrow"
+    if (diffDays === 0) {
+      const hasTime = slide.time && slide.time.trim() !== '' && !/all\s*day/i.test(slide.time);
+      return hasTime ? `Tonight: ${typeLabel}` : `Today: ${typeLabel}`;
+    }
     if (diffDays === 1) return `Tomorrow: ${typeLabel}`;
 
     // Monday-to-Sunday logic for "This Week" vs "Next Week"
@@ -1103,7 +1106,7 @@ function renderPremiumFooterRow(slide, color) {
   const subtitleLower = (slide.subtitle || '').toLowerCase();
   const timeRedundant = timeStr && (titleLower.includes(timeStr.toLowerCase()) || subtitleLower.includes(timeStr.toLowerCase()));
   
-  const dateStr = slide.date ? formatDate(slide.date) : '';
+  const dateStr = slide.date ? formatDate(slide.date, timeStr) : '';
   const dayStr = slide.meta ? 'EVERY ' + String(slide.meta).split(' ')[0].toUpperCase() : '';
   const locStr = slide.location ? '📍 ' + slide.location : '';
   
@@ -1178,7 +1181,7 @@ function parseMatrixDate(dateStr) {
 /**
  * Date Formatting Helper
  */
-function formatDate(dateStr) {
+function formatDate(dateStr, timeStr) {
   try {
     const d = parseMatrixDate(dateStr);
     if (!d) return dateStr;
@@ -1188,7 +1191,10 @@ function formatDate(dateStr) {
     const evDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
     const diffDays = Math.round((evDay - today) / (1000 * 60 * 60 * 24));
     
-    if (diffDays === 0) return 'Tonight';
+    if (diffDays === 0) {
+      const hasTime = timeStr && timeStr.trim() !== '' && !/all\s*day/i.test(timeStr);
+      return hasTime ? 'Tonight' : 'Today';
+    }
     if (diffDays === 1) return 'Tomorrow';
     
     return d.toLocaleDateString('en-NZ', { weekday: 'long', day: 'numeric', month: 'long' });
