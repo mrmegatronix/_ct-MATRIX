@@ -173,7 +173,12 @@ async function initMatrix() {
     const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
     document.documentElement.style.setProperty('--module-scale', scale);
   }
-  window.addEventListener('resize', resizeModules);
+  window.addEventListener('resize', () => {
+    resizeModules();
+    if (typeof adjustActiveSlideText === 'function') {
+      adjustActiveSlideText();
+    }
+  });
   resizeModules();
 }
 
@@ -653,6 +658,64 @@ function fitText(el, minSize = 40) {
     }
 }
 
+function adjustActiveSlideText() {
+  const slideEl = document.getElementById('slide-target');
+  if (!slideEl) return;
+
+  const titleEl = slideEl.querySelector('.premium-title, .special-title, .social-title, .band-gig-title');
+  const handleEl = slideEl.querySelector('.social-handle');
+  const descFontEl = slideEl.querySelector('.premium-desc, .special-desc, .band-gig-subtitle');
+  
+  // Rule 1: Fit title text, keep floor readable (70px)
+  if (titleEl) {
+    fitText(titleEl, 70);
+  }
+  if (handleEl) {
+    fitText(handleEl, 32);
+  }
+
+  // Overspill check
+  const cardEl = slideEl.querySelector('.premium-card, .special-event-card, .social-card, .band-gig-overlay');
+  const FOOTER_TEXT_SIZE = 35;
+
+  if (cardEl && descFontEl) {
+    // Reset description font-size to stylesheet default first so we can measure clean
+    descFontEl.style.fontSize = '';
+    
+    const cardWidth = cardEl.offsetWidth;
+    const footerEl = slideEl.querySelector('.premium-footer-row');
+    const maxBottom = footerEl ? footerEl.getBoundingClientRect().top - 20 : window.innerHeight - 50;
+
+    const contentChildren = cardEl.querySelectorAll('.premium-tag-wrapper, .premium-title-wrapper, .premium-accent-wrapper, .premium-desc-wrapper, .special-badge, .special-title, .special-desc, .band-gig-title, .band-gig-subtitle');
+    const lastContent = contentChildren.length > 0 ? contentChildren[contentChildren.length - 1] : null;
+
+    let descFontSize = parseInt(window.getComputedStyle(descFontEl).fontSize);
+
+    // If cardWidth > 0, we can run the overspill shrink logic
+    if (cardWidth > 0 && lastContent) {
+      let loopCount = 0;
+      while (lastContent.getBoundingClientRect().bottom > maxBottom && loopCount < 50) {
+        if (descFontSize > FOOTER_TEXT_SIZE) {
+          descFontSize -= 2;
+          descFontEl.style.fontSize = descFontSize + 'px';
+        } else {
+          break;
+        }
+        loopCount++;
+      }
+    }
+
+    // Rule 2 enforcement: title must always be bigger than description
+    if (titleEl) {
+      const titleSize = parseInt(window.getComputedStyle(titleEl).fontSize);
+      if (descFontSize >= titleSize) {
+        descFontEl.style.fontSize = Math.max(titleSize - 4, FOOTER_TEXT_SIZE) + 'px';
+      }
+    }
+  }
+}
+window.adjustActiveSlideText = adjustActiveSlideText;
+
 function isEventCurrent(dateOrStr, subType) {
     if (!dateOrStr) return true;
     const evDate = (dateOrStr instanceof Date) ? dateOrStr : parseMatrixDate(dateOrStr);
@@ -1107,60 +1170,20 @@ function renderActiveSlide() {
 
     container.appendChild(slideEl);
     
+    adjustActiveSlideText();
+
     if (isKing) {
       slideEl.classList.add('active');
+      requestAnimationFrame(() => {
+        adjustActiveSlideText();
+      });
     } else {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           slideEl.classList.add('active');
+          adjustActiveSlideText();
         });
       });
-    }
-
-    // ===== TEXT SIZING RULES =====
-    // Rule 1: Title (Col D) NEVER wraps — fitText shrinks to fit on one line
-    // Rule 2: Title must ALWAYS be larger than description
-    // Rule 3: Description (Col E) minimum = footer text size (~35px)
-
-    const titleEl = slideEl.querySelector('.premium-title, .special-title, .social-title');
-    const handleEl = slideEl.querySelector('.social-handle');
-    if (titleEl) fitText(titleEl, 40);
-    if (handleEl) fitText(handleEl, 32);
-
-    // Overspill check — only shrink DESCRIPTION if content overlaps footer
-    const cardEl = slideEl.querySelector('.premium-card, .special-event-card, .social-card');
-    const descFontEl = slideEl.querySelector('.premium-desc, .special-desc');
-    const FOOTER_TEXT_SIZE = 35; // Matches footer clamp(1.4rem, 2vw, 2.2rem) max
-
-    if (cardEl && cardEl.offsetWidth > 0 && descFontEl) {
-      const footerEl = slideEl.querySelector('.premium-footer-row');
-      const maxBottom = footerEl ? footerEl.getBoundingClientRect().top - 20 : window.innerHeight - 50;
-
-      const contentChildren = cardEl.querySelectorAll('.premium-tag-wrapper, .premium-title-wrapper, .premium-accent-wrapper, .premium-desc-wrapper, .special-badge, .special-title, .special-desc');
-      const lastContent = contentChildren.length > 0 ? contentChildren[contentChildren.length - 1] : null;
-
-      let descFontSize = parseInt(window.getComputedStyle(descFontEl).fontSize);
-
-      if (lastContent) {
-        let loopCount = 0;
-        while (lastContent.getBoundingClientRect().bottom > maxBottom && loopCount < 50) {
-          if (descFontSize > FOOTER_TEXT_SIZE) {
-            descFontSize -= 2;
-            descFontEl.style.fontSize = descFontSize + 'px';
-          } else {
-            break;
-          }
-          loopCount++;
-        }
-      }
-
-      // Rule 2 enforcement: title must always be bigger than description
-      if (titleEl) {
-        const titleSize = parseInt(window.getComputedStyle(titleEl).fontSize);
-        if (descFontSize >= titleSize) {
-          descFontEl.style.fontSize = Math.max(titleSize - 4, FOOTER_TEXT_SIZE) + 'px';
-        }
-      }
     }
 
     const bar = document.getElementById('progress-bar');
@@ -1385,3 +1408,11 @@ function handleLiveSlide(payload) {
 }
 
 window.initMatrix = initMatrix;
+
+if (document.fonts) {
+  document.fonts.ready.then(() => {
+    if (typeof adjustActiveSlideText === 'function') {
+      adjustActiveSlideText();
+    }
+  });
+}
