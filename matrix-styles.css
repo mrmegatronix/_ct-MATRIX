@@ -236,7 +236,7 @@ body {
 /* --- Title --- */
 .premium-title {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(11.5rem, 16vw, 19.5rem);
+  font-size: clamp(6rem, 8.5vw, 9.5rem);
   font-weight: 900;
   line-height: 1.1;
   color: #fff;
@@ -339,7 +339,7 @@ body {
 
 .band-gig-title {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(6.5rem, 9vw, 11rem);
+  font-size: clamp(6rem, 8.5vw, 9.5rem);
   font-weight: 900;
   line-height: 1.1;
   color: #fff;
@@ -792,7 +792,7 @@ body {
 
 .social-title {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(6rem, 10vw, 12rem);
+  font-size: clamp(6rem, 8.5vw, 9.5rem);
   font-weight: 900;
   line-height: 1;
   color: #fff;
@@ -866,7 +866,7 @@ body {
 
 .special-title {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(11.5rem, 16vw, 19.5rem);
+  font-size: clamp(6rem, 8.5vw, 9.5rem);
   font-weight: 900;
   line-height: 0.9;
   color: #fff;

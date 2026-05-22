@@ -644,7 +644,7 @@ function fitText(el, minSize = 40) {
     el.style.whiteSpace = 'nowrap';
     
     let fontSize = parseInt(window.getComputedStyle(el).fontSize);
-    const maxWidth = parent.offsetWidth * 0.95;
+    const maxWidth = Math.min(parent.offsetWidth || window.innerWidth, window.innerWidth * 0.90);
 
     // Fast reduction loop — shrink until it fits, never wrap
     while (el.scrollWidth > maxWidth && fontSize > minSize) {
