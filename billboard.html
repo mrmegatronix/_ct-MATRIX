@@ -75,18 +75,18 @@
       align-items: center;
       justify-content: center;
       opacity: 0;
-      transform: translateY(20px) scale(0.95);
-      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: translateX(-40px);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .slide.active {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: translateX(0);
     }
 
     .slide.exit {
       opacity: 0;
-      transform: translateY(-20px) scale(0.95);
+      transform: translateX(40px);
     }
 
     /* Premium Background System */
@@ -571,12 +571,12 @@
     }
 
     @keyframes popIn {
-      0% { opacity: 0; transform: translateY(10px) scale(0.9); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
+      0% { opacity: 0; transform: translateY(40px); }
+      100% { opacity: 1; transform: translateY(0); }
     }
 
     @keyframes content-enter {
-      0% { transform: translateY(20px); opacity: 0; }
+      0% { transform: translateY(30px); opacity: 0; }
       100% { transform: translateY(0); opacity: 1; }
     }
 
@@ -970,6 +970,7 @@
         oldSlide.classList.remove('active');
         oldSlide.classList.add('exit');
         setTimeout(() => oldSlide.remove(), 500);
+        setTimeout(() => oldSlide.remove(), 600);
       }
 
       // Format Meta (Time / Date)
