@@ -254,12 +254,13 @@ body {
 
 /* --- Accent Divider Bar --- */
 .accent-bar {
-  width: 150px;
+  width: 75%;
   height: 6px;
   border-radius: 3px;
   margin: 0 auto;
   background: var(--theme-color);
   box-shadow: 0 0 30px var(--theme-glow);
+  animation: pulse-glow-bar 3s infinite ease-in-out;
 }
 
 /* --- Description / Notes --- */
