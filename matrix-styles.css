@@ -867,8 +867,9 @@ body {
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.5rem;
-  box-shadow: 0 0 50px rgba(245, 158, 11, 0.6);
+  box-shadow: 0 0 50px var(--theme-glow);
   margin-bottom: 1rem;
+  animation: pulse-glow-small 3s infinite ease-in-out;
 }
 
 .special-title {
