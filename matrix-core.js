@@ -969,7 +969,12 @@ function renderActiveSlide() {
   setTimeout(() => {
     // Remove old slide
     const existing = document.getElementById('slide-target');
-    if (existing) existing.remove();
+    if (existing) {
+      existing.removeAttribute('id');
+      existing.classList.remove('active');
+      existing.classList.add('exit');
+      setTimeout(() => existing.remove(), 1200);
+    }
 
     // Create fresh slide element
     const slideEl = document.createElement('div');
