@@ -1271,16 +1271,18 @@ function renderPremiumFooterRow(slide, color) {
           </div>
         ` : ''}
         ${timeStr && !timeRedundant ? `<div class="premium-meta-item time-pill">⏰ ${timeStr}</div>` : ''}
-        ${showFooter ? `<div class="premium-footer">${slide.footer}</div>` : ''}
       </div>
 
-      <!-- Right: QR Code (Less Dense ECC Level L) -->
+      <!-- Right: Footer Text & QR Code -->
       <div class="footer-right">
-        ${showQR ? `
-          <div class="footer-qr-group">
-            <div class="footer-qr-img">
-              <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=L&data=${encodeURIComponent(qrData)}" alt="QR">
-            </div>
+        ${(showFooter || showQR) ? `
+          <div class="premium-meta-item footer-combined-box">
+            ${showFooter ? `<div class="premium-footer">${String(slide.footer).replace(/\n/g, '<br>')}</div>` : ''}
+            ${showQR ? `
+              <div class="footer-qr-img">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=L&data=${encodeURIComponent(qrData)}" alt="QR">
+              </div>
+            ` : ''}
           </div>
         ` : ''}
       </div>

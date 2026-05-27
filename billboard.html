@@ -331,6 +331,18 @@
       max-width: 120px;
     }
 
+    .footer-combined-box {
+      gap: 6px;
+      padding: 3px 8px;
+    }
+    .footer-combined-box .premium-footer {
+      white-space: normal;
+      text-align: right;
+      max-width: 150px;
+      line-height: 1.1;
+      color: #fff;
+    }
+
     /* Logo Zoom & Flame Animations */
     .logo-wrapper {
       position: relative;
@@ -991,6 +1003,14 @@
 
           <!-- Right: QR Code is suppressed for Billboard -->
           <div class="footer-right"></div>
+      <!-- Right: Footer Text (Billboard suppresses QR) -->
+      <div class="footer-right">
+        ${showFooter ? `
+          <div class="premium-meta-item footer-combined-box">
+            <div class="premium-footer">${String(slide.footer).replace(/\n/g, '<br>')}</div>
+          </div>
+        ` : ''}
+      </div>
         </div>
       `;
     }
