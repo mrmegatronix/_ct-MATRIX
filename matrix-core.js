@@ -1117,7 +1117,7 @@ function renderActiveSlide() {
                 <h1 class="special-title">${slide.title}</h1>
               </div>
               <div class="premium-accent-wrapper animate-content-enter" style="animation-delay: 0.2s;">
-                <div class="accent-bar" style="background: ${themeColor}; box-shadow: 0 0 30px ${themeColor}80;"></div>
+                <div class="accent-bar" style="background: ${themeColor};"></div>
               </div>
               ${slide.subtitle ? `
               <div class="premium-desc-wrapper animate-content-enter" style="animation-delay: 0.3s;">
@@ -1144,7 +1144,7 @@ function renderActiveSlide() {
           <div class="premium-card">
             <!-- 1. Event Type -->
             <div class="premium-tag-wrapper animate-tag-enter">
-              <span class="day-tag" data-type="${typeKey}" style="background-color: ${color}40; border-color: ${color}; box-shadow: 0 0 40px ${color}60;">${smartTag}</span>
+              <span class="day-tag" data-type="${typeKey}" style="background-color: ${color}40; border-color: ${color};">${smartTag}</span>
             </div>
 
             <!-- 2. Event Name -->
@@ -1153,7 +1153,7 @@ function renderActiveSlide() {
             </div>
 
             <div class="premium-accent-wrapper animate-content-enter" style="animation-delay: 0.2s;">
-              <div class="accent-bar" style="background: ${color}; box-shadow: 0 0 30px ${color}80;"></div>
+              <div class="accent-bar" style="background: ${color};"></div>
             </div>
 
             <!-- 3. Details -->
@@ -1259,7 +1259,7 @@ function renderPremiumFooterRow(slide, color) {
       <!-- Center: Price & Time -->
       <div class="footer-center">
         ${showPrice ? `
-          <div class="price-badge" style="animation: pulse-glow 3s infinite; box-shadow: 0 0 60px ${color}80;">
+          <div class="price-badge">
             <div class="price-badge-inner"><span class="price-text">${slide.price}</span></div>
           </div>
         ` : ''}
