@@ -1062,9 +1062,9 @@ function renderActiveSlide() {
               <div style="position:absolute; inset:0; background: radial-gradient(circle at center, ${accent}22 0%, #000 70%);"></div>
             </div>
             <div style="position:relative; z-index:10; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; text-align:center; padding: 5rem;">
-              <div class="text-label" style="font-size: 2rem; letter-spacing: 10px; color: ${accent}; margin-bottom: 2rem; font-weight: 900;">LIVE BROADCAST</div>
-              <div class="slide-title" style="font-size: 8rem; font-weight: 900; line-height: 0.9; margin-bottom: 3rem; color: #fff; text-shadow: 0 0 50px ${accent}44;">${slide.title}</div>
-              <div class="slide-subtitle" style="font-size: 3rem; color: #94a3b8; font-weight: 600; max-width: 1200px;">${slide.detail || ''}</div>
+              <div class="text-label animate-content-enter" style="animation-delay: 0.1s; font-size: 2rem; letter-spacing: 10px; color: ${accent}; margin-bottom: 2rem; font-weight: 900;">LIVE BROADCAST</div>
+              <div class="slide-title animate-content-enter" style="animation-delay: 0.2s; font-size: 8rem; font-weight: 900; line-height: 0.9; margin-bottom: 3rem; color: #fff; text-shadow: 0 0 50px ${accent}44;">${slide.title}</div>
+              <div class="slide-subtitle animate-content-enter" style="animation-delay: 0.3s; font-size: 3rem; color: #94a3b8; font-weight: 600; max-width: 1200px;">${slide.detail || ''}</div>
             </div>
             <div style="position: absolute; bottom: 4rem; width: 100%; text-align: center; font-family: 'JetBrains Mono'; font-size: 1.2rem; color: ${accent}; opacity: 0.5;">
               MATRIX LIVE ALERT SYSTEM v1.0
@@ -1077,13 +1077,13 @@ function renderActiveSlide() {
               <div style="position:absolute; inset:0; background: radial-gradient(circle at center, var(--theme-color)22 0%, #000 70%);"></div>
             </div>
             <div class="social-card">
-              <div class="social-icon animate-float">${icon}</div>
-              <div class="social-title animate-pop-in">${slide.title}</div>
-              <div class="social-handle animate-pop-in" style="animation-delay: 0.2s;">${slide.subtitle || ''}</div>
-              <div class="social-qr-wrapper">
+              <div class="social-icon animate-pop-in" style="animation-delay: 0.1s;"><div class="animate-float" style="display:inline-block">${icon}</div></div>
+              <div class="social-title animate-pop-in" style="animation-delay: 0.2s;">${slide.title}</div>
+              <div class="social-handle animate-pop-in" style="animation-delay: 0.3s;">${slide.subtitle || ''}</div>
+              <div class="social-qr-wrapper animate-pop-in" style="animation-delay: 0.4s;">
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(slide.qr || slide.footerLink || '')}" alt="Social QR">
               </div>
-              <div class="social-cta animate-content-enter" style="animation-delay: 0.8s;">Scan to Follow</div>
+              <div class="social-cta animate-content-enter" style="animation-delay: 0.5s;">Scan to Follow</div>
             </div>
         `;
       } else if (slide.type === 'MENU') {
@@ -1093,13 +1093,13 @@ function renderActiveSlide() {
               <div class="slide-bg-overlay" style="background: linear-gradient(to right, rgba(0,0,0,0.4) 0%, transparent 40%);"></div>
             </div>
             <div class="menu-overlay-ui">
-              <div class="menu-sidebar animate-tag-enter">
-                <div class="menu-badge">MENU</div>
-                <h1 class="menu-title">${slide.title || 'Today\'s Menu'}</h1>
-                <div class="menu-accent" style="background: var(--theme-color);"></div>
-                ${slide.subtitle ? `<div class="menu-desc">${slide.subtitle}</div>` : ''}
+              <div class="menu-sidebar">
+                <div class="menu-badge animate-content-enter" style="animation-delay: 0.1s;">MENU</div>
+                <h1 class="menu-title animate-content-enter" style="animation-delay: 0.2s;">${slide.title || 'Today\'s Menu'}</h1>
+                <div class="menu-accent animate-content-enter" style="animation-delay: 0.3s;" style="background: var(--theme-color);"></div>
+                ${slide.subtitle ? `<div class="menu-desc animate-content-enter" style="animation-delay: 0.4s;">${slide.subtitle}</div>` : ''}
                 
-                <div class="menu-qr-box animate-content-enter">
+                <div class="menu-qr-box animate-content-enter" style="animation-delay: 0.5s;">
                   <div class="qr-label">Scan for Full Menu</div>
                   <div class="qr-frame">
                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(slide.qr || slide.footerLink || window.location.href)}">
@@ -1115,17 +1115,17 @@ function renderActiveSlide() {
               <div class="slide-bg-overlay" style="background: radial-gradient(circle at center, transparent 0%, #000 90%);"></div>
             </div>
             <div class="special-event-card">
-              <div class="premium-tag-wrapper animate-tag-enter">
+              <div class="premium-tag-wrapper animate-content-enter" style="animation-delay: 0.1s;">
                 <div class="special-badge">Special Event</div>
               </div>
-              <div class="premium-title-wrapper animate-pop-in">
+              <div class="premium-title-wrapper animate-content-enter" style="animation-delay: 0.2s;">
                 <h1 class="special-title">${slide.title}</h1>
               </div>
               <div class="premium-accent-wrapper animate-content-enter" style="animation-delay: 0.2s;">
                 <div class="accent-bar" style="background: ${themeColor};"></div>
               </div>
               ${slide.subtitle ? `
-              <div class="premium-desc-wrapper animate-content-enter" style="animation-delay: 0.3s;">
+              <div class="premium-desc-wrapper animate-content-enter" style="animation-delay: 0.4s;">
                 <div class="special-desc">${slide.subtitle}</div>
               </div>` : ''}
             </div>
@@ -1148,12 +1148,12 @@ function renderActiveSlide() {
           </div>
           <div class="premium-card">
             <!-- 1. Event Type -->
-            <div class="premium-tag-wrapper animate-tag-enter">
+            <div class="premium-tag-wrapper animate-content-enter" style="animation-delay: 0.1s;">
               <span class="day-tag" data-type="${typeKey}" style="background-color: ${color}40; border-color: ${color};">${smartTag}</span>
             </div>
 
             <!-- 2. Event Name -->
-            <div class="premium-title-wrapper animate-content-enter" style="animation-delay: 0.1s;">
+            <div class="premium-title-wrapper animate-content-enter" style="animation-delay: 0.2s;">
               <h1 class="premium-title">${slide.title}</h1>
             </div>
 
@@ -1163,7 +1163,7 @@ function renderActiveSlide() {
 
             <!-- 3. Details -->
             ${slide.subtitle ? `
-            <div class="premium-desc-wrapper animate-content-enter" style="animation-delay: 0.3s;">
+            <div class="premium-desc-wrapper animate-content-enter" style="animation-delay: 0.4s;">
               <div class="premium-desc">${String(slide.subtitle).replace(/\n/g, '<br>')}</div>
             </div>` : ''}
           </div>
@@ -1255,7 +1255,7 @@ function renderPremiumFooterRow(slide, color) {
   const showFooter = !!slide.footer;
 
   return `
-    <div class="premium-footer-row animate-content-enter" style="animation-delay: 0.6s;">
+    <div class="premium-footer-row">
       <!-- Left: Date/Meta -->
       <div class="footer-left">
         ${showMeta ? `<div class="premium-meta"><div class="premium-meta-item">${dateStr || dayStr}</div></div>` : ''}
