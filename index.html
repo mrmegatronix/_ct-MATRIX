@@ -29,6 +29,38 @@
     }
     .ctrl-btn:hover { background: var(--neon-gold); color: #000; transform: scale(1.1); }
     .ctrl-btn:active { transform: scale(0.9); }
+
+    /* Locks the footer row to the bottom and builds the missing 'box' */
+    .premium-footer-row {
+      position: absolute;
+      bottom: 40px; 
+      left: 5%;
+      width: 90%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.75); 
+      border-radius: 15px;
+      padding: 15px 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      border: 2px solid var(--theme-color, #f59e0b);
+      backdrop-filter: blur(10px);
+    }
+    .footer-center {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+    .premium-footer {
+      font-size: 32px;
+      color: #ffffff;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
   </style>
 </head>
 <body>
