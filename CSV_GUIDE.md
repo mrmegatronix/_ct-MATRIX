@@ -119,8 +119,8 @@ The system automatically assigns premium background assets based on the **Event 
 
 ---
 
-## 4. CT-WEA (Weather)
-**File Path**: `D:\__GITHUB\_ct-WEA\local-backup.csv`
+## 4. CT-WEA1 (Weather)
+**File Path**: `D:\__GITHUB\_ct-WEA1\local-backup.csv`
 **Headers**: `Date,Day,Time,Event Type,Title,Description,Price,QR Code URL`
 
 ---

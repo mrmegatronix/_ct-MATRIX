@@ -548,7 +548,7 @@ function buildSlideQueue(data) {
   // 3. Project Modules (Base Infrastructure)
   // Durations are set to allow multiple internal slides (30s each)
   queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5, duration: 60 });
-  queue.push({ type: 'MODULE', id: 'ct-wea', url: '../_ct-WEA/index.html', title: "Christchurch Weather", priority: 80, duration: 60 });
+  queue.push({ type: 'MODULE', id: 'ct-wea1', url: '../_ct-WEA1/index.html', title: "Christchurch Weather", priority: 80, duration: 60 });
   queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5, duration: 180 }); // 6 slides * 30s
   queue.push({ type: 'MODULE', id: 'ct-king', url: '../_ct-KING/index.html', title: "King's Birthday Karaoke", pinned: true, priority: 5, duration: 150 }); // 5 slides * 30s
   queue.push({ type: 'MODULE', id: 'ct-quiz', url: '../_ct-QUIZ/index.html', title: "Weekly Pub Quiz", priority: 10, duration: 60 });

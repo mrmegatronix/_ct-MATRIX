@@ -518,9 +518,9 @@
                 </div>
             </div>
             <div class="tree-node">
-                <div class="tree-header" onclick="toggleNode(this)">_ct-WEA (Weather)</div>
+                <div class="tree-header" onclick="toggleNode(this)">_ct-WEA1 (Weather)</div>
                 <div class="tree-children" style="display:none">
-                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('WEA', '../_ct-WEA/index.html')">Live Conditions</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('WEA1', '../_ct-WEA1/index.html')">Live Conditions</a>
                 </div>
             </div>
             <div class="tree-node">
@@ -690,7 +690,7 @@
             { id: 'MMR', name: 'MEAT RAFFLE', path: '_ct-MMR' },
             { id: 'KING', name: 'KING BDAY', path: '_ct-KING' },
             { id: 'QUIZ', name: 'WEEKLY QUIZ', path: '_ct-QUIZ' },
-            { id: 'WEA', name: 'WEATHER', path: '_ct-WEA' },
+            { id: 'WEA1', name: 'WEATHER', path: '_ct-WEA1' },
             { id: 'FIR', name: 'FIREPLACE', path: '_ct-FIR' }
         ];
 
@@ -700,7 +700,7 @@
             if(isDisabled) return ''; // Skip disabled modules to save resources
 
             return `
-                <div class="monitor-card" onclick="loadModule('${m.id}', '${m.id === 'MATRIX' ? 'index.html' : `../${m.path}/${m.id === 'KING' || m.id === 'WEA' || m.id === 'FIR' ? 'index.html' : 'admin.html'}`}')">
+                <div class="monitor-card" onclick="loadModule('${m.id}', '${m.id === 'MATRIX' ? 'index.html' : `../${m.path}/${m.id === 'KING' || m.id === 'WEA1' || m.id === 'FIR' ? 'index.html' : 'admin.html'}`}')">
                     <div class="monitor-thumb"><iframe src="../${m.path}/index.html" scrolling="no"></iframe></div>
                     <div class="monitor-label"><span>${m.name}</span> <span style="opacity:0.5">LIVE</span></div>
                 </div>
@@ -719,7 +719,7 @@
         } catch(e) {}
         const disabled = config.disabledModules || [];
 
-        side.innerHTML = ['MATRIX', 'ACE', 'MMR', 'KING', 'QUIZ', 'WEA', 'FIR'].map(m => {
+        side.innerHTML = ['MATRIX', 'ACE', 'MMR', 'KING', 'QUIZ', 'WEA1', 'FIR'].map(m => {
             const fullId = 'ct-' + m.toLowerCase();
             const isChecked = !disabled.includes(fullId);
             return `
@@ -743,7 +743,7 @@
         'MMR': { main: 'index.html', admin: 'admin.html' },
         'KING': { main: 'index.html', admin: 'admin.html' },
         'QUIZ': { main: 'index.html', admin: 'admin.html' },
-        'WEA': { main: 'index.html' },
+        'WEA1': { main: 'index.html' },
         'FIR': { main: 'index.html' },
         'COMMANDER': { main: 'live-commander.html' }
     };
