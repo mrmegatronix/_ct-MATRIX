@@ -172,10 +172,10 @@ slideEl.innerHTML = `
       <div class="slide-bg-overlay" style="background: rgba(0,0,0,0.85);"></div>
     </div>
     <div class="premium-card">
-      <div class="day-tag" style="background: ${themeColor}40; border-color: ${themeColor};">${slide.subType || 'TEST'}</div>
-      <h1 class="premium-title">${slide.title}</h1>
-      <div class="accent-bar" style="background: ${themeColor};"></div>
-      ${slide.subtitle ? `<div class="premium-desc">${slide.subtitle}</div>` : ''}
+      <div class="day-tag animate-content-enter" style="animation-delay: 0.1s; background: ${themeColor}40; border-color: ${themeColor};">${slide.subType || 'TEST'}</div>
+      <h1 class="premium-title animate-content-enter" style="animation-delay: 0.2s;">${slide.title}</h1>
+      <div class="accent-bar animate-content-enter" style="animation-delay: 0.3s; background: ${themeColor};"></div>
+      ${slide.subtitle ? `<div class="premium-desc animate-content-enter" style="animation-delay: 0.4s;">${slide.subtitle}</div>` : ''}
       ${slide.price ? `<div class="price-badge"><div class="price-badge-inner">${slide.price}</div></div>` : ''}
       ${slide.qr ? `<div style="margin-top:2rem; background:#fff; padding:10px; border-radius:10px; display:inline-block;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.qr)}" style="width:150px; height:150px; display:block;"></div>` : ''}
     </div>
