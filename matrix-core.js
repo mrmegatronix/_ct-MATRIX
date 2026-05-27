@@ -1080,10 +1080,12 @@ function renderActiveSlide() {
               <div class="social-icon animate-pop-in" style="animation-delay: 0.1s;"><div class="animate-float" style="display:inline-block">${icon}</div></div>
               <div class="social-title animate-pop-in" style="animation-delay: 0.2s;">${slide.title}</div>
               <div class="social-handle animate-pop-in" style="animation-delay: 0.3s;">${slide.subtitle || ''}</div>
-              <div class="social-qr-wrapper animate-pop-in" style="animation-delay: 0.4s;">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(slide.qr || slide.footerLink || '')}" alt="Social QR">
+              <div class="social-qr-container animate-content-enter" style="animation-delay: 0.4s;">
+                <div class="social-cta">Scan to Follow</div>
+                <div class="social-qr-wrapper">
+                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(slide.qr || slide.footerLink || '')}" alt="Social QR">
+                </div>
               </div>
-              <div class="social-cta animate-content-enter" style="animation-delay: 0.5s;">Scan to Follow</div>
             </div>
         `;
       } else if (slide.type === 'MENU') {
