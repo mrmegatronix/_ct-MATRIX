@@ -58,7 +58,7 @@ function parseCSVToEvents(text) {
   let inQuotes = false;
   for (let i = 0; i < text.length; i++) {
     const char = text[i];
-    const nextChar = text[i+1];
+    const nextChar = text[i + 1];
     if (inQuotes) {
       if (char === '"' && nextChar === '"') { col += '"'; i++; }
       else if (char === '"') inQuotes = false;
@@ -144,31 +144,29 @@ function renderActiveSlide() {
   const slide = window.MATRIX.STATE.slides[window.MATRIX.STATE.currentIndex];
   const container = document.getElementById('slide-viewport');
   if (!container || !slide) return;
-  
+
   clearTimeout(window.MATRIX.STATE.timer);
   const oldSlide = document.getElementById('slide-target');
-  if (oldSlide) oldSlide.remove();
-  if (oldSlide) {
-    oldSlide.removeAttribute('id');
-    oldSlide.classList.remove('active');
-    oldSlide.classList.add('exit');
-    setTimeout(() => oldSlide.remove(), 1200);
-  }
+  if (oldSlide) oveAttribute('id');
+  oldSlide.classList.remove('active');
+  oldSlide.classList.add('exit');
+  setTimeout(() => oldSlide.remove(), 1200);
+}
 
-  const slideEl = document.createElement('div');
-  slideEl.id = 'slide-target';
-  const transitionClass = (slide.transition || 'fade-in').toLowerCase().replace(/\s/g, '-');
-  slideEl.className = 'slide ' + transitionClass;
+const slideEl = document.createElement('div');
+slideEl.id = 'slide-target';
+const transitionClass = (slide.transition || 'fade-in').toLowerCase().replace(/\s/g, '-');
+slideEl.className = 'slide ' + transitionClass;
 
-  if (slide.zoom) {
-    slideEl.setAttribute('data-zoom', 'true');
-    slideEl.style.setProperty('--zoom-level', slide.zoom);
-  }
+if (slide.zoom) {
+  slideEl.setAttribute('data-zoom', 'true');
+  slideEl.style.setProperty('--zoom-level', slide.zoom);
+}
 
-  const themeColor = slide.accentColor || '#f59e0b';
-  document.documentElement.style.setProperty('--theme-color', themeColor);
+const themeColor = slide.accentColor || '#f59e0b';
+document.documentElement.style.setProperty('--theme-color', themeColor);
 
-  slideEl.innerHTML = `
+slideEl.innerHTML = `
     <div class="slide-bg">
       <img src="${slide.bgImage}" style="object-fit: cover; width:100%; height:100%;" onerror="this.src='../images/bg1.jpg'">
       <div class="slide-bg-overlay" style="background: rgba(0,0,0,0.85);"></div>
@@ -189,12 +187,12 @@ function renderActiveSlide() {
     </div>
     ` : ''}
   `;
-  
-  container.appendChild(slideEl);
-  requestAnimationFrame(() => { slideEl.classList.add('active'); });
-  
-  const delay = slide.duration || window.MATRIX.CONFIG.SWAP_DELAY;
-  window.MATRIX.STATE.timer = setTimeout(nextSlide, delay);
+
+container.appendChild(slideEl);
+requestAnimationFrame(() => { slideEl.classList.add('active'); });
+
+const delay = slide.duration || window.MATRIX.CONFIG.SWAP_DELAY;
+window.MATRIX.STATE.timer = setTimeout(nextSlide, delay);
 }
 
 window.initMatrix = initMatrix;
