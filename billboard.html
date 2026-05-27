@@ -867,27 +867,21 @@
       const showMeta = metaText.length > 0;
       const showFooter = !!slide.footer;
 
-      // Build glow style from accent color
-      const glowColor = color || 'var(--theme-color)';
-      const footerGlow = `box-shadow: 0 0 12px ${glowColor}80, 0 0 4px ${glowColor}60, 0 5px 15px rgba(0,0,0,0.5); border-color: ${glowColor};`;
-      const itemGlow = `box-shadow: 0 0 8px ${glowColor}80; border-color: ${glowColor};`;
-      const priceGlow = `box-shadow: 0 0 15px ${glowColor}aa, 0 0 6px ${glowColor}80;`;
-
       return `
-        <div class="premium-footer-row animate-content-enter" style="animation-delay: 0.3s; ${footerGlow}">
+        <div class="premium-footer-row animate-content-enter" style="animation-delay: 0.3s;">
           <!-- Left: Date/Meta -->
           <div class="footer-left">
-            ${showMeta ? `<div class="premium-meta"><div class="premium-meta-item" style="${itemGlow}">${dateStr || dayStr}</div></div>` : ''}
+            ${showMeta ? `<div class="premium-meta"><div class="premium-meta-item">${dateStr || dayStr}</div></div>` : ''}
           </div>
 
           <!-- Center: Price & Time -->
           <div class="footer-center">
             ${showPrice ? `
-              <div class="price-badge" style="${priceGlow}">
+              <div class="price-badge">
                 <span class="price-text">${slide.price}</span>
               </div>
             ` : ''}
-            ${timeStr && !timeRedundant ? `<div class="premium-meta-item time-pill" style="${itemGlow}">⏰ ${timeStr}</div>` : ''}
+            ${timeStr && !timeRedundant ? `<div class="premium-meta-item time-pill">⏰ ${timeStr}</div>` : ''}
             ${showFooter ? `<div class="premium-footer">${slide.footer}</div>` : ''}
           </div>
 
