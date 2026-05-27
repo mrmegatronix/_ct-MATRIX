@@ -189,11 +189,9 @@
       text-overflow: ellipsis;
     }
 
-    /* Accent Divider Bar — breaks out of card padding to span full slide width */
+    /* Accent Divider Bar — 75% width, centered */
     .premium-accent-wrapper {
-      width: calc(100% + 40px);
-      margin-left: -20px;
-      margin-right: -20px;
+      width: 100%;
       display: flex;
       justify-content: center;
       z-index: 15;
@@ -201,9 +199,9 @@
     }
 
     .accent-bar {
-      width: 100%;
+      width: 75%;
       height: 3px;
-      border-radius: 0;
+      border-radius: 2px;
       background: var(--theme-color);
       box-shadow: 0 0 12px var(--theme-glow), 0 0 4px var(--theme-glow);
       animation: pulse-glow-bar 3s infinite ease-in-out;
@@ -1085,7 +1083,9 @@
             <div class="special-event-card">
               <div class="special-badge">Special Event</div>
               <h1 class="special-title">${slide.title || ''}</h1>
-              <div class="accent-bar" style="background: ${themeColor}; box-shadow: 0 0 10px ${themeColor}80;"></div>
+              <div class="premium-accent-wrapper">
+                <div class="accent-bar" style="background: ${themeColor};"></div>
+              </div>
               ${specialDescText ? `<div class="special-desc">${specialDescText}</div>` : ''}
             </div>
             ${renderPremiumFooterRow(slide, themeColor)}
@@ -1124,7 +1124,7 @@
 
             <!-- Accent Divider Bar -->
             <div class="premium-accent-wrapper">
-              <div class="accent-bar" style="background: ${color}; box-shadow: 0 0 10px ${color}80;"></div>
+              <div class="accent-bar" style="background: ${color};"></div>
             </div>
 
             <!-- 3. Details -->
