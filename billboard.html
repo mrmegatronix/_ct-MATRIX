@@ -253,7 +253,6 @@
       box-shadow: 0 0 12px var(--theme-glow), 0 0 4px var(--theme-glow), 0 5px 15px rgba(0,0,0,0.5);
       box-sizing: border-box;
       height: 28px;
-      animation: pulse-glow-small 3s infinite ease-in-out;
       animation: content-enter 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards, pulse-glow-small 3s infinite ease-in-out;
       opacity: 0;
     }
@@ -881,7 +880,6 @@
       const showFooter = !!slide.footer;
 
       return `
-        <div class="premium-footer-row animate-content-enter" style="animation-delay: 0.3s;">
         <div class="premium-footer-row">
           <!-- Left: Date/Meta -->
           <div class="footer-left">
