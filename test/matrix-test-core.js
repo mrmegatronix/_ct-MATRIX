@@ -177,12 +177,17 @@ slideEl.innerHTML = `
       <div class="accent-bar animate-content-enter" style="animation-delay: 0.3s; background: ${themeColor};"></div>
       ${slide.subtitle ? `<div class="premium-desc animate-content-enter" style="animation-delay: 0.4s;">${slide.subtitle}</div>` : ''}
       ${slide.price ? `<div class="price-badge"><div class="price-badge-inner">${slide.price}</div></div>` : ''}
-      ${slide.qr ? `<div style="margin-top:2rem; background:#fff; padding:10px; border-radius:10px; display:inline-block;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.qr)}" style="width:150px; height:150px; display:block;"></div>` : ''}
     </div>
-    ${slide.footer ? `
+    ${(slide.footer || slide.qr) ? `
     <div class="premium-footer-row">
+      <div class="footer-left"></div>
       <div class="footer-center">
-        <div class="premium-footer">${slide.footer}</div>
+      </div>
+      <div class="footer-right">
+        <div class="premium-meta-item footer-combined-box">
+          ${slide.footer ? `<div class="premium-footer">${String(slide.footer).replace(/\n/g, '<br>')}</div>` : ''}
+          ${slide.qr ? `<div class="footer-qr-img"><img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=L&data=${encodeURIComponent(slide.qr)}" alt="QR"></div>` : ''}
+        </div>
       </div>
     </div>
     ` : ''}
