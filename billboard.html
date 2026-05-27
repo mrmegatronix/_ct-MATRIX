@@ -344,7 +344,7 @@
           <div style="position:relative; z-index: 10; display:flex; flex-direction:column; align-items:center;">
               <div class="day-tag anim-delay-1">${tagText}</div>
               <div class="title anim-delay-2">${slide.title || ''}</div>
-              ${(slide.billboardSubtitle || slide.subtitle) ? `<div class="subtitle anim-delay-3">${(slide.billboardSubtitle || slide.subtitle).replace(/<[^>]*>?/gm, '')}</div>` : ''}
+              ${slide.billboardSubtitle ? `<div class="subtitle anim-delay-3">${slide.billboardSubtitle.replace(/<[^>]*>?/gm, '')}</div>` : ''}
               
               <div class="meta anim-delay-3" style="margin-top: 2px;">
                 ${metaText}
