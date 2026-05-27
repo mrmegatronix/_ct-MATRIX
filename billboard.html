@@ -161,6 +161,7 @@
       text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
       white-space: nowrap;
       box-shadow: 0 0 12px var(--theme-glow), 0 0 4px var(--theme-glow);
+      animation: pulse-glow-small 3s infinite ease-in-out;
     }
 
     /* Title */
@@ -188,9 +189,11 @@
       text-overflow: ellipsis;
     }
 
-    /* Accent Divider Bar */
+    /* Accent Divider Bar — breaks out of card padding to span full slide width */
     .premium-accent-wrapper {
-      width: 100%;
+      width: calc(100% + 40px);
+      margin-left: -20px;
+      margin-right: -20px;
       display: flex;
       justify-content: center;
       z-index: 15;
@@ -203,6 +206,7 @@
       border-radius: 0;
       background: var(--theme-color);
       box-shadow: 0 0 12px var(--theme-glow), 0 0 4px var(--theme-glow);
+      animation: pulse-glow-bar 3s infinite ease-in-out;
     }
 
     /* Subtitle / Description */
@@ -251,6 +255,7 @@
       box-shadow: 0 0 12px var(--theme-glow), 0 0 4px var(--theme-glow), 0 5px 15px rgba(0,0,0,0.5);
       box-sizing: border-box;
       height: 28px;
+      animation: pulse-glow-small 3s infinite ease-in-out;
     }
 
     .footer-left {
@@ -590,8 +595,13 @@
     }
 
     @keyframes pulse-glow-small {
+      0%, 100% { box-shadow: 0 0 8px var(--theme-glow), 0 0 2px var(--theme-glow); }
+      50% { box-shadow: 0 0 20px var(--theme-color), 0 0 8px var(--theme-glow); }
+    }
+
+    @keyframes pulse-glow-bar {
       0%, 100% { box-shadow: 0 0 8px var(--theme-glow); }
-      50% { box-shadow: 0 0 15px var(--theme-color); }
+      50% { box-shadow: 0 0 18px var(--theme-color), 0 0 6px var(--theme-glow); }
     }
 
     /* Flame Animations */
