@@ -148,6 +148,12 @@ function renderActiveSlide() {
   clearTimeout(window.MATRIX.STATE.timer);
   const oldSlide = document.getElementById('slide-target');
   if (oldSlide) oldSlide.remove();
+  if (oldSlide) {
+    oldSlide.removeAttribute('id');
+    oldSlide.classList.remove('active');
+    oldSlide.classList.add('exit');
+    setTimeout(() => oldSlide.remove(), 1200);
+  }
 
   const slideEl = document.createElement('div');
   slideEl.id = 'slide-target';
