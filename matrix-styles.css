@@ -73,7 +73,8 @@ body {
   position: absolute;
   inset: 0;
   opacity: 0;
-  transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(-100px);
+  transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -84,7 +85,14 @@ body {
 
 .slide.active {
   opacity: 1;
+  transform: translateX(0);
   z-index: 20;
+}
+
+.slide.exit {
+  opacity: 0;
+  transform: translateX(100px);
+  z-index: 10;
 }
 
 /* Instant Transition Override */
@@ -460,8 +468,8 @@ body {
    ========================================================================== */
 
 @keyframes slide-in-epic {
-  0% { transform: scale(1.05); opacity: 0; filter: blur(10px); }
-  100% { transform: scale(1); opacity: 1; filter: blur(0px); }
+  0% { transform: translateY(80px); opacity: 0; filter: blur(10px); }
+  100% { transform: translateY(0); opacity: 1; filter: blur(0px); }
 }
 
 @keyframes subtleZoom {
@@ -863,7 +871,7 @@ body {
   padding: 14vh 6rem 200px 6rem; /* Match premium-card: top clears tag, bottom clears footer */
   text-align: center;
   gap: 1.5rem;
-  animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slide-in-epic 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   box-sizing: border-box;
   overflow: hidden;
 }
