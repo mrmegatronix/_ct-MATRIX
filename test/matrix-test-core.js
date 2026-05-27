@@ -181,7 +181,6 @@ function renderActiveSlide() {
       ${slide.price ? `<div class="price-badge"><div class="price-badge-inner">${slide.price}</div></div>` : ''}
       ${slide.qr ? `<div style="margin-top:2rem; background:#fff; padding:10px; border-radius:10px; display:inline-block;"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(slide.qr)}" style="width:150px; height:150px; display:block;"></div>` : ''}
     </div>
-
     ${slide.footer ? `
     <div class="premium-footer-row">
       <div class="footer-center">
