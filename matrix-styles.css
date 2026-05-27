@@ -73,7 +73,7 @@ body {
   position: absolute;
   inset: 0;
   opacity: 0;
-  transform: translateX(-100px);
+  transform: translateX(100px);
   transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
@@ -91,7 +91,7 @@ body {
 
 .slide.exit {
   opacity: 0;
-  transform: translateX(100px);
+  transform: translateX(-100px);
   z-index: 10;
 }
 
@@ -176,7 +176,6 @@ body {
   padding: 14vh 6rem 200px 6rem; /* Top clears pinned tag, bottom clears pinned footer */
   text-align: center;
   gap: 1.5rem;
-  animation: slide-in-epic 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -347,7 +346,6 @@ body {
   padding: 5% 6%;
   text-align: center;
   gap: 2rem;
-  animation: slide-in-epic 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .band-gig-title {
@@ -468,7 +466,7 @@ body {
    ========================================================================== */
 
 @keyframes slide-in-epic {
-  0% { transform: translateY(80px); opacity: 0; filter: blur(10px); }
+  0% { transform: translateY(40px); opacity: 0; filter: blur(10px); }
   100% { transform: translateY(0); opacity: 1; filter: blur(0px); }
 }
 
@@ -805,7 +803,6 @@ body {
   padding: 5%;
   text-align: center;
   gap: 3rem;
-  animation: slide-in-epic 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .social-icon {
@@ -871,7 +868,6 @@ body {
   padding: 14vh 6rem 200px 6rem; /* Match premium-card: top clears tag, bottom clears footer */
   text-align: center;
   gap: 1.5rem;
-  animation: slide-in-epic 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -1059,7 +1055,8 @@ body {
   border-radius: 2rem;
   box-shadow: 0 0 25px var(--theme-glow), 0 5px 30px rgba(0,0,0,0.5);
   box-sizing: border-box;
-  animation: content-enter 1s cubic-bezier(0.16, 1, 0.3, 1) forwards, pulse-glow-small 3s infinite ease-in-out;
+  opacity: 0;
+  animation: content-enter 1s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards, pulse-glow-small 3s infinite ease-in-out;
 }
 
 .footer-left, .footer-right {
