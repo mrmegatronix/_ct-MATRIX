@@ -712,6 +712,110 @@
       bc.postMessage({ type: 'GET_SLIDES_DUMP' });
     }, 500);
 
+    function parseMatrixDate(dateStr) {
+      if (!dateStr) return null;
+      if (dateStr instanceof Date) return dateStr;
+      
+      const str = String(dateStr).trim();
+      
+      // 1. ISO Format: YYYY-MM-DD
+      if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(str)) {
+        const [y, m, d] = str.split('-').map(Number);
+        return new Date(y, m - 1, d);
+      }
+      
+      // 2. Slash format: DD/MM/YYYY (NZ/UK) — confirmed live CSV format
+      const parts = str.split('/').map(Number);
+      if (parts.length === 3) {
+        const [d, m, y] = parts;
+        if (m > 12) {
+          return new Date(y, d - 1, m); // Fallback: M/D/YYYY
+        }
+        return new Date(y, m - 1, d); // Default DD/MM/YYYY
+      }
+      
+      const d = new Date(str);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function formatDate(dateStr, timeStr) {
+      try {
+        const d = parseMatrixDate(dateStr);
+        if (!d) return dateStr;
+        
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const evDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const diffDays = Math.round((evDay - today) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 0) {
+          const hasTime = timeStr && timeStr.trim() !== '' && !/all\s*day/i.test(timeStr);
+          return hasTime ? 'Tonight' : 'Today';
+        }
+        if (diffDays === 1) return 'Tomorrow';
+        
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
+      } catch (err) {
+        return dateStr;
+      }
+    }
+
+    function getSmartTag(slide) {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const eventDate = slide.date ? parseMatrixDate(slide.date) : null;
+      const typeLabel = (slide.subType || slide.type || 'Event').toUpperCase();
+      
+      if (!eventDate || slide.type === 'MODULE') return typeLabel;
+
+      const evDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+      const diffDays = Math.round((evDay - today) / (1000 * 60 * 60 * 24));
+
+      if (diffDays < 0) return typeLabel; 
+      
+      if (diffDays === 0) {
+        const hasTime = slide.time && slide.time.trim() !== '' && !/all\s*day/i.test(slide.time);
+        return hasTime ? `Tonight: ${typeLabel}` : `Today: ${typeLabel}`;
+      }
+      if (diffDays === 1) return `Tomorrow: ${typeLabel}`;
+
+      const currentDay = today.getDay(); // 0=Sun, 1=Mon...
+      const daysToNextMonday = (currentDay === 0) ? 1 : (8 - currentDay);
+      const nextMonday = new Date(today);
+      nextMonday.setDate(today.getDate() + daysToNextMonday);
+      nextMonday.setHours(0,0,0,0);
+
+      if (evDay < nextMonday) {
+          return `This Week: ${typeLabel}`;
+      } else if (diffDays <= 14) {
+          return `Next Week: ${typeLabel}`;
+      }
+
+      return typeLabel;
+    }
+
+    function getDefaultBackground(eventType, title) {
+      const t = (eventType || '').toLowerCase();
+      const name = (title || '').toLowerCase();
+      
+      if (t.includes('rugby') || t.includes('nrl') || t.includes('warriors') || t.includes('crusaders') || 
+          name.includes('warriors') || name.includes('crusaders') || name.includes('nrl')) {
+        return '_backgrounds/stadium.png';
+      }
+      
+      if (t.includes('karaoke') || t.includes('band') || t.includes('music') || t.includes('🟠') || t.includes('🟣')) {
+        return '_backgrounds/music.jpg';
+      }
+      
+      if (t.includes('quiz') || name.includes('quiz') || t.includes('trivia') || name.includes('trivia')) {
+        return '_backgrounds/quiz.png';
+      }
+      
+      return '';
+    }
+
     function getHighlightColor(slide) {
       if (slide.accentColor) return slide.accentColor;
       const subType = (slide.subType || '').toLowerCase();
@@ -734,6 +838,46 @@
         'event': '#ffffff'
       };
       return map[subType] || '#f59e0b';
+    }
+
+    function renderPremiumFooterRow(slide, color) {
+      const showPrice = !!slide.price;
+      
+      const timeStr = slide.time || '';
+      const titleLower = (slide.title || '').toLowerCase();
+      const subtitleLower = (slide.billboardSubtitle || '').toLowerCase();
+      const timeRedundant = timeStr && (titleLower.includes(timeStr.toLowerCase()) || subtitleLower.includes(timeStr.toLowerCase()));
+      
+      const dateStr = slide.date ? formatDate(slide.date, timeStr) : '';
+      const dayStr = slide.meta ? 'EVERY ' + String(slide.meta).split(' ')[0].toUpperCase() : '';
+      const locStr = slide.location ? '📍 ' + slide.location : '';
+      
+      const metaText = [dateStr || dayStr, (timeStr && !timeRedundant ? '⏰ ' + timeStr : ''), locStr].filter(Boolean).join(' • ');
+      const showMeta = metaText.length > 0;
+      const showFooter = !!slide.footer;
+
+      return `
+        <div class="premium-footer-row animate-content-enter" style="animation-delay: 0.3s;">
+          <!-- Left: Date/Meta -->
+          <div class="footer-left">
+            ${showMeta ? `<div class="premium-meta"><div class="premium-meta-item">${dateStr || dayStr}</div></div>` : ''}
+          </div>
+
+          <!-- Center: Price & Time -->
+          <div class="footer-center">
+            ${showPrice ? `
+              <div class="price-badge">
+                <span class="price-text">${slide.price}</span>
+              </div>
+            ` : ''}
+            ${timeStr && !timeRedundant ? `<div class="premium-meta-item time-pill">⏰ ${timeStr}</div>` : ''}
+            ${showFooter ? `<div class="premium-footer">${slide.footer}</div>` : ''}
+          </div>
+
+          <!-- Right: QR Code is suppressed for Billboard -->
+          <div class="footer-right"></div>
+        </div>
+      `;
     }
 
     function renderSlide(slide, index, startTime, delay) {
@@ -820,70 +964,182 @@
       const newSlide = document.createElement('div');
       newSlide.className = 'slide';
 
+      const isLogo = slide.isLogo || (!slide.title && !slide.subtitle && slide.bgImage && slide.bgImage.includes('LOGO'));
+      
+      // Process Background (Hex support)
+      const rawBg = slide.bgImage || getDefaultBackground(slide.subType || slide.type, slide.title);
+      const isHex = /^#([A-Fa-f0-9]{3,8})$/.test((rawBg || '').trim());
+      const bgImg = isHex ? '' : rawBg;
+      const bgColor = isHex ? rawBg : '#000000';
+
+      const color = themeColor;
+      const smartTag = getSmartTag(slide);
+      const typeKey = (slide.subType || slide.type || 'Event').toLowerCase();
+
       if (slide.type === 'MODULE') {
         newSlide.innerHTML = `
           <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; border-radius: 8px;">
             <iframe src="${slide.url}" style="width: 1920px; height: 1080px; border: none; transform: scale(0.185185); pointer-events: none; position: absolute;" scrolling="no"></iframe>
           </div>
         `;
-      } else if (slide.fgImage) {
-        // FULLSCREEN IMAGE MODE (Col 19 / T)
+      } else if (isLogo) {
         newSlide.innerHTML = `
-          <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #000;">
-            <img src="${slide.fgImage}" style="width: 100%; height: 100%; object-fit: contain;">
+          <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: ${bgColor};">
+            <div class="logo-wrapper" style="position:relative; height: 120px; display: flex; justify-content: center;">
+              ${bgImg ? `<img src="${bgImg}" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative; opacity: 1; filter: none; animation: none;" />` : ''}
+              <div class="flame-anchor" style="position: absolute; left: 50%; top: ${slide.flamePosition || '60%'};">
+                <div class="flame-container">
+                    <div class="flame-glow"></div>
+                    <div class="flame-core"></div>
+                    <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
+                    <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
+                    <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
+                    <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
+                </div>
+                <!-- Reflection -->
+                <div class="flame-container reflection" style="transform: scaleY(-0.6) translateY(-40px); opacity: 0.3; filter: blur(4px);">
+                    <div class="flame-glow" style="opacity:0.2;"></div>
+                    <div class="flame-core"></div>
+                    <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
+                    <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
+                    <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
+                    <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
+                </div>
+              </div>
+            </div>
+            <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
           </div>
+          ${renderPremiumFooterRow(slide, themeColor)}
+        `;
+      } else if (slide.type === 'LIVE') {
+        const accent = slide.accent || '#06b6d4';
+        const liveSubtitleText = slide.billboardSubtitle || slide.detail || '';
+        newSlide.innerHTML = `
+            <div class="slide-bg" style="background: #000;">
+              <div style="position:absolute; inset:0; background: radial-gradient(circle at center, ${accent}22 0%, #000 70%);"></div>
+            </div>
+            <div class="live-card">
+              <div class="live-label">LIVE BROADCAST</div>
+              <div class="live-title">${slide.title || ''}</div>
+              <div class="live-subtitle">${liveSubtitleText}</div>
+            </div>
+            <div class="live-system-alert">
+              MATRIX LIVE ALERT SYSTEM v1.0
+            </div>
+        `;
+      } else if (slide.type === 'SOCIAL LINK') {
+        const icon = (slide.title || '').toLowerCase().includes('facebook') ? '📘' : ((slide.title || '').toLowerCase().includes('instagram') ? '📸' : '📱');
+        const handleText = slide.billboardSubtitle || slide.subtitle || '';
+        newSlide.innerHTML = `
+            <div class="slide-bg" style="background: #000;">
+              <div style="position:absolute; inset:0; background: radial-gradient(circle at center, var(--theme-color)22 0%, #000 70%);"></div>
+            </div>
+            <div class="social-card">
+              <div class="social-icon animate-float">${icon}</div>
+              <div class="social-title">${slide.title || ''}</div>
+              <div class="social-handle">${handleText}</div>
+            </div>
+        `;
+      } else if (slide.type === 'MENU') {
+        const menuDescText = slide.billboardSubtitle || slide.subtitle || '';
+        newSlide.innerHTML = `
+            <div class="slide-bg" style="background-color: ${bgColor};">
+              ${bgImg ? `<img src="${bgImg}" alt="" class="menu-panning-img">` : ''}
+              <div class="slide-bg-overlay" style="background: linear-gradient(to right, rgba(0,0,0,0.4) 0%, transparent 40%);"></div>
+            </div>
+            <div class="menu-overlay-ui">
+              <div class="menu-sidebar">
+                <div class="menu-badge">MENU</div>
+                <h1 class="menu-title">${slide.title || 'Today\'s Menu'}</h1>
+                <div class="menu-accent"></div>
+                ${menuDescText ? `<div class="menu-desc">${menuDescText}</div>` : ''}
+              </div>
+            </div>
+        `;
+      } else if (slide.type === 'SPECIAL EVENT') {
+        const specialDescText = slide.billboardSubtitle || slide.subtitle || '';
+        newSlide.innerHTML = `
+            <div class="slide-bg" style="background-color: ${bgColor};">
+              ${bgImg ? `<img src="${bgImg}" alt="">` : ''}
+              <div class="slide-bg-overlay" style="background: radial-gradient(circle at center, transparent 0%, #000 90%);"></div>
+            </div>
+            <div class="special-event-card">
+              <div class="special-badge">Special Event</div>
+              <h1 class="special-title">${slide.title || ''}</h1>
+              <div class="accent-bar" style="background: ${themeColor}; box-shadow: 0 0 10px ${themeColor}80;"></div>
+              ${specialDescText ? `<div class="special-desc">${specialDescText}</div>` : ''}
+            </div>
+            ${renderPremiumFooterRow(slide, themeColor)}
+        `;
+      } else if (slide.fgImage) {
+        newSlide.innerHTML = `
+          <div class="slide-bg" style="background: #000;">
+            <img src="${slide.fgImage}" alt="" style="width: 100%; height: 100%; object-fit: contain; animation: none;">
+          </div>
+          ${renderPremiumFooterRow(slide, themeColor)}
         `;
       } else {
         // Countdown Logic
         let countdownHTML = '';
         if (slide.countdownFinish) {
-            countdownHTML = `<div class="countdown-billboard" id="cd-${slide.id}" style="color: var(--theme-color); font-weight: 900; font-size: 0.7rem; margin-top: 5px;"></div>`;
+            countdownHTML = `<div class="countdown-billboard" id="cd-${slide.id}"></div>`;
         }
 
-        newSlide.innerHTML = `
-          <div style="position:relative; z-index: 10; display:flex; flex-direction:column; align-items:center;">
-              <div class="day-tag anim-delay-1">${tagText}</div>
-              <div class="title anim-delay-2">${slide.title || ''}</div>
-              ${slide.billboardSubtitle ? `<div class="subtitle anim-delay-3">${slide.billboardSubtitle.replace(/<[^>]*>?/gm, '')}</div>` : ''}
-              
-              <div class="meta anim-delay-3" style="margin-top: 2px;">
-                ${metaText}
-              </div>
-              
-              ${countdownHTML}
-          </div>
+        const subtitleText = slide.billboardSubtitle || '';
 
-          ${slide.price ? `<div class="price-badge anim-delay-3">${slide.price}</div>` : ''}
-          
-          <!-- Feature QR Only for Billboard -->
-          ${(slide.qr || slide.qrUrl) ? `
-            <div style="position:absolute; left: 10px; bottom: 10px; background: #fff; padding: 3px; border-radius: 4px; box-shadow: 0 0 10px var(--theme-glow); z-index: 20;">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=60x60&data=${encodeURIComponent(slide.qr || slide.qrUrl)}" style="width: 45px; height: 45px; display:block;">
+        newSlide.innerHTML = `
+          <div class="slide-bg" style="background-color: ${bgColor};">
+            ${bgImg ? `<img src="${bgImg}" alt="" loading="eager" />` : ''}
+            <div class="slide-bg-overlay" style="background: rgba(0,0,0,0.85);"></div>
+          </div>
+          <div class="premium-card">
+            <!-- 1. Event Type -->
+            <div class="premium-tag-wrapper">
+              <span class="day-tag" style="background-color: ${color}40; border-color: ${color}; box-shadow: 0 0 10px ${color}60;">${smartTag}</span>
             </div>
-          ` : ''}
+
+            <!-- 2. Event Name -->
+            <div class="premium-title-wrapper">
+              <h1 class="premium-title">${slide.title || ''}</h1>
+            </div>
+
+            <!-- Accent Divider Bar -->
+            <div class="premium-accent-wrapper">
+              <div class="accent-bar" style="background: ${color}; box-shadow: 0 0 10px ${color}80;"></div>
+            </div>
+
+            <!-- 3. Details -->
+            ${subtitleText ? `
+            <div class="premium-desc-wrapper">
+              <div class="premium-desc">${String(subtitleText).replace(/\n/g, '<br>')}</div>
+            </div>` : ''}
+            
+            ${countdownHTML}
+          </div>
+          ${renderPremiumFooterRow(slide, color)}
         `;
       }
 
       viewport.appendChild(newSlide);
 
-      // Prevent clipping by auto-shrinking text if it exceeds body height (200px)
-      const contentEl = newSlide.querySelector('div[style*="flex-direction:column"]');
-      if (contentEl) {
-        const titleEl = newSlide.querySelector('.title');
-        const subtitleEl = newSlide.querySelector('.subtitle');
+      // Prevent clipping by auto-shrinking text if it exceeds body height
+      const cardEl = newSlide.querySelector('.premium-card, .special-event-card, .live-card, .social-card');
+      if (cardEl) {
+        const titleEl = cardEl.querySelector('.premium-title, .special-title, .live-title, .social-title');
+        const descEl = cardEl.querySelector('.premium-desc, .special-desc, .live-subtitle, .social-handle');
         let titleSize = titleEl ? parseFloat(window.getComputedStyle(titleEl).fontSize) : 0;
-        let subtitleSize = subtitleEl ? parseFloat(window.getComputedStyle(subtitleEl).fontSize) : 0;
+        let descSize = descEl ? parseFloat(window.getComputedStyle(descEl).fontSize) : 0;
         let loops = 0;
-        while (contentEl.scrollHeight > 170 && loops < 30) {
+        while (cardEl.scrollHeight > 165 && loops < 30) {
           let shrunk = false;
-          if (titleEl && titleSize > 14) {
+          if (titleEl && titleSize > 12) {
             titleSize -= 1;
             titleEl.style.fontSize = titleSize + 'px';
             shrunk = true;
           }
-          if (subtitleEl && subtitleSize > 9) {
-            subtitleSize -= 0.5;
-            subtitleEl.style.fontSize = subtitleSize + 'px';
+          if (descEl && descSize > 8) {
+            descSize -= 0.5;
+            descEl.style.fontSize = descSize + 'px';
             shrunk = true;
           }
           if (!shrunk) break;
