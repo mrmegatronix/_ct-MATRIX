@@ -75,18 +75,18 @@
       align-items: center;
       justify-content: center;
       opacity: 0;
-      transform: scale(0.95);
-      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: translateY(20px) scale(0.95);
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .slide.active {
       opacity: 1;
-      transform: scale(1);
+      transform: translateY(0) scale(1);
     }
 
     .slide.exit {
       opacity: 0;
-      transform: scale(1.05);
+      transform: translateY(-20px) scale(0.95);
     }
 
     /* Premium Background System */
@@ -253,7 +253,7 @@
       box-shadow: 0 0 12px var(--theme-glow), 0 0 4px var(--theme-glow), 0 5px 15px rgba(0,0,0,0.5);
       box-sizing: border-box;
       height: 28px;
-lide content       animation: content-enter 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards, pulse-glow-small 3s infinite ease-in-out;
+      animation: content-enter 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards, pulse-glow-small 3s infinite ease-in-out;
       opacity: 0;
     }
 
@@ -969,7 +969,7 @@ lide content       animation: content-enter 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0
       if (oldSlide) {
         oldSlide.classList.remove('active');
         oldSlide.classList.add('exit');
-        setTimeout(() => oldSlide.remove(), 400);
+        setTimeout(() => oldSlide.remove(), 500);
       }
 
       // Format Meta (Time / Date)
