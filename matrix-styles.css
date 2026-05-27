@@ -292,11 +292,13 @@ body {
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--theme-color);
   padding: 0.5rem 1.5rem;
   border-radius: 1.2rem;
   font-size: clamp(1.4rem, 2vw, 2.2rem);
   font-weight: 600;
+  box-shadow: 0 0 15px var(--theme-glow);
+  animation: pulse-glow-small 3s infinite ease-in-out;
 }
 
 .premium-location {
