@@ -1125,10 +1125,21 @@ body {
   opacity: 0.8;
 }
 
-.footer-qr-group {
-  display: flex;
-  align-items: center;
+/* ==========================================================================
+   COMBINED FOOTER BOX (Text + QR)
+   ========================================================================== */
+.footer-combined-box {
   gap: 1.5rem;
+  padding: 0.8rem 1rem 0.8rem 2rem;
+}
+
+.footer-combined-box .premium-footer {
+  margin: 0;
+  text-align: right;
+  max-width: 350px;
+  line-height: 1.2;
+  color: #fff;
+  white-space: normal;
 }
 
 .footer-qr-img {
@@ -1138,8 +1149,14 @@ body {
 }
 
 .footer-qr-img img {
-  width: 110px; /* Reduced to keep footer compact and elegant */
+  width: 110px;
   height: 110px;
+  display: block;
+}
+
+.footer-combined-box .footer-qr-img img {
+  width: 85px; 
+  height: 85px;
   display: block;
 }
 
