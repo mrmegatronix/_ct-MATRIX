@@ -605,37 +605,49 @@ function getSmartTag(slide) {
     const eventDate = slide.date ? parseMatrixDate(slide.date) : null;
     const typeLabel = (slide.subType || slide.type || 'Event').toUpperCase();
     
-    // Modules and non-dated slides don't get smart tags
-    if (!eventDate || slide.type === 'MODULE') return typeLabel;
+    if (slide.type === 'MODULE') return typeLabel;
+
+    const days = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+    let dayName = '';
+    
+    if (eventDate) {
+        dayName = days[eventDate.getDay()];
+    } else if (slide.meta) {
+        const firstWord = String(slide.meta).split(' ')[0].toUpperCase();
+        if (days.includes(firstWord)) {
+            dayName = firstWord;
+        }
+    }
+
+    const dayPrefix = dayName ? `${dayName}: ` : '';
+
+    if (!eventDate) return (dayPrefix + typeLabel).toUpperCase();
 
     const evDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
     const diffDays = Math.round((evDay - today) / (1000 * 60 * 60 * 24));
 
-    // Filtered out past events already, but safety check
-    if (diffDays < 0) return typeLabel; 
+    if (diffDays < 0) return (dayPrefix + typeLabel).toUpperCase(); 
     
-    // Apply "Tonight"/"Today" or "Tomorrow"
     if (diffDays === 0) {
       const hasTime = slide.time && slide.time.trim() !== '' && !/all\s*day/i.test(slide.time);
-      return hasTime ? `Tonight: ${typeLabel}` : `Today: ${typeLabel}`;
+      const todayLabel = hasTime ? 'Tonight' : 'Today';
+      return `${todayLabel}: ${dayName}: ${typeLabel}`.toUpperCase();
     }
-    if (diffDays === 1) return `Tomorrow: ${typeLabel}`;
+    if (diffDays === 1) return `Tomorrow: ${dayName}: ${typeLabel}`.toUpperCase();
 
-    // Monday-to-Sunday logic for "This Week" vs "Next Week"
     const currentDay = today.getDay(); // 0=Sun, 1=Mon...
     const daysToNextMonday = (currentDay === 0) ? 1 : (8 - currentDay);
     const nextMonday = new Date(today);
     nextMonday.setDate(today.getDate() + daysToNextMonday);
     nextMonday.setHours(0,0,0,0);
 
-    // Apply tags only if within the relevant window
     if (evDay < nextMonday) {
-        return `This Week: ${typeLabel}`;
+        return `This Week: ${dayName}: ${typeLabel}`.toUpperCase();
     } else if (diffDays <= 14) {
-        return `Next Week: ${typeLabel}`;
+        return `Next Week: ${dayName}: ${typeLabel}`.toUpperCase();
     }
 
-    return typeLabel;
+    return `${dayName}: ${typeLabel}`.toUpperCase();
 }
 
 function fitText(el, minSize = 40) {
