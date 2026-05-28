@@ -1264,7 +1264,11 @@ function renderPremiumFooterRow(slide, color) {
   const dayStr = slide.meta ? 'EVERY ' + String(slide.meta).split(' ')[0].toUpperCase() : '';
   const locStr = slide.location ? '📍 ' + slide.location : '';
   
-  const showFooter = !!slide.footer;
+  let footerText = slide.footer ? String(slide.footer) : '';
+  if (/scan\s+to\s+book\s+a\s+table/i.test(footerText)) {
+    footerText = 'SCAN TO BOOK\nA TABLE NOW';
+  }
+  const showFooter = !!footerText;
 
   const subTypeLower = (slide.subType || slide.type || '').toLowerCase();
   const isTargetEvent = ['band', 'bands', 'live music', 'super rugby', 'rugby', 'nrl', 'league'].some(t => subTypeLower.includes(t));
@@ -1286,7 +1290,7 @@ function renderPremiumFooterRow(slide, color) {
       ${showLoc ? `<div class="premium-meta-item location-pill">📍 ${slide.location}</div>` : ''}
       ${(showFooter || showQR) ? `
         <div class="premium-meta-item footer-combined-box">
-          ${showFooter ? `<div class="premium-footer">📷 ${String(slide.footer).replace(/\n/g, '<br>')}</div>` : ''}
+          ${showFooter ? `<div class="premium-footer">📷 ${String(footerText).replace(/\n/g, '<br>')}</div>` : ''}
           ${showQR ? `
             <div class="footer-qr-img">
               <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=L&data=${encodeURIComponent(qrData)}" alt="QR">
