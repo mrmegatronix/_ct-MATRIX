@@ -1004,6 +1004,8 @@
     }
 
     function renderPremiumFooterRow(slide, color) {
+      const qrData = slide.qr || slide.qrUrl || slide.footerQR || slide.footerLink;
+      const showQR = !!qrData;
       const showPrice = !!slide.price;
 
       const timeStr = slide.time || '';
@@ -1037,9 +1039,14 @@
           ` : ''}
           ${timeStr && !timeRedundant ? `<div class="premium-meta-item time-pill">⏰ ${timeStr}</div>` : ''}
           ${showLoc ? `<div class="premium-meta-item location-pill">📍 ${slide.location}</div>` : ''}
-          ${showFooter ? `
+          ${(showFooter || showQR) ? `
             <div class="premium-meta-item footer-combined-box">
-              <div class="premium-footer">📷 ${String(footerText).replace(/\n/g, '<br>')}</div>
+              ${showFooter ? `<div class="premium-footer">📷 ${String(footerText).replace(/\n/g, '<br>')}</div>` : ''}
+              ${showQR ? `
+                <div class="footer-qr-img">
+                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&ecc=L&data=${encodeURIComponent(qrData)}" alt="QR">
+                </div>
+              ` : ''}
             </div>
           ` : ''}
         </div>
