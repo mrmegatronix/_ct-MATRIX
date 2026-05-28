@@ -489,6 +489,28 @@
       box-sizing: border-box;
     }
 
+    .premium-card-inner,
+    .special-event-card-inner,
+    .live-card-inner,
+    .social-card-inner,
+    .menu-sidebar-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      width: 100%;
+      height: auto;
+      box-sizing: border-box;
+      min-height: 0;
+    }
+
+    .menu-sidebar-inner {
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 4px;
+    }
+
     .menu-sidebar {
       width: 60%;
       height: 100%;
