@@ -992,7 +992,7 @@
 
       return `
         <div class="premium-footer-row">
-          ${showLeftMeta ? `<div class="premium-meta-item date-pill">${dateStr || dayStr}</div>` : ''}
+          ${showLeftMeta ? `<div class="premium-meta-item date-pill">📅 ${dateStr || dayStr}</div>` : ''}
           ${showPrice ? `
             <div class="price-badge">
               <span class="price-text">${slide.price}</span>
@@ -1002,7 +1002,7 @@
           ${showLoc ? `<div class="premium-meta-item location-pill">📍 ${slide.location}</div>` : ''}
           ${showFooter ? `
             <div class="premium-meta-item footer-combined-box">
-              <div class="premium-footer">${String(slide.footer).replace(/\n/g, '<br>')}</div>
+              <div class="premium-footer">📷 ${String(slide.footer).replace(/\n/g, '<br>')}</div>
             </div>
           ` : ''}
         </div>

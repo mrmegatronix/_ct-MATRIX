@@ -265,6 +265,7 @@
         scrollbar-width: thin;
         scrollbar-color: var(--surface-bright) transparent;
         align-items: center;
+        justify-content: safe center;
     }
 
     .monitor-card {
@@ -276,8 +277,9 @@
     
     .footer-tray .monitor-card {
         height: calc(var(--bottom-h) - 1.2rem);
-        width: calc((var(--bottom-h) - 1.2rem - 24px) * 16 / 9);
-        flex: 0 0 auto;
+        flex: 1 1 0%;
+        min-width: 120px;
+        max-width: 320px;
     }
 
     #playlist-grid .monitor-card {
@@ -288,17 +290,18 @@
 
     .monitor-thumb { 
         flex: 1;
-        aspect-ratio: 16/9; 
         background: #000; 
         overflow: hidden; 
         position: relative; 
-        width: auto;
-        container-type: inline-size;
+        width: 100%;
     }
     .monitor-thumb iframe {
         width: 1920px; height: 1080px; 
-        transform: scale(calc(100cqw / 1920));
-        transform-origin: top left; pointer-events: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform-origin: center center;
+        pointer-events: none;
         border: none;
     }
 
@@ -984,6 +987,19 @@
                 billboardFrame.style.transform = `translate(-50%, -50%) scale(${scale})`;
             }
         }
+
+        // Dynamically scale monitor card thumbnails to fit so the whole slide is seen
+        document.querySelectorAll('.monitor-thumb').forEach(thumb => {
+            const iframe = thumb.querySelector('iframe');
+            if (iframe) {
+                const w = thumb.clientWidth || thumb.offsetWidth;
+                const h = thumb.clientHeight || thumb.offsetHeight;
+                if (w > 0 && h > 0) {
+                    const scale = Math.min(w / 1920, h / 1080);
+                    iframe.style.transform = `translate(-50%, -50%) scale(${scale})`;
+                }
+            }
+        });
     }
 
     window.addEventListener('resize', scaleFrames);

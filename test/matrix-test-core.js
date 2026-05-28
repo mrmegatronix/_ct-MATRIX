@@ -181,7 +181,7 @@ slideEl.innerHTML = `
     ${(slide.footer || slide.qr) ? `
     <div class="premium-footer-row">
       <div class="premium-meta-item footer-combined-box">
-        ${slide.footer ? `<div class="premium-footer">${String(slide.footer).replace(/\n/g, '<br>')}</div>` : ''}
+        ${slide.footer ? `<div class="premium-footer">📷 ${String(slide.footer).replace(/\n/g, '<br>')}</div>` : ''}
         ${slide.qr ? `<div class="footer-qr-img"><img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=L&data=${encodeURIComponent(slide.qr)}" alt="QR"></div>` : ''}
       </div>
     </div>

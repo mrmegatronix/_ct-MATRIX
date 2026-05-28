@@ -1277,8 +1277,8 @@ body {
    COMBINED FOOTER BOX (Text + QR)
    ========================================================================== */
 .footer-combined-box {
-  gap: 1.5rem;
-  padding: 0.8rem 1rem 0.8rem 2rem;
+  gap: 1rem;
+  padding: 0.5rem 1.2rem;
 }
 
 .footer-combined-box .premium-footer {

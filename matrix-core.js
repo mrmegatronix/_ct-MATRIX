@@ -1263,7 +1263,7 @@ function renderPremiumFooterRow(slide, color) {
   return `
     <div class="premium-footer-row">
       ${showLeftMeta ? `
-        <div class="premium-meta-item date-pill">${dateStr || dayStr}</div>
+        <div class="premium-meta-item date-pill">📅 ${dateStr || dayStr}</div>
       ` : ''}
       ${showPrice ? `
         <div class="price-badge">
@@ -1274,7 +1274,7 @@ function renderPremiumFooterRow(slide, color) {
       ${showLoc ? `<div class="premium-meta-item location-pill">📍 ${slide.location}</div>` : ''}
       ${(showFooter || showQR) ? `
         <div class="premium-meta-item footer-combined-box">
-          ${showFooter ? `<div class="premium-footer">${String(slide.footer).replace(/\n/g, '<br>')}</div>` : ''}
+          ${showFooter ? `<div class="premium-footer">📷 ${String(slide.footer).replace(/\n/g, '<br>')}</div>` : ''}
           ${showQR ? `
             <div class="footer-qr-img">
               <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=L&data=${encodeURIComponent(qrData)}" alt="QR">
