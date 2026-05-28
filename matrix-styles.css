@@ -1205,8 +1205,8 @@ body {
   right: 5%;
   width: 90%;
   z-index: 30;
-  display: grid;
-  grid-template-columns: 1fr 1.5fr 1fr;
+  display: flex;
+  justify-content: space-evenly;
   align-items: center;
   gap: 2rem;
   padding: 1rem 2.5rem;
@@ -1234,6 +1234,7 @@ body {
 
 .footer-right {
   justify-content: flex-end;
+  gap: 1.5rem;
 }
 
 .footer-center {

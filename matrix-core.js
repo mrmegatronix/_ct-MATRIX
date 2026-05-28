@@ -1258,41 +1258,30 @@ function renderPremiumFooterRow(slide, color) {
   const isTargetEvent = ['band', 'bands', 'live music', 'super rugby', 'rugby', 'nrl', 'league'].some(t => subTypeLower.includes(t));
   const showLoc = isTargetEvent && slide.location;
   
-  const showMeta = !!(dateStr || dayStr || showLoc);
+  const showLeftMeta = !!(dateStr || dayStr);
 
   return `
     <div class="premium-footer-row">
-      <!-- Left: Date/Meta -->
-      <div class="footer-left">
-        ${showMeta ? `<div class="premium-meta">
-          ${(dateStr || dayStr) ? `<div class="premium-meta-item">${dateStr || dayStr}</div>` : ''}
-          ${showLoc ? `<div class="premium-meta-item location-pill">📍 ${slide.location}</div>` : ''}
-        </div>` : ''}
-      </div>
-
-      <!-- Center: Price & Time -->
-      <div class="footer-center">
-        ${showPrice ? `
-          <div class="price-badge">
-            <div class="price-badge-inner"><span class="price-text">${slide.price}</span></div>
-          </div>
-        ` : ''}
-        ${timeStr && !timeRedundant ? `<div class="premium-meta-item time-pill">⏰ ${timeStr}</div>` : ''}
-      </div>
-
-      <!-- Right: Footer Text & QR Code -->
-      <div class="footer-right">
-        ${(showFooter || showQR) ? `
-          <div class="premium-meta-item footer-combined-box">
-            ${showFooter ? `<div class="premium-footer">${String(slide.footer).replace(/\n/g, '<br>')}</div>` : ''}
-            ${showQR ? `
-              <div class="footer-qr-img">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=L&data=${encodeURIComponent(qrData)}" alt="QR">
-              </div>
-            ` : ''}
-          </div>
-        ` : ''}
-      </div>
+      ${showLeftMeta ? `
+        <div class="premium-meta-item date-pill">${dateStr || dayStr}</div>
+      ` : ''}
+      ${showPrice ? `
+        <div class="price-badge">
+          <div class="price-badge-inner"><span class="price-text">${slide.price}</span></div>
+        </div>
+      ` : ''}
+      ${timeStr && !timeRedundant ? `<div class="premium-meta-item time-pill">⏰ ${timeStr}</div>` : ''}
+      ${showLoc ? `<div class="premium-meta-item location-pill">📍 ${slide.location}</div>` : ''}
+      ${(showFooter || showQR) ? `
+        <div class="premium-meta-item footer-combined-box">
+          ${showFooter ? `<div class="premium-footer">${String(slide.footer).replace(/\n/g, '<br>')}</div>` : ''}
+          ${showQR ? `
+            <div class="footer-qr-img">
+              <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=L&data=${encodeURIComponent(qrData)}" alt="QR">
+            </div>
+          ` : ''}
+        </div>
+      ` : ''}
     </div>
   `;
 }
