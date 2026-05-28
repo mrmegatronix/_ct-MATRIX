@@ -115,6 +115,7 @@ async function initMatrix() {
     console.log('[MATRIX] Cloud State Applied:', state);
     if (state.LIVE_SLIDE) handleLiveSlide(state.LIVE_SLIDE.payload);
     if (state.MODULE_FILTER) handleModuleFilter(state.MODULE_FILTER.id, state.MODULE_FILTER.active);
+    if (state.SETTINGS_UPDATE && state.SETTINGS_UPDATE.payload) updateConfig(state.SETTINGS_UPDATE.payload);
   }
 
   applyUISettings();
