@@ -28,21 +28,30 @@
     }
 
     body {
-      width: 400px;
-      height: 200px;
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
       background-color: #050505;
       color: #fff;
       font-family: 'Inter', sans-serif;
       overflow: hidden;
-      position: relative;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
     }
 
+    #billboard-container {
+      width: 400px;
+      height: 200px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+      transform-origin: center center;
+    }
+
     /* Subtle LED grid overlay */
-    body::after {
+    #billboard-container::after {
       content: '';
       position: absolute;
       inset: 0;
