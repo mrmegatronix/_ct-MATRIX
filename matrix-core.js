@@ -1252,15 +1252,22 @@ function renderPremiumFooterRow(slide, color) {
   const dayStr = slide.meta ? 'EVERY ' + String(slide.meta).split(' ')[0].toUpperCase() : '';
   const locStr = slide.location ? '📍 ' + slide.location : '';
   
-  const metaText = [dateStr || dayStr, (timeStr && !timeRedundant ? '⏰ ' + timeStr : ''), locStr].filter(Boolean).join(' • ');
-  const showMeta = metaText.length > 0;
   const showFooter = !!slide.footer;
+
+  const subTypeLower = (slide.subType || slide.type || '').toLowerCase();
+  const isTargetEvent = ['band', 'bands', 'live music', 'super rugby', 'rugby', 'nrl', 'league'].some(t => subTypeLower.includes(t));
+  const showLoc = isTargetEvent && slide.location;
+  
+  const showMeta = !!(dateStr || dayStr || showLoc);
 
   return `
     <div class="premium-footer-row">
       <!-- Left: Date/Meta -->
       <div class="footer-left">
-        ${showMeta ? `<div class="premium-meta"><div class="premium-meta-item">${dateStr || dayStr}</div></div>` : ''}
+        ${showMeta ? `<div class="premium-meta">
+          ${(dateStr || dayStr) ? `<div class="premium-meta-item">${dateStr || dayStr}</div>` : ''}
+          ${showLoc ? `<div class="premium-meta-item location-pill">📍 ${slide.location}</div>` : ''}
+        </div>` : ''}
       </div>
 
       <!-- Center: Price & Time -->
