@@ -780,6 +780,39 @@
         setTimeout(renderMonitorTray, 500);
     }
 
+    function saveModuleDurations() {
+        const moduleIds = ['ct-mmr', 'ct-wea1', 'ct-ace', 'ct-king', 'ct-quiz', 'ct-fir'];
+        const durations = {};
+        moduleIds.forEach(id => {
+            const el = document.getElementById('dur-' + id);
+            if (el) {
+                const val = parseInt(el.value);
+                if (val && val >= 10) durations[id] = val;
+            }
+        });
+
+        // Merge into existing config
+        let config = {};
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            if (stored) config = JSON.parse(stored);
+        } catch(e) {}
+        config.moduleDurations = durations;
+        localStorage.setItem('matrix_config', JSON.stringify(config));
+
+        // Broadcast to engine + Firebase bridge
+        const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        bc.postMessage({
+            type: 'SETTINGS_UPDATE',
+            payload: { moduleDurations: durations },
+            commandId: commandId,
+            timestamp: Date.now(),
+            senderTabId: getTabId()
+        });
+
+        showToast('DURATIONS SAVED — Refresh All to apply');
+    }
+
     const MODULE_PAGES = {
         'MATRIX': { main: 'index.html', admin: 'masteradmin.html' },
         'ACE': { main: 'index.html', admin: 'admin.html' },
