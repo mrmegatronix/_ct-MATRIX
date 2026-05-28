@@ -147,26 +147,32 @@ function renderActiveSlide() {
 
   clearTimeout(window.MATRIX.STATE.timer);
   const oldSlide = document.getElementById('slide-target');
-  if (oldSlide) oveAttribute('id');
-  oldSlide.classList.remove('active');
-  oldSlide.classList.add('exit');
-  setTimeout(() => oldSlide.remove(), 1200);
-}
+  if (oldSlide) {
+    oldSlide.removeAttribute('id');
+    oldSlide.classList.remove('active');
+    oldSlide.classList.add('exit');
+    setTimeout(() => oldSlide.remove(), 1200);
+  }
 
-const slideEl = document.createElement('div');
-slideEl.id = 'slide-target';
-const transitionClass = (slide.transition || 'fade-in').toLowerCase().replace(/\s/g, '-');
-slideEl.className = 'slide ' + transitionClass;
+  const slideEl = document.createElement('div');
+  slideEl.id = 'slide-target';
+  const transitionClass = (slide.transition || 'fade-in').toLowerCase().replace(/\s/g, '-');
+  slideEl.className = 'slide ' + transitionClass;
 
-if (slide.zoom) {
-  slideEl.setAttribute('data-zoom', 'true');
-  slideEl.style.setProperty('--zoom-level', slide.zoom);
-}
+  if (slide.zoom) {
+    slideEl.setAttribute('data-zoom', 'true');
+    slideEl.style.setProperty('--zoom-level', slide.zoom);
+  }
 
-const themeColor = slide.accentColor || '#f59e0b';
-document.documentElement.style.setProperty('--theme-color', themeColor);
+  const themeColor = slide.accentColor || '#f59e0b';
+  document.documentElement.style.setProperty('--theme-color', themeColor);
 
-slideEl.innerHTML = `
+  let footerText = slide.footer ? String(slide.footer) : '';
+  if (/scan\s+to\s+book\s+a\s+table/i.test(footerText)) {
+    footerText = 'SCAN TO BOOK\nA TABLE NOW';
+  }
+
+  slideEl.innerHTML = `
     <div class="slide-bg">
       <img src="${slide.bgImage}" style="object-fit: cover; width:100%; height:100%;" onerror="this.src='../images/bg1.jpg'">
       <div class="slide-bg-overlay" style="background: rgba(0,0,0,0.85);"></div>
@@ -178,21 +184,21 @@ slideEl.innerHTML = `
       ${slide.subtitle ? `<div class="premium-desc animate-content-enter" style="animation-delay: 0.4s;">${slide.subtitle}</div>` : ''}
       ${slide.price ? `<div class="price-badge"><div class="price-badge-inner">${slide.price}</div></div>` : ''}
     </div>
-    ${(slide.footer || slide.qr) ? `
+    ${(footerText || slide.qr) ? `
     <div class="premium-footer-row">
       <div class="premium-meta-item footer-combined-box">
-        ${slide.footer ? `<div class="premium-footer">📷 ${String(slide.footer).replace(/\n/g, '<br>')}</div>` : ''}
+        ${footerText ? `<div class="premium-footer">📷 ${String(footerText).replace(/\n/g, '<br>')}</div>` : ''}
         ${slide.qr ? `<div class="footer-qr-img"><img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=L&data=${encodeURIComponent(slide.qr)}" alt="QR"></div>` : ''}
       </div>
     </div>
     ` : ''}
   `;
 
-container.appendChild(slideEl);
-requestAnimationFrame(() => { slideEl.classList.add('active'); });
+  container.appendChild(slideEl);
+  requestAnimationFrame(() => { slideEl.classList.add('active'); });
 
-const delay = slide.duration || window.MATRIX.CONFIG.SWAP_DELAY;
-window.MATRIX.STATE.timer = setTimeout(nextSlide, delay);
+  const delay = slide.duration || window.MATRIX.CONFIG.SWAP_DELAY;
+  window.MATRIX.STATE.timer = setTimeout(nextSlide, delay);
 }
 
 window.initMatrix = initMatrix;
