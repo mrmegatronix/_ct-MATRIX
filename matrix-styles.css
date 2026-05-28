@@ -1277,23 +1277,29 @@ body {
    COMBINED FOOTER BOX (Text + QR)
    ========================================================================== */
 .footer-combined-box {
-  gap: 1rem;
-  padding: 0.5rem 1.2rem;
+  gap: 0.8rem;
+  padding: 0.3rem 0.8rem;
 }
 
 .footer-combined-box .premium-footer {
   margin: 0;
   text-align: right;
-  max-width: 350px;
-  line-height: 1.2;
+  max-width: 250px;
+  line-height: 1.1;
   color: #fff;
   white-space: normal;
+  font-size: clamp(1.1rem, 1.4vw, 1.6rem);
 }
 
 .footer-qr-img {
   background: #fff;
   padding: 6px;
   border-radius: 10px;
+}
+
+.footer-combined-box .footer-qr-img {
+  padding: 4px;
+  border-radius: 8px;
 }
 
 .footer-qr-img img {
@@ -1303,8 +1309,8 @@ body {
 }
 
 .footer-combined-box .footer-qr-img img {
-  width: 85px;
-  height: 85px;
+  width: 65px;
+  height: 65px;
   display: block;
 }
 
