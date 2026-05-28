@@ -877,6 +877,26 @@
     const bc = new BroadcastChannel('ct_matrix_sync');
     let currentSlideId = null;
 
+    function adjustScale() {
+      const container = document.getElementById('billboard-container');
+      if (!container) return;
+      const targetWidth = 400;
+      const targetHeight = 200;
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      
+      const scaleX = windowWidth / targetWidth;
+      const scaleY = windowHeight / targetHeight;
+      const scale = Math.min(scaleX, scaleY);
+      
+      container.style.transform = `scale(${scale})`;
+    }
+
+    window.addEventListener('resize', adjustScale);
+    window.addEventListener('load', adjustScale);
+    // Call immediately
+    setTimeout(adjustScale, 0);
+
     bc.onmessage = (e) => {
       if (e.data.type === 'CURRENT_SLIDE_BROADCAST' && e.data.slide) {
         renderSlide(e.data.slide, e.data.index, e.data.startTime, e.data.delay);
