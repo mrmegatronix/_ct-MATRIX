@@ -865,11 +865,13 @@
 
 <body>
 
-  <div class="glow-bg" id="glow"></div>
-  <div id="viewport">
-    <div id="status" style="color: #666; font-family: 'JetBrains Mono'; font-size: 0.8rem;">Awaiting Data Sync...</div>
+  <div id="billboard-container">
+    <div class="glow-bg" id="glow"></div>
+    <div id="viewport">
+      <div id="status" style="color: #666; font-family: 'JetBrains Mono'; font-size: 0.8rem;">Awaiting Data Sync...</div>
+    </div>
+    <div id="progress-bar"></div>
   </div>
-  <div id="progress-bar"></div>
 
   <script>
     const bc = new BroadcastChannel('ct_matrix_sync');
