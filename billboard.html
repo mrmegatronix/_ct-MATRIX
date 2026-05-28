@@ -992,7 +992,7 @@
 
       return `
         <div class="premium-footer-row">
-          ${showLeftMeta ? `<div class="premium-meta-item date-pill">📅 ${dateStr || dayStr}</div>` : ''}
+          ${showLeftMeta ? `<div class="premium-meta-item date-pill">🗓️ ${dateStr || dayStr}</div>` : ''}
           ${showPrice ? `
             <div class="price-badge">
               <span class="price-text">${slide.price}</span>
@@ -1083,7 +1083,7 @@
       let metaText = '';
       const metaItems = [];
       if (slide.time) metaItems.push(`<span>⏰ ${slide.time}</span>`);
-      if (slide.date) metaItems.push(`<span>📅 ${slide.date}</span>`);
+      if (slide.date) metaItems.push(`<span>🗓️ ${slide.date}</span>`);
       if (slide.location) metaItems.push(`<span>📍 ${slide.location}</span>`);
       metaText = metaItems.join(' • ');
 
