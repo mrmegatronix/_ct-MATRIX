@@ -1263,7 +1263,7 @@ function renderPremiumFooterRow(slide, color) {
   return `
     <div class="premium-footer-row">
       ${showLeftMeta ? `
-        <div class="premium-meta-item date-pill">📅 ${dateStr || dayStr}</div>
+        <div class="premium-meta-item date-pill">🗓️ ${dateStr || dayStr}</div>
       ` : ''}
       ${showPrice ? `
         <div class="price-badge">
