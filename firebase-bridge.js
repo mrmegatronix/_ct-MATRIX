@@ -50,7 +50,7 @@ if (window.self === window.top) {
         if (e.data.isFirebaseBridge) return;
         if (e.data.senderTabId !== getTabId()) return;
 
-        if (['NEXT', 'PREV', 'JUMP', 'PROJECT', 'TOGGLE', 'MODULE_FILTER', 'LIVE_SLIDE', 'CONFETTI', 'REFRESH'].includes(type)) {
+        if (['NEXT', 'PREV', 'JUMP', 'PROJECT', 'TOGGLE', 'MODULE_FILTER', 'LIVE_SLIDE', 'SETTINGS_UPDATE', 'CONFETTI', 'REFRESH'].includes(type)) {
             console.log('[FIREBASE] Bridging Local Command to Cloud:', type);
             
             const timestamp = e.data.timestamp || Date.now();
@@ -67,7 +67,7 @@ if (window.self === window.top) {
             set(ref(db, COMMAND_PATH), payload);
 
             // If it's a persistent state change, update state node too
-            if (['MODULE_FILTER', 'LIVE_SLIDE'].includes(type)) {
+            if (['MODULE_FILTER', 'LIVE_SLIDE', 'SETTINGS_UPDATE'].includes(type)) {
                 // Include meta at root of state for loop prevention
                 update(ref(db, STATE_PATH), { _last_updated_by: getClientId() });
                 // Update specific sub-node
