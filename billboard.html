@@ -1246,9 +1246,11 @@
               <div style="position:absolute; inset:0; background: radial-gradient(circle at center, ${accent}22 0%, #000 70%);"></div>
             </div>
             <div class="live-card">
-            <div class="live-label animate-content-enter" style="animation-delay: 0.1s;">LIVE BROADCAST</div>
-            <div class="live-title animate-content-enter" style="animation-delay: 0.2s;">${slide.title || ''}</div>
-            <div class="live-subtitle animate-content-enter" style="animation-delay: 0.3s;">${liveSubtitleText}</div>
+              <div class="live-label animate-content-enter" style="animation-delay: 0.1s;">LIVE BROADCAST</div>
+              <div class="live-card-inner">
+                <div class="live-title animate-content-enter" style="animation-delay: 0.2s;">${slide.title || ''}</div>
+                <div class="live-subtitle animate-content-enter" style="animation-delay: 0.3s;">${liveSubtitleText}</div>
+              </div>
             </div>
             <div class="live-system-alert">
               MATRIX LIVE ALERT SYSTEM v1.0
@@ -1262,9 +1264,11 @@
               <div style="position:absolute; inset:0; background: radial-gradient(circle at center, var(--theme-color)22 0%, #000 70%);"></div>
             </div>
             <div class="social-card">
-            <div class="social-icon animate-content-enter" style="animation-delay: 0.1s;"><div class="animate-float" style="display:inline-block">${icon}</div></div>
-            <div class="social-title animate-content-enter" style="animation-delay: 0.2s;">${slide.title || ''}</div>
-            <div class="social-handle animate-content-enter" style="animation-delay: 0.3s;">${handleText}</div>
+              <div class="social-icon animate-content-enter" style="animation-delay: 0.1s;"><div class="animate-float" style="display:inline-block">${icon}</div></div>
+              <div class="social-card-inner">
+                <div class="social-title animate-content-enter" style="animation-delay: 0.2s;">${slide.title || ''}</div>
+                <div class="social-handle animate-content-enter" style="animation-delay: 0.3s;">${handleText}</div>
+              </div>
             </div>
         `;
       } else if (slide.type === 'MENU') {
@@ -1276,10 +1280,12 @@
             </div>
             <div class="menu-overlay-ui">
               <div class="menu-sidebar">
-              <div class="menu-badge animate-content-enter" style="animation-delay: 0.1s;">MENU</div>
-              <h1 class="menu-title animate-content-enter" style="animation-delay: 0.2s;">${slide.title || 'Today\'s Menu'}</h1>
-              <div class="menu-accent animate-content-enter" style="animation-delay: 0.3s;"></div>
-              ${menuDescText ? `<div class="menu-desc animate-content-enter" style="animation-delay: 0.4s;">${menuDescText}</div>` : ''}
+                <div class="menu-badge animate-content-enter" style="animation-delay: 0.1s;">MENU</div>
+                <div class="menu-sidebar-inner">
+                  <h1 class="menu-title animate-content-enter" style="animation-delay: 0.2s;">${slide.title || 'Today\'s Menu'}</h1>
+                  <div class="menu-accent animate-content-enter" style="animation-delay: 0.3s;"></div>
+                  ${menuDescText ? `<div class="menu-desc animate-content-enter" style="animation-delay: 0.4s;">${menuDescText}</div>` : ''}
+                </div>
               </div>
             </div>
         `;
@@ -1291,12 +1297,14 @@
               <div class="slide-bg-overlay" style="background: radial-gradient(circle at center, transparent 0%, #000 90%);"></div>
             </div>
             <div class="special-event-card">
-            <div class="special-badge animate-content-enter" style="animation-delay: 0.1s;">Special Event</div>
-            <h1 class="special-title animate-content-enter" style="animation-delay: 0.2s;">${slide.title || ''}</h1>
-            <div class="premium-accent-wrapper animate-content-enter" style="animation-delay: 0.3s;">
-                <div class="accent-bar" style="background: ${themeColor};"></div>
+              <div class="special-badge animate-content-enter" style="animation-delay: 0.1s;">Special Event</div>
+              <div class="special-event-card-inner">
+                <h1 class="special-title animate-content-enter" style="animation-delay: 0.2s;">${slide.title || ''}</h1>
+                <div class="premium-accent-wrapper animate-content-enter" style="animation-delay: 0.3s;">
+                  <div class="accent-bar" style="background: ${themeColor};"></div>
+                </div>
+                ${specialDescText ? `<div class="special-desc animate-content-enter" style="animation-delay: 0.4s;">${specialDescText}</div>` : ''}
               </div>
-            ${specialDescText ? `<div class="special-desc animate-content-enter" style="animation-delay: 0.4s;">${specialDescText}</div>` : ''}
             </div>
             ${renderPremiumFooterRow(slide, themeColor)}
         `;
@@ -1327,23 +1335,25 @@
               <span class="day-tag" style="background-color: ${color}40; border-color: ${color};">${smartTag}</span>
             </div>
 
-            <!-- 2. Event Name -->
-            <div class="premium-title-wrapper animate-content-enter" style="animation-delay: 0.2s;">
-              <h1 class="premium-title">${slide.title || ''}</h1>
-            </div>
+            <div class="premium-card-inner">
+              <!-- 2. Event Name -->
+              <div class="premium-title-wrapper animate-content-enter" style="animation-delay: 0.2s;">
+                <h1 class="premium-title">${slide.title || ''}</h1>
+              </div>
 
-            <!-- Accent Divider Bar -->
-            <div class="premium-accent-wrapper animate-content-enter" style="animation-delay: 0.3s;">
-              <div class="accent-bar" style="background: ${color};"></div>
-            </div>
+              <!-- Accent Divider Bar -->
+              <div class="premium-accent-wrapper animate-content-enter" style="animation-delay: 0.3s;">
+                <div class="accent-bar" style="background: ${color};"></div>
+              </div>
 
-            <!-- 3. Details -->
-            ${subtitleText ? `
-            <div class="premium-desc-wrapper animate-content-enter" style="animation-delay: 0.4s;">
-              <div class="premium-desc">${String(subtitleText).replace(/\n/g, '<br>')}</div>
-            </div>` : ''}
-            
-            ${countdownHTML}
+              <!-- 3. Details -->
+              ${subtitleText ? `
+              <div class="premium-desc-wrapper animate-content-enter" style="animation-delay: 0.4s;">
+                <div class="premium-desc">${String(subtitleText).replace(/\n/g, '<br>')}</div>
+              </div>` : ''}
+              
+              ${countdownHTML}
+            </div>
           </div>
           ${renderPremiumFooterRow(slide, color)}
         `;
@@ -1351,23 +1361,29 @@
 
       viewport.appendChild(newSlide);
 
-      // Prevent clipping by auto-shrinking text if it exceeds body height
-      const cardEl = newSlide.querySelector('.premium-card, .special-event-card, .live-card, .social-card');
-      if (cardEl) {
-        const titleEl = cardEl.querySelector('.premium-title, .special-title, .live-title, .social-title');
-        const descEl = cardEl.querySelector('.premium-desc, .special-desc, .live-subtitle, .social-handle');
+      // Prevent clipping by auto-shrinking text if it exceeds inner content bounds
+      const innerEl = newSlide.querySelector('.premium-card-inner, .special-event-card-inner, .live-card-inner, .social-card-inner, .menu-sidebar-inner');
+      if (innerEl) {
+        const titleEl = innerEl.querySelector('.premium-title, .special-title, .live-title, .social-title, .menu-title');
+        const descEl = innerEl.querySelector('.premium-desc, .special-desc, .live-subtitle, .social-handle, .menu-desc');
+        
+        let maxHeight = 125;
+        if (innerEl.classList.contains('live-card-inner')) maxHeight = 150;
+        else if (innerEl.classList.contains('social-card-inner')) maxHeight = 140;
+        else if (innerEl.classList.contains('menu-sidebar-inner')) maxHeight = 160;
+
         let titleSize = titleEl ? parseFloat(window.getComputedStyle(titleEl).fontSize) : 0;
         let descSize = descEl ? parseFloat(window.getComputedStyle(descEl).fontSize) : 0;
         let loops = 0;
-        while (cardEl.scrollHeight > 165 && loops < 30) {
+        while (innerEl.scrollHeight > maxHeight && loops < 30) {
           let shrunk = false;
           if (titleEl && titleSize > 12) {
-            titleSize -= 1;
+            titleSize -= 0.5;
             titleEl.style.fontSize = titleSize + 'px';
             shrunk = true;
           }
           if (descEl && descSize > 8) {
-            descSize -= 0.5;
+            descSize -= 0.25;
             descEl.style.fontSize = descSize + 'px';
             shrunk = true;
           }
