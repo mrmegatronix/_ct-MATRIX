@@ -856,37 +856,15 @@
 
 <body>
 
-  <div id="billboard-container">
-    <div class="glow-bg" id="glow"></div>
-    <div id="viewport">
-      <div id="status" style="color: #666; font-family: 'JetBrains Mono'; font-size: 0.8rem;">Awaiting Data Sync...</div>
-    </div>
-    <div id="progress-bar"></div>
+  <div class="glow-bg" id="glow"></div>
+  <div id="viewport">
+    <div id="status" style="color: #666; font-family: 'JetBrains Mono'; font-size: 0.8rem;">Awaiting Data Sync...</div>
   </div>
+  <div id="progress-bar"></div>
 
   <script>
     const bc = new BroadcastChannel('ct_matrix_sync');
     let currentSlideId = null;
-
-    function adjustScale() {
-      const container = document.getElementById('billboard-container');
-      if (!container) return;
-      const targetWidth = 400;
-      const targetHeight = 200;
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-      
-      const scaleX = windowWidth / targetWidth;
-      const scaleY = windowHeight / targetHeight;
-      const scale = Math.min(scaleX, scaleY);
-      
-      container.style.transform = `scale(${scale})`;
-    }
-
-    window.addEventListener('resize', adjustScale);
-    window.addEventListener('load', adjustScale);
-    // Call immediately
-    setTimeout(adjustScale, 0);
 
     bc.onmessage = (e) => {
       if (e.data.type === 'CURRENT_SLIDE_BROADCAST' && e.data.slide) {
