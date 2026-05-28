@@ -1026,8 +1026,6 @@
     }
 
     function renderPremiumFooterRow(slide, color) {
-      const qrData = slide.qr || slide.qrUrl || slide.footerQR || slide.footerLink;
-      const showQR = !!qrData;
       const showPrice = !!slide.price;
 
       const timeStr = slide.time || '';
