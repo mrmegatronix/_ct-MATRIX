@@ -643,6 +643,36 @@
     function renderDashboardHome() {
         const wrap = document.getElementById('operator-wrap');
         
+        // Load current durations from config
+        let config = { moduleDurations: {} };
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            if (stored) config = { ...config, ...JSON.parse(stored) };
+        } catch(e) {}
+        const dur = config.moduleDurations || {};
+
+        const modules = [
+            { id: 'ct-mmr', label: 'MMR (Meat Raffle)', defaultDur: 600 },
+            { id: 'ct-wea1', label: 'WEA1 (Weather)', defaultDur: 60 },
+            { id: 'ct-ace', label: 'ACE (Chase the Ace)', defaultDur: 180 },
+            { id: 'ct-king', label: 'KING (Birthday)', defaultDur: 150 },
+            { id: 'ct-quiz', label: 'QUIZ (Pub Quiz)', defaultDur: 60 },
+            { id: 'ct-fir', label: 'FIR (Fireplace)', defaultDur: 180 }
+        ];
+
+        const durationRows = modules.map(m => {
+            const val = dur[m.id] || m.defaultDur;
+            return `
+                <div style="display:flex; align-items:center; justify-content:space-between; padding: 6px 0; border-bottom: 1px solid var(--border);">
+                    <span style="font-size:0.72rem; font-weight:700; color:#fff;">${m.label}</span>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <input type="number" id="dur-${m.id}" value="${val}" min="10" max="9999" style="width:70px; background:var(--surface-bright); border:1px solid var(--border); color:#fff; padding:4px 8px; border-radius:6px; font-size:0.75rem; font-weight:700; text-align:center; font-family:'JetBrains Mono',monospace;">
+                        <span style="font-size:0.6rem; opacity:0.4; font-weight:700;">SEC</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
         wrap.innerHTML = `
             <div class="dashboard-home">
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
@@ -657,6 +687,16 @@
                         <button class="ctrl-btn primary" style="width: 100%; margin-bottom: 10px;" onclick="bc.postMessage({type:'GET_SLIDES_DUMP'})">Refresh Telemetry</button>
                         <button class="ctrl-btn" style="width: 100%;" onclick="loadModule('COMMANDER', 'live-commander.html')">Open Live Commander</button>
                     </div>
+                </div>
+
+                <!-- MODULE DURATION SETTINGS -->
+                <div class="panel" style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px; margin-top: 1.5rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+                        <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.5;">MODULE DURATION SETTINGS</div>
+                        <button class="ctrl-btn primary" style="padding: 5px 16px; font-size: 0.6rem;" onclick="saveModuleDurations()">💾 SAVE DURATIONS</button>
+                    </div>
+                    <div style="font-size:0.6rem; opacity:0.35; margin-bottom:0.8rem; font-weight:600;">How long each module is shown before cycling to the next slide (in seconds). Changes take effect on next queue rebuild or REFRESH ALL.</div>
+                    ${durationRows}
                 </div>
                 
                 <div style="margin-top: 2rem; opacity: 0.3; font-size: 0.7rem; text-align: center; font-weight: 800; letter-spacing: 2px;">
