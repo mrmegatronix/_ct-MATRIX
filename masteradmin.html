@@ -979,6 +979,22 @@
             dot.classList.add('pulse');
         }
 
+        // Sync local UI if another admin/remote makes changes
+        if (e.data.type === 'MODULE_FILTER' || e.data.type === 'SETTINGS_UPDATE') {
+            setTimeout(() => {
+                renderSidebarToggles();
+                renderDashboardHome();
+            }, 100);
+        }
+        if (e.data.type === 'SYNC_STATE' && e.data.state) {
+            if (e.data.state.MODULE_FILTER || e.data.state.SETTINGS_UPDATE) {
+                setTimeout(() => {
+                    renderSidebarToggles();
+                    renderDashboardHome();
+                }, 100);
+            }
+        }
+
         if (e.data.type === 'SLIDES_DUMP') {
 
             const grid = document.getElementById('playlist-grid');

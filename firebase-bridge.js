@@ -147,16 +147,17 @@ if (window.self === window.top) {
 
             const timestamp = e.data.timestamp || Date.now();
             const commandId = e.data.commandId || ('cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9));
-            const payload = {
+            // Strip undefined values which cause Firebase to crash and reject the sync
+            const safePayload = JSON.parse(JSON.stringify({
                 ...e.data,
                 source: getClientId(),
                 timestamp: timestamp,
                 commandId: commandId,
                 isFirebaseBridge: true
-            };
+            }));
 
             // Write the command to Firebase
-            set(ref(db, COMMAND_PATH), payload)
+            set(ref(db, COMMAND_PATH), safePayload)
                 .then(() => {
                     console.log('[FIREBASE BRIDGE] ✅ Command written to Firebase:', type);
                     updateCloudDot('syncing');
@@ -175,7 +176,7 @@ if (window.self === window.top) {
                 update(ref(db, STATE_PATH), { _last_updated_by: getClientId() })
                     .catch(err => console.error('[FIREBASE BRIDGE] State meta update failed:', err));
                 // Update specific sub-node
-                update(ref(db, STATE_PATH + '/' + type), payload)
+                update(ref(db, STATE_PATH + '/' + type), safePayload)
                     .catch(err => console.error('[FIREBASE BRIDGE] State sub-node update failed:', err));
             }
         }

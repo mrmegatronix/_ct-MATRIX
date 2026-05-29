@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Remote | _ct-MATRIX</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,304 +15,313 @@
       --purple: #8b5cf6;
       --text: #ffffff;
       --btn-bg: #111827;
+      --border: rgba(255, 255, 255, 0.08);
     }
     body { 
-      background: var(--bg); 
-      color: var(--text); 
-      font-family: 'Inter', sans-serif; 
-      margin: 0; 
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      overflow-x: hidden;
-      overflow-y: auto;
-      padding-bottom: 80px;
+      background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; 
+      margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center;
+      height: 100vh; overflow: hidden; touch-action: none;
     }
-    header { text-align: center; margin-bottom: 30px; }
-    h1 { font-weight: 900; color: var(--accent); margin: 0; font-size: 1.5rem; }
+    header { text-align: center; margin-bottom: 10px; }
+    h1 { font-weight: 900; color: var(--accent); margin: 0; font-size: 1.2rem; }
     
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 15px;
-      width: 100%;
-      max-width: 400px;
-    }
-
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: 100%; max-width: 400px; margin-bottom: 10px; }
+    
     .btn {
-      background: var(--btn-bg);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 20px;
-      color: var(--text);
-      padding: 30px 10px;
-      font-size: 1rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      transition: all 0.1s;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
+      background: var(--btn-bg); border: 1px solid var(--border); border-radius: 12px;
+      color: var(--text); padding: 10px 5px; font-size: 0.65rem; font-weight: 700;
+      text-transform: uppercase; display: flex; flex-direction: column; align-items: center;
+      gap: 5px; cursor: pointer; -webkit-tap-highlight-color: transparent;
     }
-    .btn:active {
-      transform: scale(0.95);
-      background: var(--accent);
-      color: #000;
-    }
-    .btn-icon { font-size: 2rem; }
-    
-    .btn-big { grid-column: span 2; padding: 40px; }
+    .btn:active { transform: scale(0.95); background: var(--accent); color: #000; }
+    .btn-icon { font-size: 1.4rem; }
     .btn-primary { border-color: var(--accent); color: var(--accent); }
-    .btn-celebrate { border-color: var(--purple); color: #a78bfa; }
     
-    .status-bar {
-      margin-top: auto;
-      background: rgba(255,255,255,0.05);
-      padding: 10px 20px;
-      border-radius: 50px;
-      font-size: 0.8rem;
-      opacity: 0.5;
-      margin-bottom: 80px;
-    }
-
+    .section-title { width: 100%; max-width: 400px; font-size: 0.65rem; font-weight: 800; color: #666; text-transform: uppercase; margin-bottom: 5px; }
+    
+    .modules { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 400px; flex-grow: 1; }
+    .mod-row { display: grid; grid-template-columns: 60px 1fr 60px; gap: 8px; background: var(--btn-bg); padding: 6px 10px; border-radius: 12px; align-items: center; border: 1px solid var(--border); }
+    .mod-name { font-size: 0.75rem; font-weight: 900; white-space: nowrap; }
+    
+    .mod-toggle { display: flex; background: #000; border-radius: 6px; overflow: hidden; }
+    .mod-btn { flex: 1; padding: 6px 0; text-align: center; font-size: 0.65rem; font-weight: 900; border: none; cursor: pointer; color: #666; background: transparent; transition: 0.2s; }
+    .mod-btn.active-on { background: var(--accent); color: #000; }
+    .mod-btn.active-off { background: #333; color: #fff; }
+    
+    .mod-dur-wrapper { position: relative; }
+    .mod-dur { width: 100%; background: #000; color: #fff; border: 1px solid #333; padding: 6px; border-radius: 6px; text-align: center; font-size: 0.75rem; font-family: monospace; box-sizing: border-box; }
+    .mod-dur-wrapper::after { content: 's'; position: absolute; right: 5px; top: 50%; transform: translateY(-50%); font-size: 0.6rem; color: #666; pointer-events: none; }
+    
+    .save-btn { width: 100%; max-width: 400px; background: var(--accent); color: #000; font-weight: 900; padding: 12px; border: none; border-radius: 12px; font-size: 0.8rem; cursor: pointer; margin-bottom: 10px; }
+    .save-btn:active { transform: scale(0.98); }
+    
+    .status-bar { background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 50px; font-size: 0.65rem; opacity: 0.5; margin-bottom: 60px; }
+    
     /* Navigation Hub */
-    .nav-hub { position: fixed; bottom: 0; left: 0; right: 0; background: #000; border-top: 1px solid var(--border); padding: 15px; display: flex; justify-content: center; gap: 15px; z-index: 1000; }
-    .nav-link { color: #888; text-decoration: none; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; opacity: 0.5; }
-    .nav-link:hover { opacity: 1; color: var(--accent); }
+    .nav-hub { position: fixed; bottom: 0; left: 0; right: 0; background: #000; border-top: 1px solid var(--border); padding: 10px; display: flex; justify-content: center; gap: 15px; z-index: 1000; }
+    .nav-link { color: #888; text-decoration: none; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; opacity: 0.5; }
     .nav-link.active { opacity: 1; color: var(--accent); }
   </style>
 </head>
 <body>
   <header>
     <h1>MATRIX REMOTE</h1>
-    <p style="opacity: 0.5; font-size: 0.8rem;">Multi-Screen Synchronization</p>
   </header>
 
-  <div class="grid">
-    <button class="btn btn-big btn-primary" onclick="send('NEXT')">
-      <span class="btn-icon">⏭</span>
-      <span>Next Slide</span>
-    </button>
-    
-    <button class="btn" onclick="send('PREV')">
-      <span class="btn-icon">⏮</span>
-      <span>Previous</span>
-    </button>
-    
-    <button class="btn" onclick="send('TOGGLE')">
-      <span class="btn-icon">⏯</span>
-      <span>Play / Pause</span>
-    </button>
+  <div class="grid-3">
+    <button class="btn" onclick="send('PREV')"><span class="btn-icon">⏮</span><span>Prev</span></button>
+    <button class="btn btn-primary" onclick="send('NEXT')"><span class="btn-icon">⏭</span><span>Next</span></button>
+    <button class="btn" onclick="send('TOGGLE')"><span class="btn-icon">⏯</span><span>Play/Pause</span></button>
+  </div>
 
-    <div style="grid-column: span 2; margin-top: 10px; opacity: 0.3; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">Direct Jump</div>
+  <div class="grid-3">
+    <button class="btn" onclick="jump('ct-mmr')"><span class="btn-icon">🥩</span><span>MMR</span></button>
+    <button class="btn" onclick="jump('ct-king')"><span class="btn-icon">👑</span><span>KING</span></button>
+    <button class="btn" onclick="celebrate()" style="border-color: var(--purple); color: #a78bfa;"><span class="btn-icon">✨</span><span>Confetti</span></button>
+  </div>
 
-    <button class="btn" onclick="jump('ct-king')">
-      <span class="btn-icon">🌸</span>
-      <span>King's Birthday</span>
-    </button>
-    
-    <button class="btn" onclick="jump('ct-mmr')">
-      <span class="btn-icon">🥩</span>
-      <span>Meat Raffle</span>
-    </button>
-
-    <button class="btn btn-big btn-celebrate" onclick="celebrate()">
-      <span class="btn-icon">✨</span>
-      <span>Emergency Confetti</span>
-    </button>
-
-    <div style="grid-column: span 2; margin-top: 10px; opacity: 0.3; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">Module Toggles</div>
-    <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 10px; width: 100%;">
-      
-      <!-- ACE -->
-      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--btn-bg); padding:10px 20px; border-radius:20px; border:1px solid rgba(255,255,255,0.1);">
-        <strong style="font-size:1.1rem; color:var(--text);">🃏 ACE</strong>
-        <div style="display:flex; gap:10px;">
-          <button style="padding:10px 20px; border-radius:10px; border:none; background:var(--accent); color:#000; font-weight:bold; cursor:pointer;" onclick="toggleModule('ACE', true)">ON</button>
-          <button style="padding:10px 20px; border-radius:10px; border:none; background:#333; color:#fff; font-weight:bold; cursor:pointer;" onclick="toggleModule('ACE', false)">OFF</button>
-        </div>
+  <div class="section-title">Modules & Timers</div>
+  <div class="modules">
+    <!-- ACE -->
+    <div class="mod-row" id="row-ct-ace">
+      <div class="mod-name">🃏 ACE</div>
+      <div class="mod-toggle">
+        <button class="mod-btn btn-on" onclick="toggleModule('ACE', true)">ON</button>
+        <button class="mod-btn btn-off" onclick="toggleModule('ACE', false)">OFF</button>
       </div>
-      
-      <!-- MMR -->
-      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--btn-bg); padding:10px 20px; border-radius:20px; border:1px solid rgba(255,255,255,0.1);">
-        <strong style="font-size:1.1rem; color:var(--text);">🥩 MMR</strong>
-        <div style="display:flex; gap:10px;">
-          <button style="padding:10px 20px; border-radius:10px; border:none; background:var(--accent); color:#000; font-weight:bold; cursor:pointer;" onclick="toggleModule('MMR', true)">ON</button>
-          <button style="padding:10px 20px; border-radius:10px; border:none; background:#333; color:#fff; font-weight:bold; cursor:pointer;" onclick="toggleModule('MMR', false)">OFF</button>
-        </div>
+      <div class="mod-dur-wrapper"><input type="number" class="mod-dur" id="dur-ct-ace" placeholder="s"></div>
+    </div>
+    <!-- MMR -->
+    <div class="mod-row" id="row-ct-mmr">
+      <div class="mod-name">🥩 MMR</div>
+      <div class="mod-toggle">
+        <button class="mod-btn btn-on" onclick="toggleModule('MMR', true)">ON</button>
+        <button class="mod-btn btn-off" onclick="toggleModule('MMR', false)">OFF</button>
       </div>
-
-      <!-- QUIZ -->
-      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--btn-bg); padding:10px 20px; border-radius:20px; border:1px solid rgba(255,255,255,0.1);">
-        <strong style="font-size:1.1rem; color:var(--text);">🧠 QUIZ</strong>
-        <div style="display:flex; gap:10px;">
-          <button style="padding:10px 20px; border-radius:10px; border:none; background:var(--accent); color:#000; font-weight:bold; cursor:pointer;" onclick="toggleModule('QUIZ', true)">ON</button>
-          <button style="padding:10px 20px; border-radius:10px; border:none; background:#333; color:#fff; font-weight:bold; cursor:pointer;" onclick="toggleModule('QUIZ', false)">OFF</button>
-        </div>
+      <div class="mod-dur-wrapper"><input type="number" class="mod-dur" id="dur-ct-mmr" placeholder="s"></div>
+    </div>
+    <!-- QUIZ -->
+    <div class="mod-row" id="row-ct-quiz">
+      <div class="mod-name">🧠 QUIZ</div>
+      <div class="mod-toggle">
+        <button class="mod-btn btn-on" onclick="toggleModule('QUIZ', true)">ON</button>
+        <button class="mod-btn btn-off" onclick="toggleModule('QUIZ', false)">OFF</button>
       </div>
-
-      <!-- KING -->
-      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--btn-bg); padding:10px 20px; border-radius:20px; border:1px solid rgba(255,255,255,0.1);">
-        <strong style="font-size:1.1rem; color:var(--text);">👑 KING</strong>
-        <div style="display:flex; gap:10px;">
-          <button style="padding:10px 20px; border-radius:10px; border:none; background:var(--accent); color:#000; font-weight:bold; cursor:pointer;" onclick="toggleModule('KING', true)">ON</button>
-          <button style="padding:10px 20px; border-radius:10px; border:none; background:#333; color:#fff; font-weight:bold; cursor:pointer;" onclick="toggleModule('KING', false)">OFF</button>
-        </div>
+      <div class="mod-dur-wrapper"><input type="number" class="mod-dur" id="dur-ct-quiz" placeholder="s"></div>
+    </div>
+    <!-- KING -->
+    <div class="mod-row" id="row-ct-king">
+      <div class="mod-name">👑 KING</div>
+      <div class="mod-toggle">
+        <button class="mod-btn btn-on" onclick="toggleModule('KING', true)">ON</button>
+        <button class="mod-btn btn-off" onclick="toggleModule('KING', false)">OFF</button>
       </div>
-
-      <!-- WEA1 -->
-      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--btn-bg); padding:10px 20px; border-radius:20px; border:1px solid rgba(255,255,255,0.1);">
-        <strong style="font-size:1.1rem; color:var(--text);">🌦 WEA1</strong>
-        <div style="display:flex; gap:10px;">
-          <button style="padding:10px 20px; border-radius:10px; border:none; background:var(--accent); color:#000; font-weight:bold; cursor:pointer;" onclick="toggleModule('WEA1', true)">ON</button>
-          <button style="padding:10px 20px; border-radius:10px; border:none; background:#333; color:#fff; font-weight:bold; cursor:pointer;" onclick="toggleModule('WEA1', false)">OFF</button>
-        </div>
+      <div class="mod-dur-wrapper"><input type="number" class="mod-dur" id="dur-ct-king" placeholder="s"></div>
+    </div>
+    <!-- WEA1 -->
+    <div class="mod-row" id="row-ct-wea1">
+      <div class="mod-name">🌦 WEA1</div>
+      <div class="mod-toggle">
+        <button class="mod-btn btn-on" onclick="toggleModule('WEA1', true)">ON</button>
+        <button class="mod-btn btn-off" onclick="toggleModule('WEA1', false)">OFF</button>
       </div>
-
-      <!-- FIR -->
-      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--btn-bg); padding:10px 20px; border-radius:20px; border:1px solid rgba(255,255,255,0.1);">
-        <strong style="font-size:1.1rem; color:var(--text);">🔥 FIR</strong>
-        <div style="display:flex; gap:10px;">
-          <button style="padding:10px 20px; border-radius:10px; border:none; background:var(--accent); color:#000; font-weight:bold; cursor:pointer;" onclick="toggleModule('FIR', true)">ON</button>
-          <button style="padding:10px 20px; border-radius:10px; border:none; background:#333; color:#fff; font-weight:bold; cursor:pointer;" onclick="toggleModule('FIR', false)">OFF</button>
-        </div>
+      <div class="mod-dur-wrapper"><input type="number" class="mod-dur" id="dur-ct-wea1" placeholder="s"></div>
+    </div>
+    <!-- FIR -->
+    <div class="mod-row" id="row-ct-fir">
+      <div class="mod-name">🔥 FIR</div>
+      <div class="mod-toggle">
+        <button class="mod-btn btn-on" onclick="toggleModule('FIR', true)">ON</button>
+        <button class="mod-btn btn-off" onclick="toggleModule('FIR', false)">OFF</button>
       </div>
-      
+      <div class="mod-dur-wrapper"><input type="number" class="mod-dur" id="dur-ct-fir" placeholder="s"></div>
     </div>
   </div>
 
+  <button class="save-btn" onclick="saveModuleDurations()">💾 SAVE DURATIONS</button>
   <div class="status-bar" id="status">Sync Active</div>
 
-  <!-- Navigation Hub -->
   <nav class="nav-hub">
       <a href="index.html" class="nav-link">📺 Display</a>
       <a href="masteradmin.html" class="nav-link">🛠 Admin</a>
       <a href="remote.html" class="nav-link active">📱 Remote</a>
-      <span style="color: #333">|</span>
-      <a href="../_ct-KING/index.html" class="nav-link">👑 KING</a>
-      <a href="../_ct-MMR/index.html" class="nav-link">🥩 MMR</a>
-      <a href="../_ct-ACE/index.html" class="nav-link">🃏 ACE</a>
-      <a href="../_ct-WEA1/index.html" class="nav-link">🌦 WEA</a>
-      <a href="../_ct-FIR/index.html" class="nav-link">🔥 FIR</a>
   </nav>
 
   <script>
     const bc = new BroadcastChannel('ct_matrix_sync');
-    const bc_sub = new BroadcastChannel('mom_sync'); // For MOM confetti trigger
+    const bc_sub = new BroadcastChannel('mom_sync');
+
+    // Default durations fallback
+    const DEFAULT_DURS = { 'ct-mmr': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-king': 150, 'ct-quiz': 60, 'ct-fir': 180 };
 
     function getClientId() {
       let id = localStorage.getItem('matrix_client_id');
-      if (!id) {
-        id = 'client_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('matrix_client_id', id);
-      }
+      if (!id) { id = 'client_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('matrix_client_id', id); }
       return id;
     }
-
     function getTabId() {
       if (window.getMatrixTabId) return window.getMatrixTabId();
-      if (!window.matrixTabId) {
-        window.matrixTabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-      }
+      if (!window.matrixTabId) { window.matrixTabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); }
       return window.matrixTabId;
     }
 
+    function initUI() {
+      let config = { disabledModules: [], moduleDurations: {} };
+      try {
+        const stored = localStorage.getItem('matrix_config');
+        if (stored) config = { ...config, ...JSON.parse(stored) };
+      } catch(e) {}
+      
+      const moduleIds = ['ct-ace', 'ct-mmr', 'ct-quiz', 'ct-king', 'ct-wea1', 'ct-fir'];
+      moduleIds.forEach(id => {
+        const row = document.getElementById('row-' + id);
+        if (!row) return;
+        
+        // Setup Durations
+        const durInput = document.getElementById('dur-' + id);
+        if (durInput) {
+            durInput.value = config.moduleDurations[id] || DEFAULT_DURS[id];
+        }
+
+        // Setup Toggles
+        const isOff = config.disabledModules && config.disabledModules.includes(id);
+        const btnOn = row.querySelector('.btn-on');
+        const btnOff = row.querySelector('.btn-off');
+        if (isOff) {
+          btnOn.classList.remove('active-on');
+          btnOff.classList.add('active-off');
+        } else {
+          btnOn.classList.add('active-on');
+          btnOff.classList.remove('active-off');
+        }
+      });
+    }
+
+    // Listen to local BroadcastChannel to stay synced if someone edits from masteradmin
+    bc.onmessage = (e) => {
+        if (e.data.type === 'MODULE_FILTER' || e.data.type === 'SETTINGS_UPDATE') {
+            // Give localStorage a tiny moment to be written by matrix-core.js before reading
+            setTimeout(initUI, 100);
+        }
+        if (e.data.type === 'SYNC_STATE' && e.data.state && e.data.state.SETTINGS_UPDATE) {
+            setTimeout(initUI, 100);
+        }
+    };
+
     function send(type) {
-      const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-      const timestamp = Date.now();
-      const msg = { type, commandId, timestamp, source: getClientId(), senderTabId: getTabId() };
+      const msg = { type, commandId: 'cmd_' + Date.now(), timestamp: Date.now(), source: getClientId(), senderTabId: getTabId() };
       bc.postMessage(msg);
       if (window.sendToFirebase) window.sendToFirebase(msg);
-      vibrate();
-      showStatus('Sent: ' + type);
+      vibrate(); showStatus('Sent: ' + type);
     }
 
     function jump(id) {
-      const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-      const timestamp = Date.now();
-      const msg = { type: 'PROJECT', id, commandId, timestamp, source: getClientId(), senderTabId: getTabId() };
+      const msg = { type: 'PROJECT', id, commandId: 'cmd_' + Date.now(), timestamp: Date.now(), source: getClientId(), senderTabId: getTabId() };
       bc.postMessage(msg);
       if (window.sendToFirebase) window.sendToFirebase(msg);
-      vibrate();
-      showStatus('Jumping to ' + id);
+      vibrate(); showStatus('Jumping: ' + id);
     }
 
     function celebrate() {
-      const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-      const timestamp = Date.now();
-      const msg = { type: 'CONFETTI', commandId, timestamp, source: getClientId(), senderTabId: getTabId() };
-      // Send to Matrix
+      const msg = { type: 'CONFETTI', commandId: 'cmd_' + Date.now(), timestamp: Date.now(), source: getClientId(), senderTabId: getTabId() };
       bc.postMessage(msg);
       if (window.sendToFirebase) window.sendToFirebase(msg);
-      // Also send to MOM specifically if it's the active iframe
-      bc_sub.postMessage({ type: 'CONFETTI', commandId, timestamp });
-      vibrate([100, 50, 100]);
-      showStatus('CELEBRATION TRIGGERED');
+      bc_sub.postMessage({ type: 'CONFETTI', commandId: msg.commandId, timestamp: msg.timestamp });
+      vibrate([100, 50, 100]); showStatus('CONFETTI TRIGGERED');
     }
 
-    function toggleModule(id, state) {
-      const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-      const timestamp = Date.now();
-      const msg = { type: 'MODULE_FILTER', id, active: state, commandId, timestamp, source: getClientId(), senderTabId: getTabId() };
+    function toggleModule(rawId, state) {
+      const msg = { type: 'MODULE_FILTER', id: rawId, active: state, commandId: 'cmd_' + Date.now(), timestamp: Date.now(), source: getClientId(), senderTabId: getTabId() };
       bc.postMessage(msg);
       if (window.sendToFirebase) window.sendToFirebase(msg);
-      vibrate();
-      showStatus(`${id} ${state ? 'ENABLED' : 'DISABLED'}`);
+      vibrate(); showStatus(`${rawId} ${state ? 'ON' : 'OFF'}`);
+      
+      // Optimistically update local config and UI so it feels instant
+      let config = { disabledModules: [] };
+      try {
+        const stored = localStorage.getItem('matrix_config');
+        if (stored) config = { ...config, ...JSON.parse(stored) };
+      } catch(e) {}
+      const fullId = 'ct-' + rawId.toLowerCase();
+      if (state) {
+          config.disabledModules = config.disabledModules.filter(m => m !== fullId);
+      } else {
+          if (!config.disabledModules.includes(fullId)) config.disabledModules.push(fullId);
+      }
+      localStorage.setItem('matrix_config', JSON.stringify(config));
+      initUI();
+    }
+
+    function saveModuleDurations() {
+        const moduleIds = ['ct-ace', 'ct-mmr', 'ct-quiz', 'ct-king', 'ct-wea1', 'ct-fir'];
+        const durations = {};
+        moduleIds.forEach(id => {
+            const el = document.getElementById('dur-' + id);
+            if (el) {
+                const val = parseInt(el.value);
+                if (val && val >= 10) durations[id] = val;
+            }
+        });
+
+        let config = {};
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            if (stored) config = JSON.parse(stored);
+        } catch(e) {}
+        config.moduleDurations = durations;
+        localStorage.setItem('matrix_config', JSON.stringify(config));
+
+        const msg = {
+            type: 'SETTINGS_UPDATE',
+            payload: { moduleDurations: durations },
+            commandId: 'cmd_' + Date.now(),
+            timestamp: Date.now(),
+            senderTabId: getTabId(),
+            source: getClientId()
+        };
+        bc.postMessage(msg);
+        if (window.sendToFirebase) window.sendToFirebase(msg);
+
+        vibrate();
+        showStatus('DURATIONS SAVED');
     }
 
     function vibrate(pattern = 50) {
-      if (window.navigator && window.navigator.vibrate) {
-        window.navigator.vibrate(pattern);
-      }
+      if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(pattern);
     }
-
     function showStatus(msg) {
       const el = document.getElementById('status');
-      el.innerText = msg;
-      el.style.opacity = '1';
+      el.innerText = msg; el.style.opacity = '1';
       setTimeout(() => el.style.opacity = '0.5', 2000);
     }
+
+    // Run immediately
+    initUI();
   </script>
   <script type="module">
-    // Direct Firebase integration for remote control
     import { db, ref, set, update } from './firebase-config.js';
-    
     const COMMAND_PATH = 'matrix_command';
+    const STATE_PATH = 'matrix_state';
     
     function getClientIdForFirebase() {
         let id = localStorage.getItem('matrix_client_id');
-        if (!id) {
-            id = 'client_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('matrix_client_id', id);
-        }
+        if (!id) { id = 'client_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('matrix_client_id', id); }
         return id;
     }
     
     window.sendToFirebase = function(msg) {
-        if (!db) {
-            console.error('[REMOTE] Firebase DB not initialized');
-            return;
+        if (!db) return;
+        const payload = { ...msg, source: getClientIdForFirebase(), isFirebaseBridge: true };
+        set(ref(db, COMMAND_PATH), payload);
+        
+        // If it's a persistent state change, also update state node (mirrors masteradmin)
+        const PERSISTENT_TYPES = ['MODULE_FILTER', 'SETTINGS_UPDATE'];
+        if (PERSISTENT_TYPES.includes(msg.type)) {
+            update(ref(db, STATE_PATH + '/' + msg.type), payload);
+            update(ref(db, STATE_PATH), { _last_updated_by: getClientIdForFirebase() });
         }
-        const payload = {
-            ...msg,
-            source: getClientIdForFirebase(),
-            isFirebaseBridge: true
-        };
-        console.log('[REMOTE] ☁️ Writing to Firebase:', msg.type);
-        set(ref(db, COMMAND_PATH), payload)
-            .then(() => console.log('[REMOTE] ✅ Firebase write OK:', msg.type))
-            .catch((err) => console.error('[REMOTE] ❌ Firebase write FAILED:', err));
     };
-    
-    console.log('[REMOTE] ✅ Direct Firebase integration loaded.');
   </script>
   <script type="module" src="firebase-bridge.js"></script>
 </body>
 </html>
-
