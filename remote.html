@@ -165,7 +165,9 @@
     function send(type) {
       const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
       const timestamp = Date.now();
-      bc.postMessage({ type, commandId, timestamp, source: getClientId(), senderTabId: getTabId() });
+      const msg = { type, commandId, timestamp, source: getClientId(), senderTabId: getTabId() };
+      bc.postMessage(msg);
+      if (window.sendToFirebase) window.sendToFirebase(msg);
       vibrate();
       showStatus('Sent: ' + type);
     }
@@ -173,7 +175,9 @@
     function jump(id) {
       const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
       const timestamp = Date.now();
-      bc.postMessage({ type: 'PROJECT', id, commandId, timestamp, source: getClientId(), senderTabId: getTabId() });
+      const msg = { type: 'PROJECT', id, commandId, timestamp, source: getClientId(), senderTabId: getTabId() };
+      bc.postMessage(msg);
+      if (window.sendToFirebase) window.sendToFirebase(msg);
       vibrate();
       showStatus('Jumping to ' + id);
     }
@@ -181,8 +185,10 @@
     function celebrate() {
       const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
       const timestamp = Date.now();
-      // Send to Matrix (maybe it has its own effect)
-      bc.postMessage({ type: 'CONFETTI', commandId, timestamp, source: getClientId(), senderTabId: getTabId() });
+      const msg = { type: 'CONFETTI', commandId, timestamp, source: getClientId(), senderTabId: getTabId() };
+      // Send to Matrix
+      bc.postMessage(msg);
+      if (window.sendToFirebase) window.sendToFirebase(msg);
       // Also send to MOM specifically if it's the active iframe
       bc_sub.postMessage({ type: 'CONFETTI', commandId, timestamp });
       vibrate([100, 50, 100]);
@@ -202,6 +208,40 @@
       setTimeout(() => el.style.opacity = '0.5', 2000);
     }
   </script>
+  <script type="module">
+    // Direct Firebase integration for remote control
+    import { db, ref, set, update } from './firebase-config.js';
+    
+    const COMMAND_PATH = 'matrix_command';
+    
+    function getClientIdForFirebase() {
+        let id = localStorage.getItem('matrix_client_id');
+        if (!id) {
+            id = 'client_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('matrix_client_id', id);
+        }
+        return id;
+    }
+    
+    window.sendToFirebase = function(msg) {
+        if (!db) {
+            console.error('[REMOTE] Firebase DB not initialized');
+            return;
+        }
+        const payload = {
+            ...msg,
+            source: getClientIdForFirebase(),
+            isFirebaseBridge: true
+        };
+        console.log('[REMOTE] ☁️ Writing to Firebase:', msg.type);
+        set(ref(db, COMMAND_PATH), payload)
+            .then(() => console.log('[REMOTE] ✅ Firebase write OK:', msg.type))
+            .catch((err) => console.error('[REMOTE] ❌ Firebase write FAILED:', err));
+    };
+    
+    console.log('[REMOTE] ✅ Direct Firebase integration loaded.');
+  </script>
   <script type="module" src="firebase-bridge.js"></script>
 </body>
 </html>
+

@@ -774,7 +774,9 @@
     }
 
     function toggleModule(id, state) {
-        bc.postMessage({type: 'MODULE_FILTER', id, active: state, senderTabId: getTabId()});
+        const msg = {type: 'MODULE_FILTER', id, active: state, senderTabId: getTabId(), commandId: 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9), timestamp: Date.now()};
+        bc.postMessage(msg);
+        if (window.sendToFirebase) window.sendToFirebase(msg);
         showToast(`${id} ${state ? 'ENABLED' : 'DISABLED'}`);
         // Delay tray re-render to allow engine to update
         setTimeout(renderMonitorTray, 500);
@@ -800,15 +802,17 @@
         config.moduleDurations = durations;
         localStorage.setItem('matrix_config', JSON.stringify(config));
 
-        // Broadcast to engine + Firebase bridge
+        // Broadcast to engine + Firebase
         const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        bc.postMessage({
+        const settingsMsg = {
             type: 'SETTINGS_UPDATE',
             payload: { moduleDurations: durations },
             commandId: commandId,
             timestamp: Date.now(),
             senderTabId: getTabId()
-        });
+        };
+        bc.postMessage(settingsMsg);
+        if (window.sendToFirebase) window.sendToFirebase(settingsMsg);
 
         showToast('DURATIONS SAVED — Refresh All to apply');
     }
@@ -860,7 +864,17 @@
         const timestamp = Date.now();
         const msg = { type, commandId, timestamp, senderTabId: getTabId() };
         if (id) msg.id = id;
+        
+        // 1. Local BroadcastChannel (for preview iframe and other local tabs)
         bc.postMessage(msg);
+        
+        // 2. Direct Firebase write (for remote devices — bypasses BC relay)
+        if (window.sendToFirebase) {
+            window.sendToFirebase(msg);
+        } else {
+            console.warn('[MASTERADMIN] sendToFirebase not yet available — Firebase module still loading');
+        }
+        
         showToast('MASTER: ' + type + (id ? ' ' + id : ''));
     }
 
@@ -872,12 +886,16 @@
             accent: document.getElementById('live-accent').value,
             mode: document.getElementById('live-mode').value
         };
-        bc.postMessage({ type: 'LIVE_SLIDE', payload, senderTabId: getTabId() });
+        const msg = { type: 'LIVE_SLIDE', payload, senderTabId: getTabId(), commandId: 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9), timestamp: Date.now() };
+        bc.postMessage(msg);
+        if (window.sendToFirebase) window.sendToFirebase(msg);
         showToast('LIVE SLIDE PUSHED');
     }
 
     function clearLiveSlide() {
-        bc.postMessage({ type: 'LIVE_SLIDE', payload: { active: false }, senderTabId: getTabId() });
+        const msg = { type: 'LIVE_SLIDE', payload: { active: false }, senderTabId: getTabId(), commandId: 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9), timestamp: Date.now() };
+        bc.postMessage(msg);
+        if (window.sendToFirebase) window.sendToFirebase(msg);
         document.getElementById('live-title').value = '';
         document.getElementById('live-detail').value = '';
         showToast('LIVE SLIDE CLEARED');
@@ -1093,6 +1111,73 @@
             bc.postMessage({ type: 'GET_SLIDES_DUMP' });
         }, 500);
     };
+</script>
+<script type="module">
+    // ─── DIRECT FIREBASE INTEGRATION FOR ADMIN ───
+    // Instead of relying on BroadcastChannel relay to firebase-bridge.js,
+    // masteradmin writes commands directly to Firebase for maximum reliability.
+    
+    import { db, ref, set, update } from './firebase-config.js';
+    
+    const COMMAND_PATH = 'matrix_command';
+    const STATE_PATH = 'matrix_state';
+    
+    function getClientIdForFirebase() {
+        let id = localStorage.getItem('matrix_client_id');
+        if (!id) {
+            id = 'client_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('matrix_client_id', id);
+        }
+        return id;
+    }
+    
+    // Expose the direct Firebase send function globally
+    window.sendToFirebase = function(msg) {
+        if (!db) {
+            console.error('[MASTERADMIN] Firebase DB not initialized — cannot send to cloud');
+            return;
+        }
+        
+        const payload = {
+            ...msg,
+            source: getClientIdForFirebase(),
+            isFirebaseBridge: true
+        };
+        
+        console.log('[MASTERADMIN] ☁️ Writing command to Firebase:', msg.type, payload);
+        
+        set(ref(db, COMMAND_PATH), payload)
+            .then(() => {
+                console.log('[MASTERADMIN] ✅ Firebase command written:', msg.type);
+                // Pulse the cloud dot
+                const dot = document.getElementById('cloud-dot');
+                if (dot) {
+                    dot.style.background = '#06b6d4';
+                    dot.classList.remove('pulse');
+                    void dot.offsetWidth;
+                    dot.classList.add('pulse');
+                    setTimeout(() => { dot.style.background = '#10b981'; }, 500);
+                }
+            })
+            .catch((err) => {
+                console.error('[MASTERADMIN] ❌ Firebase write FAILED:', err);
+                const dot = document.getElementById('cloud-dot');
+                if (dot) dot.style.background = '#ef4444';
+                const label = document.querySelector('#cloud-status span:last-child');
+                if (label) label.textContent = 'FIREBASE ERROR';
+            });
+        
+        // If it's a persistent state change, also update state node
+        const PERSISTENT_TYPES = ['MODULE_FILTER', 'LIVE_SLIDE', 'SETTINGS_UPDATE'];
+        if (PERSISTENT_TYPES.includes(msg.type)) {
+            update(ref(db, STATE_PATH), { _last_updated_by: getClientIdForFirebase() })
+                .catch(err => console.error('[MASTERADMIN] State meta update failed:', err));
+            update(ref(db, STATE_PATH + '/' + msg.type), payload)
+                .catch(err => console.error('[MASTERADMIN] State sub-node update failed:', err));
+        }
+    };
+    
+    console.log('[MASTERADMIN] ✅ Direct Firebase integration loaded. Client:', getClientIdForFirebase());
 </script>
 <script type="module" src="firebase-bridge.js"></script>
 </body>

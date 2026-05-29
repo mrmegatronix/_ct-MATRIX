@@ -105,7 +105,9 @@
             accent: document.getElementById('live-accent').value,
             mode: document.getElementById('live-mode').value
         };
-        bc.postMessage({ type: 'LIVE_SLIDE', payload, senderTabId: getTabId() });
+        const msg = { type: 'LIVE_SLIDE', payload, senderTabId: getTabId(), commandId: 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9), timestamp: Date.now() };
+        bc.postMessage(msg);
+        if (window.sendToFirebase) window.sendToFirebase(msg);
         
         // Visual feedback
         const btn = event.target;
@@ -119,7 +121,9 @@
     }
 
     function clearLiveSlide() {
-        bc.postMessage({ type: 'LIVE_SLIDE', payload: { active: false }, senderTabId: getTabId() });
+        const msg = { type: 'LIVE_SLIDE', payload: { active: false }, senderTabId: getTabId(), commandId: 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9), timestamp: Date.now() };
+        bc.postMessage(msg);
+        if (window.sendToFirebase) window.sendToFirebase(msg);
         document.getElementById('live-title').value = '';
         document.getElementById('live-detail').value = '';
         
@@ -131,6 +135,28 @@
         }, 2000);
     }
 </script>
+<script type="module">
+    // Direct Firebase integration (works when loaded standalone, not in iframe)
+    if (window.self === window.top) {
+        import('./firebase-config.js').then(({ db, ref, set }) => {
+            const COMMAND_PATH = 'matrix_command';
+            function getClientIdForFirebase() {
+                let id = localStorage.getItem('matrix_client_id');
+                if (!id) { id = 'client_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('matrix_client_id', id); }
+                return id;
+            }
+            window.sendToFirebase = function(msg) {
+                if (!db) return;
+                const payload = { ...msg, source: getClientIdForFirebase(), isFirebaseBridge: true };
+                set(ref(db, COMMAND_PATH), payload)
+                    .then(() => console.log('[COMMANDER] ✅ Firebase write OK:', msg.type))
+                    .catch((err) => console.error('[COMMANDER] ❌ Firebase write FAILED:', err));
+            };
+            console.log('[COMMANDER] ✅ Direct Firebase loaded.');
+        });
+    }
+</script>
 <script type="module" src="firebase-bridge.js"></script>
 </body>
 </html>
+

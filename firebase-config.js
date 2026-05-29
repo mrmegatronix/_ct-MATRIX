@@ -1,6 +1,8 @@
 /**
  * FIREBASE CONFIGURATION
  * Real-time cloud sync for ct-Matrix
+ * 
+ * Exports: db, ref, onValue, set, update, push
  */
 
 const firebaseConfig = {
@@ -17,7 +19,34 @@ const firebaseConfig = {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
 import { getDatabase, ref, onValue, set, update, push } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+let app, db;
+
+try {
+    app = initializeApp(firebaseConfig);
+    db = getDatabase(app);
+    console.log('[FIREBASE CONFIG] ✅ Firebase initialized successfully. DB URL:', firebaseConfig.databaseURL);
+} catch (err) {
+    console.error('[FIREBASE CONFIG] ❌ Firebase initialization FAILED:', err);
+    // Create a dummy db that will cause clear errors downstream
+    db = null;
+}
+
+// Connection state monitoring — attach to .info/connected
+if (db) {
+    try {
+        const connectedRef = ref(db, '.info/connected');
+        onValue(connectedRef, (snap) => {
+            if (snap.val() === true) {
+                console.log('[FIREBASE CONFIG] 🟢 Connected to Firebase RTDB');
+                window._firebaseConnected = true;
+            } else {
+                console.log('[FIREBASE CONFIG] 🔴 Disconnected from Firebase RTDB');
+                window._firebaseConnected = false;
+            }
+        });
+    } catch (e) {
+        console.warn('[FIREBASE CONFIG] Could not attach connection listener:', e);
+    }
+}
 
 export { db, ref, onValue, set, update, push };
