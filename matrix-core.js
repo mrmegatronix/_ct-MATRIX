@@ -103,7 +103,8 @@ async function initMatrix() {
           currentIndex: window.MATRIX.STATE.currentIndex,
           startTime: window.MATRIX.STATE.currentSlideStartTime,
           delay: window.MATRIX.STATE.currentSlideDelay,
-          lastSync: new Date().toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false })
+          lastSync: new Date().toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false }),
+          senderTabId: window.matrixTabId
         }); 
         break;
       case 'CONFETTI': if (window.triggerConfetti) window.triggerConfetti(); break;
@@ -588,7 +589,8 @@ function buildSlideQueue(data) {
       currentIndex: window.MATRIX.STATE.currentIndex,
       startTime: window.MATRIX.STATE.currentSlideStartTime,
       delay: window.MATRIX.STATE.currentSlideDelay,
-      lastSync: new Date().toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false })
+      lastSync: new Date().toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false }),
+      senderTabId: window.matrixTabId
     });
   }
   
@@ -922,7 +924,8 @@ function renderActiveSlide() {
           slide: slide, 
           index: window.MATRIX.STATE.currentIndex,
           startTime: startTime,
-          delay: delay
+          delay: delay,
+          senderTabId: window.matrixTabId
       });
   }
   
