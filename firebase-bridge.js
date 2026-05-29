@@ -65,6 +65,7 @@ if (window.self === window.top) {
     }
 
     // Listen for one-time action commands (NEXT, PREV, JUMP, TOGGLE, etc.)
+    let isInitialCommandLoad = true;
     try {
         onValue(ref(db, COMMAND_PATH), (snapshot) => {
             firebaseConnected = true;
@@ -74,12 +75,18 @@ if (window.self === window.top) {
                 return;
             }
 
+            // Skip the command that's already in Firebase when the page first loads
+            if (isInitialCommandLoad) {
+                isInitialCommandLoad = false;
+                window.lastCommandId = cmd.commandId;
+                console.log('[FIREBASE BRIDGE] Skipping initial historical command on load');
+                return;
+            }
+
             // Guards: only process commands that are:
-            // 1. Newer than when this page loaded (prevents replaying old commands on refresh)
-            // 2. Newer than the last command we processed (prevents duplicates)
-            // 3. Not from this device (prevents echo)
-            const isNew = cmd.timestamp > pageLoadTime;
-            const isNewerThanLast = cmd.timestamp > (window.lastCommandTime || 0);
+            // 1. New (different commandId from last processed)
+            // 2. Not from this device (prevents echo)
+            const isNew = cmd.commandId !== window.lastCommandId;
             const isFromOtherDevice = cmd.source !== getClientId();
 
             console.log('[FIREBASE BRIDGE] Command received from Firebase:', {
@@ -87,13 +94,12 @@ if (window.self === window.top) {
                 commandId: cmd.commandId,
                 source: cmd.source,
                 isNew,
-                isNewerThanLast,
                 isFromOtherDevice,
                 myClientId: getClientId()
             });
 
-            if (isNew && isNewerThanLast && isFromOtherDevice) {
-                window.lastCommandTime = cmd.timestamp;
+            if (isNew && isFromOtherDevice) {
+                window.lastCommandId = cmd.commandId;
                 console.log('[FIREBASE BRIDGE] ✅ Executing remote command:', cmd.type);
                 
                 // Post to local BroadcastChannel so matrix-core.js picks it up

@@ -203,6 +203,9 @@ function updateConfig(newConfig) {
   window.MATRIX.CONFIG = { ...window.MATRIX.CONFIG, ...newConfig };
   localStorage.setItem('matrix_config', JSON.stringify(window.MATRIX.CONFIG));
   applyUISettings();
+  if (newConfig.moduleDurations) {
+      window.initMatrix();
+  }
 }
 
 function handleModuleFilter(id, active) {
