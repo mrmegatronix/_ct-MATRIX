@@ -313,6 +313,7 @@ body {
   font-weight: 600;
   box-shadow: 0 0 15px var(--theme-glow);
   animation: pulse-glow-small 3s infinite ease-in-out;
+  white-space: nowrap;
 }
 
 .premium-location {
@@ -1201,9 +1202,9 @@ body {
 .premium-footer-row {
   position: absolute;
   bottom: 30px;
-  left: 5%;
-  right: 5%;
-  width: 90%;
+  left: 2%;
+  right: 2%;
+  width: 96%;
   z-index: 30;
   display: flex;
   justify-content: space-evenly;

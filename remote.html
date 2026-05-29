@@ -124,6 +124,65 @@
       <span class="btn-icon">✨</span>
       <span>Emergency Confetti</span>
     </button>
+
+    <div style="grid-column: span 2; margin-top: 10px; opacity: 0.3; font-size: 0.7rem; font-weight: 800; text-transform: uppercase;">Module Toggles</div>
+    <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 10px; width: 100%;">
+      
+      <!-- ACE -->
+      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--btn-bg); padding:10px 20px; border-radius:20px; border:1px solid rgba(255,255,255,0.1);">
+        <strong style="font-size:1.1rem; color:var(--text);">🃏 ACE</strong>
+        <div style="display:flex; gap:10px;">
+          <button style="padding:10px 20px; border-radius:10px; border:none; background:var(--accent); color:#000; font-weight:bold; cursor:pointer;" onclick="toggleModule('ACE', true)">ON</button>
+          <button style="padding:10px 20px; border-radius:10px; border:none; background:#333; color:#fff; font-weight:bold; cursor:pointer;" onclick="toggleModule('ACE', false)">OFF</button>
+        </div>
+      </div>
+      
+      <!-- MMR -->
+      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--btn-bg); padding:10px 20px; border-radius:20px; border:1px solid rgba(255,255,255,0.1);">
+        <strong style="font-size:1.1rem; color:var(--text);">🥩 MMR</strong>
+        <div style="display:flex; gap:10px;">
+          <button style="padding:10px 20px; border-radius:10px; border:none; background:var(--accent); color:#000; font-weight:bold; cursor:pointer;" onclick="toggleModule('MMR', true)">ON</button>
+          <button style="padding:10px 20px; border-radius:10px; border:none; background:#333; color:#fff; font-weight:bold; cursor:pointer;" onclick="toggleModule('MMR', false)">OFF</button>
+        </div>
+      </div>
+
+      <!-- QUIZ -->
+      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--btn-bg); padding:10px 20px; border-radius:20px; border:1px solid rgba(255,255,255,0.1);">
+        <strong style="font-size:1.1rem; color:var(--text);">🧠 QUIZ</strong>
+        <div style="display:flex; gap:10px;">
+          <button style="padding:10px 20px; border-radius:10px; border:none; background:var(--accent); color:#000; font-weight:bold; cursor:pointer;" onclick="toggleModule('QUIZ', true)">ON</button>
+          <button style="padding:10px 20px; border-radius:10px; border:none; background:#333; color:#fff; font-weight:bold; cursor:pointer;" onclick="toggleModule('QUIZ', false)">OFF</button>
+        </div>
+      </div>
+
+      <!-- KING -->
+      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--btn-bg); padding:10px 20px; border-radius:20px; border:1px solid rgba(255,255,255,0.1);">
+        <strong style="font-size:1.1rem; color:var(--text);">👑 KING</strong>
+        <div style="display:flex; gap:10px;">
+          <button style="padding:10px 20px; border-radius:10px; border:none; background:var(--accent); color:#000; font-weight:bold; cursor:pointer;" onclick="toggleModule('KING', true)">ON</button>
+          <button style="padding:10px 20px; border-radius:10px; border:none; background:#333; color:#fff; font-weight:bold; cursor:pointer;" onclick="toggleModule('KING', false)">OFF</button>
+        </div>
+      </div>
+
+      <!-- WEA1 -->
+      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--btn-bg); padding:10px 20px; border-radius:20px; border:1px solid rgba(255,255,255,0.1);">
+        <strong style="font-size:1.1rem; color:var(--text);">🌦 WEA1</strong>
+        <div style="display:flex; gap:10px;">
+          <button style="padding:10px 20px; border-radius:10px; border:none; background:var(--accent); color:#000; font-weight:bold; cursor:pointer;" onclick="toggleModule('WEA1', true)">ON</button>
+          <button style="padding:10px 20px; border-radius:10px; border:none; background:#333; color:#fff; font-weight:bold; cursor:pointer;" onclick="toggleModule('WEA1', false)">OFF</button>
+        </div>
+      </div>
+
+      <!-- FIR -->
+      <div style="display:flex; justify-content:space-between; align-items:center; background:var(--btn-bg); padding:10px 20px; border-radius:20px; border:1px solid rgba(255,255,255,0.1);">
+        <strong style="font-size:1.1rem; color:var(--text);">🔥 FIR</strong>
+        <div style="display:flex; gap:10px;">
+          <button style="padding:10px 20px; border-radius:10px; border:none; background:var(--accent); color:#000; font-weight:bold; cursor:pointer;" onclick="toggleModule('FIR', true)">ON</button>
+          <button style="padding:10px 20px; border-radius:10px; border:none; background:#333; color:#fff; font-weight:bold; cursor:pointer;" onclick="toggleModule('FIR', false)">OFF</button>
+        </div>
+      </div>
+      
+    </div>
   </div>
 
   <div class="status-bar" id="status">Sync Active</div>
@@ -193,6 +252,16 @@
       bc_sub.postMessage({ type: 'CONFETTI', commandId, timestamp });
       vibrate([100, 50, 100]);
       showStatus('CELEBRATION TRIGGERED');
+    }
+
+    function toggleModule(id, state) {
+      const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      const timestamp = Date.now();
+      const msg = { type: 'MODULE_FILTER', id, active: state, commandId, timestamp, source: getClientId(), senderTabId: getTabId() };
+      bc.postMessage(msg);
+      if (window.sendToFirebase) window.sendToFirebase(msg);
+      vibrate();
+      showStatus(`${id} ${state ? 'ENABLED' : 'DISABLED'}`);
     }
 
     function vibrate(pattern = 50) {

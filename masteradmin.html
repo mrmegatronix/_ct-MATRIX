@@ -602,6 +602,16 @@
         return window.matrixTabId;
     }
 
+    function requestTelemetry() {
+        const payload = { type: 'GET_SLIDES_DUMP', senderTabId: getTabId() };
+        bc.postMessage(payload);
+        if (window.sendToFirebase) {
+            payload.timestamp = Date.now();
+            payload.commandId = 'cmd_' + payload.timestamp + '_' + Math.random().toString(36).substr(2, 9);
+            window.sendToFirebase(payload);
+        }
+    }
+
     function toggleNode(el) {
         const c = el.nextElementSibling;
         const isOpening = c.style.display === 'none' || c.style.display === '';
@@ -684,7 +694,7 @@
                     </div>
                     <div class="panel" style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px;">
                         <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.5; margin-bottom: 1rem;">QUICK ACTIONS</div>
-                        <button class="ctrl-btn primary" style="width: 100%; margin-bottom: 10px;" onclick="bc.postMessage({type:'GET_SLIDES_DUMP', senderTabId: getTabId()})">Refresh Telemetry</button>
+                        <button class="ctrl-btn primary" style="width: 100%; margin-bottom: 10px;" onclick="requestTelemetry()">Refresh Telemetry</button>
                         <button class="ctrl-btn" style="width: 100%;" onclick="loadModule('COMMANDER', 'live-commander.html')">Open Live Commander</button>
                     </div>
                 </div>
@@ -711,7 +721,7 @@
         if (ctx) ctx.innerHTML = '';
         
         // Request metrics telemetry
-        bc.postMessage({ type: 'GET_SLIDES_DUMP', senderTabId: getTabId() });
+        requestTelemetry();
         renderSidebarToggles();
         renderMonitorTray();
     }
@@ -957,7 +967,7 @@
         grid.innerHTML = '<div style="grid-column:1/-1; opacity:0.5">Requesting playlist data from live monitor...</div>';
         
         // Request fresh dump from index.html (which uses matrix-core.js)
-        bc.postMessage({ type: 'GET_SLIDES_DUMP', senderTabId: getTabId() });
+        requestTelemetry();
     }
 
     bc.onmessage = (e) => {
@@ -1041,7 +1051,7 @@
             }
         }
         if (e.data.type === 'CURRENT_SLIDE_BROADCAST') {
-            bc.postMessage({ type: 'GET_SLIDES_DUMP', senderTabId: getTabId() });
+            requestTelemetry();
         }
         if (e.data.type === 'DATA_HOT_RELOADED') {
             if (document.getElementById('full-grid-view').style.display === 'flex') renderPlaylistGrid();
@@ -1108,7 +1118,7 @@
             document.getElementById('preview-frame').src = 'index.html';
             document.getElementById('billboard-frame').src = 'billboard.html';
             scaleFrames();
-            bc.postMessage({ type: 'GET_SLIDES_DUMP', senderTabId: getTabId() });
+            requestTelemetry();
         }, 500);
     };
 </script>
