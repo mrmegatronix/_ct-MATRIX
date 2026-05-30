@@ -139,7 +139,7 @@ if (window.self === window.top) {
             'NEXT', 'PREV', 'JUMP', 'PROJECT', 'TOGGLE',
             'MODULE_FILTER', 'LIVE_SLIDE', 'SETTINGS_UPDATE',
             'CONFETTI', 'REFRESH', 'CURRENT_SLIDE_BROADCAST', 
-            'GET_SLIDES_DUMP', 'SLIDES_DUMP'
+            'GET_SLIDES_DUMP', 'SLIDES_DUMP', 'SYNC_JUMP'
         ];
 
         if (BRIDGED_COMMANDS.includes(type)) {

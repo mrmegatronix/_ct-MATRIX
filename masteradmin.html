@@ -410,6 +410,10 @@
     #toast.show { opacity: 1; transform: translateY(-10px); }
 
   </style>
+    <script>
+        // Tag this window as the master controller for synchronization purposes
+        window.IS_MASTER_DASHBOARD = true;
+    </script>
 </head>
 <body>
 
@@ -475,7 +479,7 @@
             <div class="nav-section-title">GLOBAL DASHBOARD</div>
             <div class="nav-link active" id="nav-home" onclick="loadWorkspaceView('HOME')">Dashboard Home</div>
             <div class="nav-link" id="nav-playlist" onclick="loadWorkspaceView('PLAYLIST')">Playlist Grid</div>
-            <div class="nav-link" onclick="loadModule('COMMANDER', 'live-commander.html')" style="color: var(--accent)">Live Slide Commander</div>
+            <div class="nav-link" onclick="loadModule('COMMANDER', 'live-commander.html?compact=true&v=' + Date.now())" style="color: var(--accent)">Live Slide Commander</div>
         </div>
 
 
@@ -491,50 +495,8 @@
             </div>
 
             <div class="nav-section-title">LIVE MODULES TREE</div>
-            <div class="tree-node">
-                <div class="tree-header" onclick="toggleNode(this)">_ct-ACE (Chase Ace)</div>
-                <div class="tree-children" style="display:none">
-                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('ACE', '../_ct-ACE/index.html')">Module View</a>
-                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('ACE', '../_ct-ACE/admin.html')">Admin Panel</a>
-                </div>
-            </div>
-            <div class="tree-node">
-                <div class="tree-header" onclick="toggleNode(this)">_ct-MMR (Meat Raffle)</div>
-                <div class="tree-children" style="display:none">
-                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MMR', '../_ct-MMR/index.html')">Module View</a>
-                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MMR', '../_ct-MMR/admin.html')">Admin Panel</a>
-                </div>
-            </div>
-            <div class="tree-node">
-                <div class="tree-header" onclick="toggleNode(this)">_ct-KING (Birthday)</div>
-                <div class="tree-children" style="display:none">
-                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('KING', '../_ct-KING/index.html')">Module View</a>
-                </div>
-            </div>
-            <div class="tree-node">
-                <div class="tree-header" onclick="toggleNode(this)">_ct-QUIZ (Pub Quiz)</div>
-                <div class="tree-children" style="display:none">
-                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('QUIZ', '../_ct-QUIZ/index.html')">Module View</a>
-                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('QUIZ', '../_ct-QUIZ/admin.html')">Admin Panel</a>
-                </div>
-            </div>
-            <div class="tree-node">
-                <div class="tree-header" onclick="toggleNode(this)">_ct-WEA1 (Weather)</div>
-                <div class="tree-children" style="display:none">
-                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('WEA1', '../_ct-wea1/index.html')">Live Conditions</a>
-                </div>
-            </div>
-            <div class="tree-node">
-                <div class="tree-header" onclick="toggleNode(this)">_ct-FIR (Fireplace)</div>
-                <div class="tree-children" style="display:none">
-                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('FIR', '../_ct-FIR/index.html')">Looping Fire</a>
-                </div>
-            </div>
+            <div id="live-modules-tree-container"></div>
         </div>
-
-        <div class="nav-section-title" style="margin-top: 15px;">MODULE SETTINGS</div>
-        <div id="sidebar-module-controls" style="padding: 0 5px;"></div>
-        <button class="ctrl-btn primary" style="width: 100%; margin-top: 10px; font-size: 0.6rem; padding: 6px;" onclick="saveModuleDurations()">💾 SAVE DURATIONS</button>
 
     </nav>
 
@@ -698,7 +660,7 @@
                     <div class="panel" style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px;">
                         <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.5; margin-bottom: 1rem;">QUICK ACTIONS</div>
                         <button class="ctrl-btn primary" style="width: 100%; margin-bottom: 10px;" onclick="requestTelemetry()">Refresh Telemetry</button>
-                        <button class="ctrl-btn" style="width: 100%;" onclick="loadModule('COMMANDER', 'live-commander.html')">Open Live Commander</button>
+                        <button class="ctrl-btn" style="width: 100%;" onclick="loadModule('COMMANDER', 'live-commander.html?compact=true&v=' + Date.now())">Open Live Commander</button>
                     </div>
                 </div>
 
@@ -757,7 +719,7 @@
     }
 
     function renderSidebarToggles() {
-        const side = document.getElementById('sidebar-module-controls');
+        const side = document.getElementById('live-modules-tree-container');
         if(!side) return;
 
         let config = { disabledModules: [], moduleDurations: {} };
@@ -769,28 +731,40 @@
         const dur = config.moduleDurations || {};
 
         const modules = [
-            { id: 'ct-mmr', name: 'MMR', defaultDur: 600 },
-            { id: 'ct-wea1', name: 'WEA1', defaultDur: 60 },
-            { id: 'ct-ace', name: 'ACE', defaultDur: 180 },
-            { id: 'ct-king', name: 'KING', defaultDur: 150 },
-            { id: 'ct-quiz', name: 'QUIZ', defaultDur: 60 },
-            { id: 'ct-fir', name: 'FIR', defaultDur: 180 }
+            { id: 'ct-ace', name: 'ACE', title: 'Chase Ace', defaultDur: 180, hasAdmin: true },
+            { id: 'ct-mmr', name: 'MMR', title: 'Meat Raffle', defaultDur: 600, hasAdmin: true },
+            { id: 'ct-king', name: 'KING', title: 'Birthday', defaultDur: 150, hasAdmin: false },
+            { id: 'ct-quiz', name: 'QUIZ', title: 'Pub Quiz', defaultDur: 60, hasAdmin: true },
+            { id: 'ct-wea1', name: 'WEA1', title: 'Weather', defaultDur: 60, hasAdmin: false },
+            { id: 'ct-fir', name: 'FIR', title: 'Fireplace', defaultDur: 180, hasAdmin: false }
         ];
 
         side.innerHTML = modules.map(m => {
             const isChecked = !disabled.includes(m.id);
             const val = dur[m.id] || m.defaultDur;
+            
+            // Generate the tree children dynamically based on hasAdmin
+            let childrenHTML = `<a href="javascript:void(0)" class="tree-item" onclick="loadModule('${m.name}', '../_${m.id}/${m.id === 'ct-wea1' || m.id === 'ct-fir' ? 'index.html' : 'index.html'}')">${m.id === 'ct-wea1' ? 'Live Conditions' : (m.id === 'ct-fir' ? 'Looping Fire' : 'Module View')}</a>`;
+            if (m.hasAdmin) {
+                childrenHTML += `<a href="javascript:void(0)" class="tree-item" onclick="loadModule('${m.name}', '../_${m.id}/admin.html')">Admin Panel</a>`;
+            }
+
             return `
-                <div style="display: flex; flex-direction: column; background: rgba(255,255,255,0.02); padding: 6px; border-radius: 6px; margin-bottom: 6px; border: 1px solid var(--border);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                        <span style="font-size: 0.65rem; font-weight: 800; color: #fff;">${m.name}</span>
-                        <div class="toggle-pill ${isChecked ? 'active' : ''}" style="margin: 0; padding: 2px 8px; font-size: 0.55rem; min-width: 40px; justify-content: center;" onclick="toggleModule('${m.name}', ${!isChecked}); renderSidebarToggles();">
-                            <span>${isChecked ? 'ON' : 'OFF'}</span>
+                <div class="tree-node">
+                    <div class="tree-header" style="display:flex; justify-content:space-between; align-items:center; padding: 6px 10px;">
+                        <span onclick="toggleNode(this.parentElement)" style="flex:1;">_${m.id.toUpperCase()} (${m.title})</span>
+                        <div style="display:flex; gap: 8px; align-items:center;">
+                            <div style="display:flex; align-items:center; gap: 4px;" title="Duration (Seconds)">
+                                <input type="number" id="dur-${m.id}" value="${val}" min="10" max="9999" onchange="saveModuleDurations()" style="width: 45px; background: rgba(0,0,0,0.4); border: 1px solid #333; color: #fff; padding: 2px 4px; border-radius: 4px; font-size: 0.65rem; font-family: monospace; text-align: center;" onclick="event.stopPropagation()">
+                                <span style="font-size: 0.5rem; color: #666; font-weight: 700;">SEC</span>
+                            </div>
+                            <div class="toggle-pill ${isChecked ? 'active' : ''}" style="margin: 0; padding: 2px 8px; font-size: 0.55rem; min-width: 40px; justify-content: center;" onclick="event.stopPropagation(); toggleModule('${m.name}', ${!isChecked}); renderSidebarToggles();">
+                                <span>${isChecked ? 'ON' : 'OFF'}</span>
+                            </div>
                         </div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 4px;">
-                        <input type="number" id="dur-${m.id}" value="${val}" min="10" max="9999" style="width: 100%; background: var(--surface); border: 1px solid #333; color: #fff; padding: 3px 6px; border-radius: 4px; font-size: 0.65rem; font-family: monospace; text-align: center;">
-                        <span style="font-size: 0.55rem; color: #666; font-weight: 700;">SEC</span>
+                    <div class="tree-children" style="display:none">
+                        ${childrenHTML}
                     </div>
                 </div>
             `;

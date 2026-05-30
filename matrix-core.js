@@ -93,6 +93,10 @@ async function initMatrix() {
       case 'PROJECT': window.jumpToProject(e.data.id); break;
       case 'SETTINGS_UPDATE': updateConfig(e.data.payload); break;
       case 'SYNC_DATA': window.initMatrix(); break; 
+      case 'SYNC_JUMP': 
+        if (window.parent && window.parent.IS_MASTER_DASHBOARD) return; // Master ignores incoming syncs to prevent loop
+        window.jumpToProject(e.data.id); 
+        break;
       case 'REFRESH': window.location.reload(); break;
       case 'LIVE_SLIDE': handleLiveSlide(e.data.payload); break;
       case 'MODULE_FILTER': handleModuleFilter(e.data.id, e.data.active); break;
@@ -930,6 +934,16 @@ function renderActiveSlide() {
           delay: delay,
           senderTabId: window.matrixTabId
       });
+
+      // If this is the master dashboard, blast a SYNC_JUMP so all billboards follow suit
+      if (window.parent && window.parent.IS_MASTER_DASHBOARD) {
+          bc.postMessage({
+              type: 'SYNC_JUMP',
+              id: slide.id,
+              senderTabId: window.matrixTabId,
+              timestamp: Date.now()
+          });
+      }
   }
   
   if (!container || !slide) return;
