@@ -74,9 +74,20 @@
     <button class="btn" onclick="send('TOGGLE')"><span class="btn-icon">⏯</span><span>Play/Pause</span></button>
   </div>
 
+  <div class="section-title" style="margin-top: 5px;">Direct Jumps</div>
   <div class="grid-3">
+    <button class="btn" onclick="jump('ct-ace')"><span class="btn-icon">🃏</span><span>ACE</span></button>
     <button class="btn" onclick="jump('ct-mmr')"><span class="btn-icon">🥩</span><span>MMR</span></button>
+    <button class="btn" onclick="jump('ct-quiz')"><span class="btn-icon">🧠</span><span>QUIZ</span></button>
     <button class="btn" onclick="jump('ct-king')"><span class="btn-icon">👑</span><span>KING</span></button>
+    <button class="btn" onclick="jump('ct-wea1')"><span class="btn-icon">🌦</span><span>WEA1</span></button>
+    <button class="btn" onclick="jump('ct-fir')"><span class="btn-icon">🔥</span><span>FIR</span></button>
+  </div>
+
+  <div class="section-title">Live Overrides</div>
+  <div class="grid-3">
+    <button class="btn" onclick="lastDrinks()" style="border-color: orange; color: orange;"><span class="btn-icon">🍻</span><span>Last Drinks</span></button>
+    <button class="btn" onclick="clearLive()" style="border-color: var(--red); color: var(--red);"><span class="btn-icon">⏹</span><span>Clear Live</span></button>
     <button class="btn" onclick="celebrate()" style="border-color: var(--purple); color: #a78bfa;"><span class="btn-icon">✨</span><span>Confetti</span></button>
   </div>
 
@@ -220,6 +231,29 @@
       bc.postMessage(msg);
       if (window.sendToFirebase) window.sendToFirebase(msg);
       vibrate(); showStatus('Jumping: ' + id);
+    }
+
+    function lastDrinks() {
+      const finishTime = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+      const payload = {
+        title: "LAST DRINKS",
+        subtitle: "The bar will be closing in 10 minutes. Please make your final purchases now.",
+        accentColor: "#f59e0b",
+        bgImage: "_backgrounds/music.jpg",
+        duration: 99999,
+        countdownFinish: finishTime
+      };
+      const msg = { type: 'LIVE_SLIDE', slide: payload, commandId: 'cmd_' + Date.now(), timestamp: Date.now(), source: getClientId(), senderTabId: getTabId() };
+      bc.postMessage(msg);
+      if (window.sendToFirebase) window.sendToFirebase(msg);
+      vibrate([100, 50, 100]); showStatus('LIVE: LAST DRINKS');
+    }
+
+    function clearLive() {
+      const msg = { type: 'LIVE_SLIDE', slide: null, commandId: 'cmd_' + Date.now(), timestamp: Date.now(), source: getClientId(), senderTabId: getTabId() };
+      bc.postMessage(msg);
+      if (window.sendToFirebase) window.sendToFirebase(msg);
+      vibrate(); showStatus('LIVE CLEARED');
     }
 
     function celebrate() {

@@ -455,8 +455,7 @@
                 <!-- Telemetry injected here -->
             </div>
         </div>
-        <div class="header-toggles" id="header-toggles">
-            <!-- Toggles injected via JS -->
+        <div id="header-toggles" style="display:none;"></div>    <!-- Toggles injected via JS -->
         </div>
 
         <div style="display:flex; align-items:center; gap: 10px; margin-left: auto;">
@@ -533,6 +532,11 @@
                 </div>
             </div>
         </div>
+
+        <div class="nav-section-title" style="margin-top: 15px;">MODULE SETTINGS</div>
+        <div id="sidebar-module-controls" style="padding: 0 5px;"></div>
+        <button class="ctrl-btn primary" style="width: 100%; margin-top: 10px; font-size: 0.6rem; padding: 6px;" onclick="saveModuleDurations()">💾 SAVE DURATIONS</button>
+
     </nav>
 
     <div class="workspace-left" id="workspace-left">
@@ -699,15 +703,7 @@
                     </div>
                 </div>
 
-                <!-- MODULE DURATION SETTINGS -->
-                <div class="panel" style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px; margin-top: 1.5rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
-                        <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.5;">MODULE DURATION SETTINGS</div>
-                        <button class="ctrl-btn primary" style="padding: 5px 16px; font-size: 0.6rem;" onclick="saveModuleDurations()">💾 SAVE DURATIONS</button>
-                    </div>
-                    <div style="font-size:0.6rem; opacity:0.35; margin-bottom:0.8rem; font-weight:600;">How long each module is shown before cycling to the next slide (in seconds). Changes take effect on next queue rebuild or REFRESH ALL.</div>
-                    ${durationRows}
-                </div>
+                <!-- MODULE DURATIONS MOVED TO SIDEBAR -->
                 
                 <div style="margin-top: 2rem; opacity: 0.3; font-size: 0.7rem; text-align: center; font-weight: 800; letter-spacing: 2px;">
                     SELECT A MODULE FROM THE NAVIGATION TO BEGIN OPERATING
@@ -762,22 +758,41 @@
     }
 
     function renderSidebarToggles() {
-        const side = document.getElementById('header-toggles');
+        const side = document.getElementById('sidebar-module-controls');
         if(!side) return;
 
-        let config = { disabledModules: [] };
+        let config = { disabledModules: [], moduleDurations: {} };
         try {
             const stored = localStorage.getItem('matrix_config');
-            if (stored) config = JSON.parse(stored);
+            if (stored) config = { ...config, ...JSON.parse(stored) };
         } catch(e) {}
         const disabled = config.disabledModules || [];
+        const dur = config.moduleDurations || {};
 
-        side.innerHTML = ['MATRIX', 'ACE', 'MMR', 'KING', 'QUIZ', 'WEA1', 'FIR'].map(m => {
-            const fullId = 'ct-' + m.toLowerCase();
-            const isChecked = !disabled.includes(fullId);
+        const modules = [
+            { id: 'ct-mmr', name: 'MMR', defaultDur: 600 },
+            { id: 'ct-wea1', name: 'WEA1', defaultDur: 60 },
+            { id: 'ct-ace', name: 'ACE', defaultDur: 180 },
+            { id: 'ct-king', name: 'KING', defaultDur: 150 },
+            { id: 'ct-quiz', name: 'QUIZ', defaultDur: 60 },
+            { id: 'ct-fir', name: 'FIR', defaultDur: 180 }
+        ];
+
+        side.innerHTML = modules.map(m => {
+            const isChecked = !disabled.includes(m.id);
+            const val = dur[m.id] || m.defaultDur;
             return `
-                <div class="toggle-pill ${isChecked ? 'active' : ''}" onclick="toggleModule('${m}', ${!isChecked}); renderSidebarToggles();">
-                    <span>${m}</span>
+                <div style="display: flex; flex-direction: column; background: rgba(255,255,255,0.02); padding: 6px; border-radius: 6px; margin-bottom: 6px; border: 1px solid var(--border);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-size: 0.65rem; font-weight: 800; color: #fff;">${m.name}</span>
+                        <div class="toggle-pill ${isChecked ? 'active' : ''}" style="margin: 0; padding: 2px 8px; font-size: 0.55rem; min-width: 40px; justify-content: center;" onclick="toggleModule('${m.name}', ${!isChecked}); renderSidebarToggles();">
+                            <span>${isChecked ? 'ON' : 'OFF'}</span>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <input type="number" id="dur-${m.id}" value="${val}" min="10" max="9999" style="width: 100%; background: var(--surface); border: 1px solid #333; color: #fff; padding: 3px 6px; border-radius: 4px; font-size: 0.65rem; font-family: monospace; text-align: center;">
+                        <span style="font-size: 0.55rem; color: #666; font-weight: 700;">SEC</span>
+                    </div>
                 </div>
             `;
         }).join('');

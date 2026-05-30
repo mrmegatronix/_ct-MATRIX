@@ -57,6 +57,11 @@
 <div class="card">
     <div class="title">Live Slide Commander</div>
     
+    <div style="display:flex; gap: 10px; justify-content: center; margin-bottom: 2rem;">
+        <button class="btn btn-secondary" style="padding: 10px; font-size: 0.7rem;" onclick="loadTemplateLastDrinks()">+ 10 MIN LAST DRINKS</button>
+        <button class="btn btn-secondary" style="padding: 10px; font-size: 0.7rem;" onclick="loadTemplateBarClosed()">+ BAR CLOSED</button>
+    </div>
+
     <div class="label">Primary Heading</div>
     <input type="text" id="live-title" placeholder="URGENT ANNOUNCEMENT...">
 
@@ -105,6 +110,12 @@
             accent: document.getElementById('live-accent').value,
             mode: document.getElementById('live-mode').value
         };
+        
+        // If it's the last drinks template, attach the countdown
+        if (payload.title === 'LAST DRINKS' && document.getElementById('live-mode').value === 'OVERRIDE') {
+            payload.countdownFinish = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+        }
+
         const msg = { type: 'LIVE_SLIDE', payload, senderTabId: getTabId(), commandId: 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9), timestamp: Date.now() };
         bc.postMessage(msg);
         if (window.sendToFirebase) window.sendToFirebase(msg);
@@ -133,6 +144,20 @@
         setTimeout(() => {
             btn.innerText = originalText;
         }, 2000);
+    }
+
+    function loadTemplateLastDrinks() {
+        document.getElementById('live-title').value = 'LAST DRINKS';
+        document.getElementById('live-detail').value = 'The bar will be closing in 10 minutes. Please make your final purchases now.';
+        document.getElementById('live-accent').value = '#f59e0b'; // Orange
+        document.getElementById('live-mode').value = 'OVERRIDE';
+    }
+
+    function loadTemplateBarClosed() {
+        document.getElementById('live-title').value = 'BAR IS NOW CLOSED';
+        document.getElementById('live-detail').value = 'Last drinks has finished. Thank you for visiting, please travel home safely.';
+        document.getElementById('live-accent').value = '#ef4444'; // Red
+        document.getElementById('live-mode').value = 'OVERRIDE';
     }
 </script>
 <script type="module">

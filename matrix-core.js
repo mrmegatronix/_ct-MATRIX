@@ -1376,6 +1376,10 @@ loadPersistedState();
 
 function handleLiveSlide(payload) {
     if (!payload || !payload.active) {
+        if (window.MATRIX.STATE.liveTimer) {
+            clearInterval(window.MATRIX.STATE.liveTimer);
+            window.MATRIX.STATE.liveTimer = null;
+        }
         const liveOverlay = document.getElementById('live-slide-overlay');
         if (liveOverlay) liveOverlay.remove();
         window.MATRIX.STATE.isPaused = false;
@@ -1422,7 +1426,8 @@ function handleLiveSlide(payload) {
         <div style="position:absolute; inset:0; background: radial-gradient(circle at center, ${accent}22 0%, #000 70%);"></div>
         <div style="z-index:1; animation: liveSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1)">
             <h2 style="font-size: 2rem; text-transform: uppercase; letter-spacing: 10px; color: ${accent}; margin-bottom: 2rem; font-weight: 900;">LIVE BROADCAST</h2>
-            <h1 style="font-size: 8rem; font-weight: 900; line-height: 0.9; margin-bottom: 3rem; color: #fff; text-shadow: 0 0 50px ${accent}44;">${payload.title || ''}</h1>
+            ${payload.countdownFinish ? `<div id="live-countdown-text" style="font-size: 12rem; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: #fff; line-height: 1; margin-bottom: 2rem; text-shadow: 0 0 50px ${accent};">--:--</div>` : ''}
+            <h1 style="font-size: 6rem; font-weight: 900; line-height: 0.9; margin-bottom: 2rem; color: #fff; text-shadow: 0 0 50px ${accent}44;">${payload.title || ''}</h1>
             <p style="font-size: 3rem; color: #94a3b8; font-weight: 600; max-width: 1200px;">${payload.detail || ''}</p>
         </div>
         <div style="position: absolute; bottom: 4rem; width: 100%; text-align: center; font-family: 'JetBrains Mono'; font-size: 1.2rem; color: ${accent}; opacity: 0.5;">
@@ -1433,6 +1438,26 @@ function handleLiveSlide(payload) {
     if (payload.mode === 'OVERRIDE') {
         window.MATRIX.STATE.isPaused = true;
         if (window.MATRIX.STATE.timer) clearTimeout(window.MATRIX.STATE.timer);
+    }
+    
+    if (window.MATRIX.STATE.liveTimer) clearInterval(window.MATRIX.STATE.liveTimer);
+    if (payload.countdownFinish) {
+        const finish = new Date(payload.countdownFinish).getTime();
+        window.MATRIX.STATE.liveTimer = setInterval(() => {
+            const now = Date.now();
+            const diff = finish - now;
+            const cdEl = document.getElementById('live-countdown-text');
+            if (cdEl) {
+                if (diff <= 0) {
+                    cdEl.innerHTML = "00:00";
+                    clearInterval(window.MATRIX.STATE.liveTimer);
+                } else {
+                    const m = Math.floor(diff / 60000).toString().padStart(2, '0');
+                    const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+                    cdEl.innerHTML = m + ":" + s;
+                }
+            }
+        }, 1000);
     }
 }
 
