@@ -118,7 +118,11 @@
 
         const msg = { type: 'LIVE_SLIDE', payload, senderTabId: getTabId(), commandId: 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9), timestamp: Date.now() };
         bc.postMessage(msg);
-        if (window.sendToFirebase) window.sendToFirebase(msg);
+        if (window.parent && window.parent.sendToFirebase) {
+            window.parent.sendToFirebase(msg);
+        } else if (window.sendToFirebase) {
+            window.sendToFirebase(msg);
+        }
         
         // Visual feedback
         const btn = event.target;
@@ -134,7 +138,11 @@
     function clearLiveSlide() {
         const msg = { type: 'LIVE_SLIDE', payload: { active: false }, senderTabId: getTabId(), commandId: 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9), timestamp: Date.now() };
         bc.postMessage(msg);
-        if (window.sendToFirebase) window.sendToFirebase(msg);
+        if (window.parent && window.parent.sendToFirebase) {
+            window.parent.sendToFirebase(msg);
+        } else if (window.sendToFirebase) {
+            window.sendToFirebase(msg);
+        }
         document.getElementById('live-title').value = '';
         document.getElementById('live-detail').value = '';
         

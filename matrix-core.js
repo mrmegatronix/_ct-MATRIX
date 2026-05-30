@@ -1037,7 +1037,7 @@ function renderActiveSlide() {
       const isLogo = slide.isLogo || (!slide.title && !slide.subtitle && slide.bgImage && slide.bgImage.includes('LOGO'));
       
       // Process Background (Hex support)
-      const rawBg = slide.bgImage || getDefaultBackground(slide.subType, slide.title);
+      const rawBg = slide.bgImage ? String(slide.bgImage) : getDefaultBackground(slide.subType, slide.title);
       const isHex = /^#([A-Fa-f0-9]{3,8})$/.test((rawBg || '').trim());
       const bgImg = isHex ? '' : rawBg;
       const bgColor = isHex ? rawBg : '#000000';
@@ -1165,7 +1165,7 @@ function renderActiveSlide() {
       } else {
         slideEl.innerHTML = `
           <div class="slide-bg" style="background-color: ${bgColor};">
-            ${bgImg ? `<img src="${bgImg}" alt="" loading="eager" style="object-position: ${bgImg.includes('crusaders') ? 'left center' : (bgImg.includes('warriors') ? 'right center' : 'center center')};" />` : ''}
+            ${bgImg ? `<img src="${bgImg}" alt="" loading="eager" style="object-position: ${String(bgImg).includes('crusaders') ? 'left center' : (String(bgImg).includes('warriors') ? 'right center' : 'center center')};" />` : ''}
             <div class="slide-bg-overlay" style="background: rgba(0,0,0,0.85);"></div>
           </div>
           <div class="premium-card">
@@ -1263,9 +1263,9 @@ function renderPremiumFooterRow(slide, color) {
   const showPrice = !!slide.price;
   
   // Meta Logic (Time/Date/Location/Days)
-  const timeStr = slide.time || '';
-  const titleLower = (slide.title || '').toLowerCase();
-  const subtitleLower = (slide.subtitle || '').toLowerCase();
+  const timeStr = slide.time ? String(slide.time) : '';
+  const titleLower = String(slide.title || '').toLowerCase();
+  const subtitleLower = String(slide.subtitle || '').toLowerCase();
   const timeRedundant = timeStr && (titleLower.includes(timeStr.toLowerCase()) || subtitleLower.includes(timeStr.toLowerCase()));
   
   const dateStr = slide.date ? formatDate(slide.date, timeStr) : '';
