@@ -235,22 +235,22 @@
 
     function lastDrinks() {
       const finishTime = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-      const payload = {
+      const livePayload = {
+        active: true,
         title: "LAST DRINKS",
-        subtitle: "The bar will be closing in 10 minutes. Please make your final purchases now.",
-        accentColor: "#f59e0b",
-        bgImage: "_backgrounds/music.jpg",
-        duration: 99999,
+        detail: "The bar will be closing in 10 minutes. Please make your final purchases now.",
+        accent: "#f59e0b",
+        mode: "OVERRIDE",
         countdownFinish: finishTime
       };
-      const msg = { type: 'LIVE_SLIDE', slide: payload, commandId: 'cmd_' + Date.now(), timestamp: Date.now(), source: getClientId(), senderTabId: getTabId() };
+      const msg = { type: 'LIVE_SLIDE', payload: livePayload, commandId: 'cmd_' + Date.now(), timestamp: Date.now(), source: getClientId(), senderTabId: getTabId() };
       bc.postMessage(msg);
       if (window.sendToFirebase) window.sendToFirebase(msg);
       vibrate([100, 50, 100]); showStatus('LIVE: LAST DRINKS');
     }
 
     function clearLive() {
-      const msg = { type: 'LIVE_SLIDE', slide: null, commandId: 'cmd_' + Date.now(), timestamp: Date.now(), source: getClientId(), senderTabId: getTabId() };
+      const msg = { type: 'LIVE_SLIDE', payload: { active: false }, commandId: 'cmd_' + Date.now(), timestamp: Date.now(), source: getClientId(), senderTabId: getTabId() };
       bc.postMessage(msg);
       if (window.sendToFirebase) window.sendToFirebase(msg);
       vibrate(); showStatus('LIVE CLEARED');
@@ -345,7 +345,7 @@
     
     window.sendToFirebase = function(msg) {
         if (!db) return;
-        const payload = { ...msg, source: getClientIdForFirebase(), isFirebaseBridge: true };
+        const payload = JSON.parse(JSON.stringify({ ...msg, source: getClientIdForFirebase(), isFirebaseBridge: true }));
         set(ref(db, COMMAND_PATH), payload);
         
         // If it's a persistent state change, also update state node (mirrors masteradmin)
