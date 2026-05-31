@@ -744,9 +744,10 @@
             const val = dur[m.id] || m.defaultDur;
             
             // Generate the tree children dynamically based on hasAdmin
-            let childrenHTML = `<a href="javascript:void(0)" class="tree-item" onclick="loadModule('${m.name}', '../_${m.id}/${m.id === 'ct-wea1' || m.id === 'ct-fir' ? 'index.html' : 'index.html'}')">${m.id === 'ct-wea1' ? 'Live Conditions' : (m.id === 'ct-fir' ? 'Looping Fire' : 'Module View')}</a>`;
+            const folderName = m.id === 'ct-wea1' ? '_ct-wea1' : '_ct-' + m.name;
+            let childrenHTML = `<a href="javascript:void(0)" class="tree-item" onclick="loadModule('${m.name}', '../${folderName}/index.html')">${m.id === 'ct-wea1' ? 'Live Conditions' : (m.id === 'ct-fir' ? 'Looping Fire' : 'Module View')}</a>`;
             if (m.hasAdmin) {
-                childrenHTML += `<a href="javascript:void(0)" class="tree-item" onclick="loadModule('${m.name}', '../_${m.id}/admin.html')">Admin Panel</a>`;
+                childrenHTML += `<a href="javascript:void(0)" class="tree-item" onclick="loadModule('${m.name}', '../${folderName}/admin.html')">Admin Panel</a>`;
             }
 
             return `

@@ -926,23 +926,31 @@ function renderActiveSlide() {
   window.MATRIX.STATE.currentSlideDelay = delay;
 
   if (bc && slide) {
-      bc.postMessage({ 
+      const broadcastMsg = { 
           type: 'CURRENT_SLIDE_BROADCAST', 
           slide: slide, 
           index: window.MATRIX.STATE.currentIndex,
           startTime: startTime,
           delay: delay,
           senderTabId: window.matrixTabId
-      });
+      };
+      bc.postMessage(broadcastMsg);
+      if (window.parent && window.parent.sendToFirebase) {
+          window.parent.sendToFirebase(broadcastMsg);
+      }
 
       // If this is the master dashboard, blast a SYNC_JUMP so all billboards follow suit
       if (window.parent && window.parent.IS_MASTER_DASHBOARD) {
-          bc.postMessage({
+          const syncMsg = {
               type: 'SYNC_JUMP',
               id: slide.id,
               senderTabId: window.matrixTabId,
               timestamp: Date.now()
-          });
+          };
+          bc.postMessage(syncMsg);
+          if (window.parent.sendToFirebase) {
+              window.parent.sendToFirebase(syncMsg);
+          }
       }
   }
   
