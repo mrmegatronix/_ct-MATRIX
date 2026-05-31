@@ -1,10 +1,354 @@
-<!-- Navigation Hub -->
-<nav id="nav-hub">
-    <a href="../_ct-MATRIX/index.html">📺 Display</a>
-    <a href="../_ct-MATRIX/masteradmin.html">🛠 Admin</a>
-    <span style="color:#333">|</span>
-    <a href="../_ct-KING/index.html">👑 KING</a>
-    <a href="../_ct-MMR/index.html">🥩 MMR</a>
-    <a href="../_ct-ACE/index.html">🃏 ACE</a>
-    <a href="index.html" class="active">🌦 WEA</a>
-</nav>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Module Navigator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #09090b;
+            --surface: #18181b;
+            --surface-hover: #27272a;
+            --border: #27272a;
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 320px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: var(--surface);
+            z-index: 10;
+        }
+
+        .sidebar-header h1 {
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: var(--accent);
+            text-transform: uppercase;
+        }
+
+        .sidebar-header p {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 4px;
+        }
+
+        .tree-container {
+            padding: 1rem;
+        }
+
+        .module-group {
+            margin-bottom: 1rem;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .module-header {
+            padding: 0.8rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #fff;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .module-header:hover {
+            background: var(--surface-hover);
+        }
+
+        .module-header .icon {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            transition: transform 0.2s;
+        }
+
+        .module-group.open .module-header .icon {
+            transform: rotate(90deg);
+        }
+
+        .module-links {
+            display: none;
+            flex-direction: column;
+            padding: 0.5rem 0;
+        }
+
+        .module-group.open .module-links {
+            display: flex;
+        }
+
+        .link-item {
+            padding: 0.5rem 1rem 0.5rem 2rem;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .link-item:hover, .link-item.active {
+            color: var(--accent);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .link-item::before {
+            content: "└";
+            color: var(--border);
+            margin-right: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Iframe Area Styling */
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #000;
+            position: relative;
+        }
+
+        .top-bar {
+            height: 40px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            gap: 1rem;
+        }
+
+        .top-bar-url {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            background: rgba(0,0,0,0.3);
+            padding: 4px 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            flex: 1;
+        }
+
+        .action-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            border-color: var(--text);
+            color: var(--text);
+        }
+
+        iframe {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: #fff; /* White background by default for external pages */
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>Global Navigator</h1>
+            <p>CT-NETWORK DIRECTORY</p>
+        </div>
+
+        <div class="tree-container">
+            
+            <div class="module-group open">
+                <div class="module-header" onclick="toggleGroup(this)">
+                    <span>MATRIX (Core Display)</span>
+                    <span class="icon">▶</span>
+                </div>
+                <div class="module-links">
+                    <div class="link-item active" onclick="loadPage(this, '../_ct-MATRIX/masteradmin.html')">Master Admin Dashboard</div>
+                    <div class="link-item" onclick="loadPage(this, '../_ct-MATRIX/index.html')">Display Engine (Billboard)</div>
+                    <div class="link-item" onclick="loadPage(this, '../_ct-MATRIX/live-commander.html')">Live Slide Commander</div>
+                    <div class="link-item" onclick="loadPage(this, '../_ct-MATRIX/remote.html')">Remote Control</div>
+                    <div class="link-item" onclick="loadPage(this, '../_ct-MATRIX/book.html')">Booking Form</div>
+                </div>
+            </div>
+
+            <div class="module-group">
+                <div class="module-header" onclick="toggleGroup(this)">
+                    <span>ACE (Chase The Ace)</span>
+                    <span class="icon">▶</span>
+                </div>
+                <div class="module-links">
+                    <div class="link-item" onclick="loadPage(this, '../_ct-ACE/admin.html')">Admin Panel</div>
+                    <div class="link-item" onclick="loadPage(this, '../_ct-ACE/index.html')">Display Engine</div>
+                    <div class="link-item" onclick="loadPage(this, '../_ct-ACE/preview.html')">Preview View</div>
+                </div>
+            </div>
+
+            <div class="module-group">
+                <div class="module-header" onclick="toggleGroup(this)">
+                    <span>MMR (Meat Raffle)</span>
+                    <span class="icon">▶</span>
+                </div>
+                <div class="module-links">
+                    <div class="link-item" onclick="loadPage(this, '../_ct-MMR/admin.html')">Admin Panel</div>
+                    <div class="link-item" onclick="loadPage(this, '../_ct-MMR/remote.html')">Remote Controller</div>
+                    <div class="link-item" onclick="loadPage(this, '../_ct-MMR/index.html')">Display Engine</div>
+                </div>
+            </div>
+
+            <div class="module-group">
+                <div class="module-header" onclick="toggleGroup(this)">
+                    <span>KING (Birthday King)</span>
+                    <span class="icon">▶</span>
+                </div>
+                <div class="module-links">
+                    <div class="link-item" onclick="loadPage(this, '../_ct-KING/admin.html')">Admin Panel</div>
+                    <div class="link-item" onclick="loadPage(this, '../_ct-KING/index.html')">Display Engine</div>
+                </div>
+            </div>
+
+            <div class="module-group">
+                <div class="module-header" onclick="toggleGroup(this)">
+                    <span>QUIZ (Pub Quiz)</span>
+                    <span class="icon">▶</span>
+                </div>
+                <div class="module-links">
+                    <div class="link-item" onclick="loadPage(this, '../_ct-QUIZ/index.html')">Display Engine</div>
+                </div>
+            </div>
+
+            <div class="module-group">
+                <div class="module-header" onclick="toggleGroup(this)">
+                    <span>WEA1 (Live Weather)</span>
+                    <span class="icon">▶</span>
+                </div>
+                <div class="module-links">
+                    <div class="link-item" onclick="loadPage(this, '../_ct-wea1/index.html')">Display Engine</div>
+                </div>
+            </div>
+
+            <div class="module-group">
+                <div class="module-header" onclick="toggleGroup(this)">
+                    <span>FIR (Fireplace)</span>
+                    <span class="icon">▶</span>
+                </div>
+                <div class="module-links">
+                    <div class="link-item" onclick="loadPage(this, '../_ct-FIR/index.html')">Display Engine</div>
+                </div>
+            </div>
+
+            <div class="module-group">
+                <div class="module-header" onclick="toggleGroup(this)">
+                    <span>POST (Poster Display)</span>
+                    <span class="icon">▶</span>
+                </div>
+                <div class="module-links">
+                    <div class="link-item" onclick="loadPage(this, '../_ct-POST/index.html')">Display Engine</div>
+                </div>
+            </div>
+
+            <div class="module-group">
+                <div class="module-header" onclick="toggleGroup(this)">
+                    <span>AUTO-DASH</span>
+                    <span class="icon">▶</span>
+                </div>
+                <div class="module-links">
+                    <div class="link-item" onclick="loadPage(this, '../__auto-dash/index.html')">Main Dashboard</div>
+                    <div class="link-item" onclick="loadPage(this, '../__auto-dash/4cam-view.html')">4-Camera View</div>
+                    <div class="link-item" onclick="loadPage(this, '../__auto-dash/links.html')">Links Page</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div class="top-bar">
+            <div class="top-bar-url" id="url-display">../_ct-MATRIX/masteradmin.html</div>
+            <button class="action-btn" onclick="openNewTab()">Open in New Tab</button>
+            <button class="action-btn" onclick="document.getElementById('content-frame').contentWindow.location.reload()">Refresh Frame</button>
+        </div>
+        <iframe id="content-frame" src="../_ct-MATRIX/masteradmin.html"></iframe>
+    </div>
+
+    <script>
+        // Toggle Accordion
+        function toggleGroup(headerEl) {
+            const group = headerEl.parentElement;
+            group.classList.toggle('open');
+        }
+
+        // Load Page into iframe
+        function loadPage(linkEl, url) {
+            // Update active state
+            document.querySelectorAll('.link-item').forEach(el => el.classList.remove('active'));
+            linkEl.classList.add('active');
+
+            // Update iframe and URL bar
+            document.getElementById('content-frame').src = url;
+            document.getElementById('url-display').innerText = url;
+        }
+
+        // Open current iframe URL in a new tab
+        function openNewTab() {
+            const url = document.getElementById('content-frame').src;
+            if (url) {
+                window.open(url, '_blank');
+            }
+        }
+    </script>
+</body>
+</html>
