@@ -560,7 +560,6 @@ function buildSlideQueue(data) {
   queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5, duration: customDurations['ct-mmr'] || 600 }); // Play all slides (10min default)
   queue.push({ type: 'MODULE', id: 'ct-wea1', url: '../_ct-wea1/index.html', title: "Christchurch Weather", priority: 80, duration: customDurations['ct-wea1'] || 60 });
   queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5, duration: customDurations['ct-ace'] || 180 }); // 6 slides * 30s
-  queue.push({ type: 'MODULE', id: 'ct-king', url: '../_ct-KING/index.html', title: "King's Birthday Karaoke", pinned: true, priority: 5, duration: customDurations['ct-king'] || 150 }); // 5 slides * 30s
   queue.push({ type: 'MODULE', id: 'ct-quiz', url: '../_ct-QUIZ/index.html', title: "Weekly Pub Quiz", priority: 10, duration: customDurations['ct-quiz'] || 60 });
   queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, duration: customDurations['ct-fir'] || 180 }); // 3min default
 
@@ -675,7 +674,7 @@ function fitText(el, minSize = 40) {
     const maxWidth = Math.min(parent.offsetWidth || window.innerWidth, window.innerWidth * 0.90);
 
     // Fast reduction loop — shrink until it fits, never wrap
-    while (el.scrollWidth > maxWidth && fontSize > minSize) {
+    while (el.scrollWidth > maxWidth && fontSize > 24) { // Lowered minimum size to guarantee no horizontal overflow
         fontSize -= 2;
         el.style.fontSize = fontSize + 'px';
     }
@@ -689,17 +688,17 @@ function adjustActiveSlideText() {
   const handleEl = slideEl.querySelector('.social-handle');
   const descFontEl = slideEl.querySelector('.premium-desc, .special-desc, .band-gig-subtitle');
   
-  // Rule 1: Fit title text, keep floor readable (70px)
+  // Rule 1: Fit title text, keep floor readable (45px instead of 70px)
   if (titleEl) {
-    fitText(titleEl, 70);
+    fitText(titleEl, 45);
   }
   if (handleEl) {
-    fitText(handleEl, 32);
+    fitText(handleEl, 24);
   }
 
   // Overspill check
   const cardEl = slideEl.querySelector('.premium-card, .special-event-card, .social-card, .band-gig-overlay');
-  const FOOTER_TEXT_SIZE = 35;
+  const FOOTER_TEXT_SIZE = 20; // Lowered from 35 to guarantee no vertical overflow
 
   if (cardEl && descFontEl) {
     // Reset description font-size to stylesheet default first so we can measure clean
@@ -713,26 +712,37 @@ function adjustActiveSlideText() {
     const lastContent = contentChildren.length > 0 ? contentChildren[contentChildren.length - 1] : null;
 
     let descFontSize = parseInt(window.getComputedStyle(descFontEl).fontSize);
+    let titleFontSize = titleEl ? parseInt(window.getComputedStyle(titleEl).fontSize) : null;
 
     // If cardWidth > 0, we can run the overspill shrink logic
     if (cardWidth > 0 && lastContent) {
       let loopCount = 0;
-      while (lastContent.getBoundingClientRect().bottom > maxBottom && loopCount < 50) {
+      while (lastContent.getBoundingClientRect().bottom > maxBottom && loopCount < 100) {
+        let shrunk = false;
+        
+        // Try shrinking description first
         if (descFontSize > FOOTER_TEXT_SIZE) {
           descFontSize -= 2;
           descFontEl.style.fontSize = descFontSize + 'px';
-        } else {
-          break;
+          shrunk = true;
+        } 
+        
+        // If description can't shrink more, start shrinking the title!
+        if (!shrunk && titleEl && titleFontSize > 30) {
+          titleFontSize -= 2;
+          titleEl.style.fontSize = titleFontSize + 'px';
+          shrunk = true;
         }
+
+        if (!shrunk) break; // Cannot shrink anything anymore
         loopCount++;
       }
     }
 
     // Rule 2 enforcement: title must always be bigger than description
     if (titleEl) {
-      const titleSize = parseInt(window.getComputedStyle(titleEl).fontSize);
-      if (descFontSize >= titleSize) {
-        descFontEl.style.fontSize = Math.max(titleSize - 4, FOOTER_TEXT_SIZE) + 'px';
+      if (descFontSize >= titleFontSize) {
+        descFontEl.style.fontSize = Math.max(titleFontSize - 4, FOOTER_TEXT_SIZE) + 'px';
       }
     }
   }
@@ -866,11 +876,34 @@ function nextSlide() {
   const s = window.MATRIX.STATE;
   if (!s.slides.length) return;
   
+  const previousIndex = s.currentIndex;
   let loopCount = 0;
   do {
     s.currentIndex = (s.currentIndex + 1) % s.slides.length;
     loopCount++;
   } while (!isSlideActive(s.slides[s.currentIndex]) && loopCount < s.slides.length);
+  
+  if (previousIndex === s.currentIndex && document.getElementById('slide-target')) {
+      const slide = s.slides[s.currentIndex];
+      const delay = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
+      
+      window.MATRIX.STATE.currentSlideStartTime = Date.now();
+      window.MATRIX.STATE.currentSlideDelay = delay;
+      
+      clearTimeout(s.timer);
+      s.timer = setTimeout(window.nextSlide, delay);
+      
+      const bar = document.getElementById('progress-bar');
+      if (bar && slide.type !== 'MODULE') {
+        bar.style.transition = 'none';
+        bar.style.width = '0%';
+        requestAnimationFrame(() => {
+          bar.style.transition = `width ${delay}ms linear`;
+          bar.style.width = '100%';
+        });
+      }
+      return;
+  }
   
   renderActiveSlide();
 }
@@ -897,9 +930,31 @@ function togglePause() {
 }
 
 function jumpToProject(id) {
-  const idx = window.MATRIX.STATE.slides.findIndex(s => s.id === id);
+  const s = window.MATRIX.STATE;
+  const idx = s.slides.findIndex(s => s.id === id);
   if (idx !== -1) {
-    window.MATRIX.STATE.currentIndex = idx;
+    if (s.currentIndex === idx && document.getElementById('slide-target')) {
+        const slide = s.slides[idx];
+        const delay = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
+        
+        window.MATRIX.STATE.currentSlideStartTime = Date.now();
+        window.MATRIX.STATE.currentSlideDelay = delay;
+        
+        clearTimeout(s.timer);
+        s.timer = setTimeout(window.nextSlide, delay);
+        
+        const bar = document.getElementById('progress-bar');
+        if (bar && slide.type !== 'MODULE') {
+          bar.style.transition = 'none';
+          bar.style.width = '0%';
+          requestAnimationFrame(() => {
+            bar.style.transition = `width ${delay}ms linear`;
+            bar.style.width = '100%';
+          });
+        }
+        return;
+    }
+    s.currentIndex = idx;
     renderActiveSlide();
   }
 }
@@ -932,7 +987,8 @@ function renderActiveSlide() {
           index: window.MATRIX.STATE.currentIndex,
           startTime: startTime,
           delay: delay,
-          senderTabId: window.matrixTabId
+          senderTabId: window.matrixTabId,
+          commandId: 'cmd_' + Date.now() + '_bc_' + Math.random().toString(36).substr(2, 5)
       };
       bc.postMessage(broadcastMsg);
       if (window.parent && window.parent.sendToFirebase) {
@@ -945,7 +1001,8 @@ function renderActiveSlide() {
               type: 'SYNC_JUMP',
               id: slide.id,
               senderTabId: window.matrixTabId,
-              timestamp: Date.now()
+              timestamp: Date.now(),
+              commandId: 'cmd_' + Date.now() + '_sync_' + Math.random().toString(36).substr(2, 5)
           };
           bc.postMessage(syncMsg);
           if (window.parent.sendToFirebase) {
@@ -1025,12 +1082,6 @@ function renderActiveSlide() {
     // Apply custom transition class
     const transitionClass = (slide.transition || '').toLowerCase().replace(/\s/g, '-');
     slideEl.className = 'slide ' + transitionClass;
-    
-    // User Request: Remove transition for King module
-    const isKing = slide.id === 'ct-king';
-    if (isKing) {
-      slideEl.classList.add('no-transition');
-    }
 
     // Apply custom zoom if specified
     if (slide.zoom) {
@@ -1046,7 +1097,6 @@ function renderActiveSlide() {
     if (slide.type === 'MODULE') {
       let moduleColor = '#f59e0b';
       if (slide.id === 'ct-mmr') moduleColor = '#ef4444';
-      if (slide.id === 'ct-king') moduleColor = '#FFD700';
       if (slide.id === 'ct-fir') moduleColor = '#f97316';
       if (slide.id === 'ct-quiz') moduleColor = '#3b82f6';
       

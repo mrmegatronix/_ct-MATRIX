@@ -630,7 +630,6 @@
             { id: 'ct-mmr', label: 'MMR (Meat Raffle)', defaultDur: 600 },
             { id: 'ct-wea1', label: 'WEA1 (Weather)', defaultDur: 60 },
             { id: 'ct-ace', label: 'ACE (Chase the Ace)', defaultDur: 180 },
-            { id: 'ct-king', label: 'KING (Birthday)', defaultDur: 150 },
             { id: 'ct-quiz', label: 'QUIZ (Pub Quiz)', defaultDur: 60 },
             { id: 'ct-fir', label: 'FIR (Fireplace)', defaultDur: 180 }
         ];
@@ -698,7 +697,6 @@
             { id: 'MATRIX', name: 'LIVE SLIDES', path: '_ct-MATRIX' },
             { id: 'ACE', name: 'CHASE ACE', path: '_ct-ACE' },
             { id: 'MMR', name: 'MEAT RAFFLE', path: '_ct-MMR' },
-            { id: 'KING', name: 'KING BDAY', path: '_ct-KING' },
             { id: 'QUIZ', name: 'WEEKLY QUIZ', path: '_ct-QUIZ' },
             { id: 'WEA1', name: 'WEATHER', path: '_ct-wea1' },
             { id: 'FIR', name: 'FIREPLACE', path: '_ct-FIR' }
@@ -733,7 +731,6 @@
         const modules = [
             { id: 'ct-ace', name: 'ACE', title: 'Chase Ace', defaultDur: 180, hasAdmin: true },
             { id: 'ct-mmr', name: 'MMR', title: 'Meat Raffle', defaultDur: 600, hasAdmin: true },
-            { id: 'ct-king', name: 'KING', title: 'Birthday', defaultDur: 150, hasAdmin: false },
             { id: 'ct-quiz', name: 'QUIZ', title: 'Pub Quiz', defaultDur: 60, hasAdmin: true },
             { id: 'ct-wea1', name: 'WEA1', title: 'Weather', defaultDur: 60, hasAdmin: false },
             { id: 'ct-fir', name: 'FIR', title: 'Fireplace', defaultDur: 180, hasAdmin: false }
@@ -754,17 +751,18 @@
                 <div class="tree-node">
                     <div class="tree-header" style="display:flex; justify-content:space-between; align-items:center; padding: 6px 10px;">
                         <span onclick="toggleNode(this.parentElement)" style="flex:1;">_${m.id.toUpperCase()} (${m.title})</span>
-                        <div style="display:flex; gap: 8px; align-items:center;">
+                        <div class="toggle-pill ${isChecked ? 'active' : ''}" style="margin: 0; padding: 2px 8px; font-size: 0.55rem; min-width: 40px; justify-content: center;" onclick="event.stopPropagation(); toggleModule('${m.name}', ${!isChecked}); renderSidebarToggles();">
+                            <span>${isChecked ? 'ON' : 'OFF'}</span>
+                        </div>
+                    </div>
+                    <div class="tree-children" style="display:none">
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding: 6px 8px; margin-bottom: 4px; background: rgba(0,0,0,0.2); border-left: 2px solid var(--border);">
+                            <span style="font-size: 0.65rem; color: #888;">Module Settings</span>
                             <div style="display:flex; align-items:center; gap: 4px;" title="Duration (Seconds)">
                                 <input type="number" id="dur-${m.id}" value="${val}" min="10" max="9999" onchange="saveModuleDurations()" style="width: 45px; background: rgba(0,0,0,0.4); border: 1px solid #333; color: #fff; padding: 2px 4px; border-radius: 4px; font-size: 0.65rem; font-family: monospace; text-align: center;" onclick="event.stopPropagation()">
                                 <span style="font-size: 0.5rem; color: #666; font-weight: 700;">SEC</span>
                             </div>
-                            <div class="toggle-pill ${isChecked ? 'active' : ''}" style="margin: 0; padding: 2px 8px; font-size: 0.55rem; min-width: 40px; justify-content: center;" onclick="event.stopPropagation(); toggleModule('${m.name}', ${!isChecked}); renderSidebarToggles();">
-                                <span>${isChecked ? 'ON' : 'OFF'}</span>
-                            </div>
                         </div>
-                    </div>
-                    <div class="tree-children" style="display:none">
                         ${childrenHTML}
                     </div>
                 </div>
@@ -782,7 +780,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-mmr', 'ct-wea1', 'ct-ace', 'ct-king', 'ct-quiz', 'ct-fir'];
+        const moduleIds = ['ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir'];
         const durations = {};
         moduleIds.forEach(id => {
             const el = document.getElementById('dur-' + id);
