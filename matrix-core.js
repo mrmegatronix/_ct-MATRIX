@@ -666,17 +666,26 @@ function fitText(el, minSize = 40) {
     if (!parent) return;
     if (parent.offsetWidth === 0) return;
     
+    // Disable transitions temporarily so scrollWidth updates synchronously
+    const oldTransition = el.style.transition;
+    el.style.transition = 'none';
+    
     // Reset to base size first to measure correctly
     el.style.fontSize = '';
+    el.style.whiteSpace = 'nowrap';
     
     let fontSize = parseInt(window.getComputedStyle(el).fontSize);
     const maxWidth = Math.min(parent.offsetWidth || window.innerWidth, window.innerWidth * 0.90);
 
     // Fast reduction loop — shrink until it fits, never wrap
-    while (el.scrollWidth > maxWidth && fontSize > 24) { // Lowered minimum size to guarantee no horizontal overflow
+    while (el.scrollWidth > maxWidth && fontSize > minSize) {
         fontSize -= 2;
         el.style.fontSize = fontSize + 'px';
     }
+    
+    // Force reflow and restore transition
+    void el.offsetWidth;
+    el.style.transition = oldTransition;
 }
 
 function adjustActiveSlideText() {
