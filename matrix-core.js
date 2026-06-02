@@ -108,7 +108,7 @@ async function initMatrix() {
           startTime: window.MATRIX.STATE.currentSlideStartTime,
           delay: window.MATRIX.STATE.currentSlideDelay,
           lastSync: new Date().toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false }),
-          senderTabId: window.matrixTabId
+          senderTabId: window.matrixTabId || 'iframe'
         }); 
         break;
       case 'CONFETTI': if (window.triggerConfetti) window.triggerConfetti(); break;
@@ -596,7 +596,7 @@ function buildSlideQueue(data) {
       startTime: window.MATRIX.STATE.currentSlideStartTime,
       delay: window.MATRIX.STATE.currentSlideDelay,
       lastSync: new Date().toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false }),
-      senderTabId: window.matrixTabId
+      senderTabId: window.matrixTabId || 'iframe'
     });
   }
   
@@ -987,7 +987,7 @@ function renderActiveSlide() {
           index: window.MATRIX.STATE.currentIndex,
           startTime: startTime,
           delay: delay,
-          senderTabId: window.matrixTabId,
+          senderTabId: window.matrixTabId || 'iframe',
           commandId: 'cmd_' + Date.now() + '_bc_' + Math.random().toString(36).substr(2, 5)
       };
       bc.postMessage(broadcastMsg);
@@ -1000,7 +1000,7 @@ function renderActiveSlide() {
           const syncMsg = {
               type: 'SYNC_JUMP',
               id: slide.id,
-              senderTabId: window.matrixTabId,
+              senderTabId: window.matrixTabId || 'iframe',
               timestamp: Date.now(),
               commandId: 'cmd_' + Date.now() + '_sync_' + Math.random().toString(36).substr(2, 5)
           };
