@@ -92,10 +92,35 @@ async function initMatrix() {
       case 'JUMP': window.jumpToProject(e.data.id); break;
       case 'PROJECT': window.jumpToProject(e.data.id); break;
       case 'SETTINGS_UPDATE': updateConfig(e.data.payload); break;
+      case 'CURRENT_SLIDE_BROADCAST':
+        // Ignore our own broadcasts
+        if (e.data.senderTabId === (window.matrixTabId || 'iframe')) return;
+        // Master ignores incoming syncs to prevent being overridden by lagging TVs
+        if (window.parent && window.parent.IS_MASTER_DASHBOARD) return;
+
+        if (e.data.isMaster) {
+            window.MATRIX.STATE.lastMasterBroadcast = Date.now();
+        }
+
+        if (e.data.index !== undefined) {
+           window.MATRIX.STATE.currentIndex = e.data.index;
+           renderActiveSlide(true); // Render it locally, but DON'T broadcast it back
+           
+           // Sync our timer to their timer!
+           clearTimeout(window.MATRIX.STATE.timer);
+           const elapsed = Date.now() - e.data.startTime;
+           const remaining = e.data.delay - elapsed;
+           if (remaining > 0) {
+               window.MATRIX.STATE.timer = setTimeout(() => { if (window.nextSlide) window.nextSlide(false); }, remaining);
+           } else {
+               window.MATRIX.STATE.timer = setTimeout(() => { if (window.nextSlide) window.nextSlide(false); }, window.MATRIX.CONFIG.SWAP_DELAY);
+           }
+        }
+        break;
       case 'SYNC_DATA': window.initMatrix(); break; 
       case 'SYNC_JUMP': 
         if (window.parent && window.parent.IS_MASTER_DASHBOARD) return; // Master ignores incoming syncs to prevent loop
-        window.jumpToProject(e.data.id); 
+        window.jumpToProject(e.data.id, true); 
         break;
       case 'REFRESH': window.location.reload(); break;
       case 'LIVE_SLIDE': handleLiveSlide(e.data.payload); break;
@@ -888,43 +913,20 @@ function isSlideActive(slide) {
 /**
  * Controller & Engine
  */
-function nextSlide() {
+function nextSlide(skipBroadcast = false) {
   const s = window.MATRIX.STATE;
   if (!s.slides.length) return;
   
-  const previousIndex = s.currentIndex;
   let loopCount = 0;
   do {
     s.currentIndex = (s.currentIndex + 1) % s.slides.length;
     loopCount++;
   } while (!isSlideActive(s.slides[s.currentIndex]) && loopCount < s.slides.length);
   
-  if (previousIndex === s.currentIndex && document.getElementById('slide-target')) {
-      const slide = s.slides[s.currentIndex];
-      const delay = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
-      
-      window.MATRIX.STATE.currentSlideStartTime = Date.now();
-      window.MATRIX.STATE.currentSlideDelay = delay;
-      
-      clearTimeout(s.timer);
-      s.timer = setTimeout(window.nextSlide, delay);
-      
-      const bar = document.getElementById('progress-bar');
-      if (bar && slide.type !== 'MODULE') {
-        bar.style.transition = 'none';
-        bar.style.width = '0%';
-        requestAnimationFrame(() => {
-          bar.style.transition = `width ${delay}ms linear`;
-          bar.style.width = '100%';
-        });
-      }
-      return;
-  }
-  
-  renderActiveSlide();
+  renderActiveSlide(skipBroadcast);
 }
 
-function prevSlide() {
+function prevSlide(skipBroadcast = false) {
   const s = window.MATRIX.STATE;
   if (!s.slides.length) return;
   
@@ -934,7 +936,7 @@ function prevSlide() {
     loopCount++;
   } while (!isSlideActive(s.slides[s.currentIndex]) && loopCount < s.slides.length);
   
-  renderActiveSlide();
+  renderActiveSlide(skipBroadcast);
 }
 
 function togglePause() {
@@ -945,16 +947,10 @@ function togglePause() {
   if (!s.isPaused) nextSlide();
 }
 
-function jumpToProject(id) {
+function jumpToProject(id, skipBroadcast = false) {
   const s = window.MATRIX.STATE;
   const idx = s.slides.findIndex(s => s.id === id);
   if (idx !== -1) {
-    if (s.currentIndex === idx && document.getElementById('slide-target')) {
-        const slide = s.slides[idx];
-        const delay = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
-        
-        window.MATRIX.STATE.currentSlideStartTime = Date.now();
-        window.MATRIX.STATE.currentSlideDelay = delay;
         
         clearTimeout(s.timer);
         s.timer = setTimeout(window.nextSlide, delay);
@@ -984,7 +980,7 @@ window.jumpToProject = jumpToProject;
  * Premium Slide Renderer
  * Generates the premium TV-quality DOM structure for each slide.
  */
-function renderActiveSlide() {
+function renderActiveSlide(skipBroadcast = false) {
   const s = window.MATRIX.STATE;
   if (s.currentIndex < 0 || s.currentIndex >= s.slides.length) return;
   const slide = s.slides[s.currentIndex];
@@ -996,7 +992,15 @@ function renderActiveSlide() {
   window.MATRIX.STATE.currentSlideStartTime = startTime;
   window.MATRIX.STATE.currentSlideDelay = delay;
 
-  if (bc && slide) {
+  const isMaster = window.parent && window.parent.IS_MASTER_DASHBOARD;
+  const masterIsActive = window.MATRIX.STATE.lastMasterBroadcast && (Date.now() - window.MATRIX.STATE.lastMasterBroadcast) < 30000;
+  
+  // If we are a slave TV, and a Master is currently broadcasting, do NOT broadcast our own local changes
+  if (!isMaster && masterIsActive) {
+      skipBroadcast = true;
+  }
+
+  if (bc && slide && !skipBroadcast) {
       const broadcastMsg = { 
           type: 'CURRENT_SLIDE_BROADCAST', 
           slide: slide, 
@@ -1004,6 +1008,7 @@ function renderActiveSlide() {
           startTime: startTime,
           delay: delay,
           senderTabId: window.matrixTabId || 'iframe',
+          isMaster: !!isMaster,
           commandId: 'cmd_' + Date.now() + '_bc_' + Math.random().toString(36).substr(2, 5)
       };
       bc.postMessage(broadcastMsg);
@@ -1464,7 +1469,7 @@ function handleLiveSlide(payload) {
         const liveOverlay = document.getElementById('live-slide-overlay');
         if (liveOverlay) liveOverlay.remove();
         window.MATRIX.STATE.isPaused = false;
-        renderActiveSlide();
+        renderActiveSlide(false);
         return;
     }
 
