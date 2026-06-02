@@ -715,9 +715,17 @@ function adjustActiveSlideText() {
     let titleFontSize = titleEl ? parseInt(window.getComputedStyle(titleEl).fontSize) : null;
 
     // If cardWidth > 0, we can run the overspill shrink logic
-    if (cardWidth > 0 && lastContent) {
+    if (cardWidth > 0) {
       let loopCount = 0;
-      while (lastContent.getBoundingClientRect().bottom > maxBottom && loopCount < 100) {
+      
+      const getLowestBottom = () => {
+        let bottom = 0;
+        if (descFontEl) bottom = Math.max(bottom, descFontEl.getBoundingClientRect().bottom);
+        if (titleEl) bottom = Math.max(bottom, titleEl.getBoundingClientRect().bottom);
+        return bottom;
+      };
+
+      while (getLowestBottom() > maxBottom && loopCount < 100) {
         let shrunk = false;
         
         // Try shrinking description first
