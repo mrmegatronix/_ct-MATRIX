@@ -668,7 +668,6 @@ function fitText(el, minSize = 40) {
     
     // Reset to base size first to measure correctly
     el.style.fontSize = '';
-    el.style.whiteSpace = 'nowrap';
     
     let fontSize = parseInt(window.getComputedStyle(el).fontSize);
     const maxWidth = Math.min(parent.offsetWidth || window.innerWidth, window.innerWidth * 0.90);

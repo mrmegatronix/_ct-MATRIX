@@ -262,7 +262,8 @@ body {
   max-width: 100%;
   margin: 0 auto;
   transition: all 0.5s ease;
-  white-space: nowrap;
+  white-space: normal;
+  text-wrap: balance;
   text-align: center;
 }
 
