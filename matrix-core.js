@@ -1271,19 +1271,12 @@ function renderActiveSlide() {
     
     adjustActiveSlideText();
 
-    if (isKing) {
-      slideEl.classList.add('active');
+    requestAnimationFrame(() => {
       requestAnimationFrame(() => {
+        slideEl.classList.add('active');
         adjustActiveSlideText();
       });
-    } else {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          slideEl.classList.add('active');
-          adjustActiveSlideText();
-        });
-      });
-    }
+    });
 
     const bar = document.getElementById('progress-bar');
     if (bar) {
