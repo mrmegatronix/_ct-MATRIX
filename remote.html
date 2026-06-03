@@ -25,7 +25,7 @@
     header { text-align: center; margin-bottom: 10px; }
     h1 { font-weight: 900; color: var(--accent); margin: 0; font-size: 1.2rem; }
     
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: 100%; max-width: 400px; margin-bottom: 10px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: 100%; max-width: 600px; margin-bottom: 10px; }
     
     .btn {
       background: var(--btn-bg); border: 1px solid var(--border); border-radius: 12px;
@@ -37,9 +37,9 @@
     .btn-icon { font-size: 1.4rem; }
     .btn-primary { border-color: var(--accent); color: var(--accent); }
     
-    .section-title { width: 100%; max-width: 400px; font-size: 0.65rem; font-weight: 800; color: #666; text-transform: uppercase; margin-bottom: 5px; }
+    .section-title { width: 100%; max-width: 600px; font-size: 0.65rem; font-weight: 800; color: #666; text-transform: uppercase; margin-bottom: 5px; }
     
-    .modules { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 400px; flex-grow: 1; }
+    .modules { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 600px; flex-grow: 1; }
     .mod-row { display: grid; grid-template-columns: 60px 1fr 60px; gap: 8px; background: var(--btn-bg); padding: 6px 10px; border-radius: 12px; align-items: center; border: 1px solid var(--border); }
     .mod-name { font-size: 0.75rem; font-weight: 900; white-space: nowrap; }
     
@@ -52,9 +52,16 @@
     .mod-dur { width: 100%; background: #000; color: #fff; border: 1px solid #333; padding: 6px; border-radius: 6px; text-align: center; font-size: 0.75rem; font-family: monospace; box-sizing: border-box; }
     .mod-dur-wrapper::after { content: 's'; position: absolute; right: 5px; top: 50%; transform: translateY(-50%); font-size: 0.6rem; color: #666; pointer-events: none; }
     
-    .save-btn { width: 100%; max-width: 400px; background: var(--accent); color: #000; font-weight: 900; padding: 12px; border: none; border-radius: 12px; font-size: 0.8rem; cursor: pointer; margin-bottom: 10px; }
+    .save-btn { width: 100%; max-width: 600px; background: var(--accent); color: #000; font-weight: 900; padding: 12px; border: none; border-radius: 12px; font-size: 0.8rem; cursor: pointer; margin-bottom: 10px; }
     .save-btn:active { transform: scale(0.98); }
     
+    .upcoming-box { width: 100%; max-width: 600px; background: var(--btn-bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; }
+    .upcoming-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; padding: 5px; border-bottom: 1px solid var(--border); }
+    .upcoming-item:last-child { border-bottom: none; }
+    .upcoming-title { font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+    .upcoming-type { font-weight: 900; color: var(--accent); font-size: 0.6rem; }
+    .upcoming-active { background: rgba(6, 182, 212, 0.1); border-radius: 4px; border: 1px solid var(--accent); }
+
     .status-bar { background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 50px; font-size: 0.65rem; opacity: 0.5; margin-bottom: 60px; }
     
     /* Navigation Hub */
@@ -90,8 +97,22 @@
     <button class="btn" onclick="celebrate()" style="border-color: var(--purple); color: #a78bfa;"><span class="btn-icon">✨</span><span>Confetti</span></button>
   </div>
 
+  <div class="section-title">Upcoming Slides</div>
+  <div class="upcoming-box" id="upcoming-slides">
+    <div style="text-align:center; opacity:0.5; font-size:0.7rem; padding:10px;">Waiting for slide data...</div>
+  </div>
+
   <div class="section-title">Modules & Timers</div>
   <div class="modules">
+    <!-- MATRIX -->
+    <div class="mod-row" id="row-ct-matrix">
+      <div class="mod-name">📺 MATRIX</div>
+      <div class="mod-toggle">
+        <button class="mod-btn btn-on" onclick="toggleModule('MATRIX', true)">ON</button>
+        <button class="mod-btn btn-off" onclick="toggleModule('MATRIX', false)">OFF</button>
+      </div>
+      <div class="mod-dur-wrapper"><input type="number" class="mod-dur" id="dur-ct-matrix" placeholder="s"></div>
+    </div>
     <!-- ACE -->
     <div class="mod-row" id="row-ct-ace">
       <div class="mod-name">🃏 ACE</div>
@@ -154,7 +175,7 @@
     const bc_sub = new BroadcastChannel('mom_sync');
 
     // Default durations fallback
-    const DEFAULT_DURS = { 'ct-mmr': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-quiz': 60, 'ct-fir': 180 };
+    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-quiz': 60, 'ct-fir': 180 };
 
     function getClientId() {
       let id = localStorage.getItem('matrix_client_id');
@@ -174,7 +195,7 @@
         if (stored) config = { ...config, ...JSON.parse(stored) };
       } catch(e) {}
       
-      const moduleIds = ['ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir'];
+      const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir'];
       moduleIds.forEach(id => {
         const row = document.getElementById('row-' + id);
         if (!row) return;
@@ -197,6 +218,9 @@
           btnOff.classList.remove('active-off');
         }
       });
+      
+      // Request telemetry to populate upcoming slides
+      bc.postMessage({ type: 'GET_SLIDES_DUMP', senderTabId: getTabId() });
     }
 
     // Listen to local BroadcastChannel to stay synced if someone edits from masteradmin
@@ -207,6 +231,20 @@
         }
         if (e.data.type === 'SYNC_STATE' && e.data.state && e.data.state.SETTINGS_UPDATE) {
             setTimeout(initUI, 100);
+        }
+        if (e.data.type === 'SLIDES_DUMP') {
+            const box = document.getElementById('upcoming-slides');
+            const slides = e.data.slides || [];
+            if (slides.length === 0) {
+                box.innerHTML = '<div style="text-align:center; opacity:0.5; font-size:0.7rem; padding:10px;">No upcoming slides.</div>';
+            } else {
+                box.innerHTML = slides.map((s, idx) => `
+                    <div class="upcoming-item ${e.data.currentIndex === idx ? 'upcoming-active' : ''}">
+                        <div class="upcoming-type">${idx + 1}. ${s.subType || 'AD'}</div>
+                        <div class="upcoming-title">${s.title || (s.type === 'MODULE' ? s.id : 'Slide')}</div>
+                    </div>
+                `).join('');
+            }
         }
     };
 
@@ -278,7 +316,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir'];
+        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir'];
         const durations = {};
         moduleIds.forEach(id => {
             const el = document.getElementById('dur-' + id);
@@ -340,7 +378,7 @@
         set(ref(db, COMMAND_PATH), payload);
         
         // If it's a persistent state change, also update state node (mirrors masteradmin)
-        const PERSISTENT_TYPES = ['MODULE_FILTER', 'SETTINGS_UPDATE'];
+        const PERSISTENT_TYPES = ['MODULE_FILTER', 'SETTINGS_UPDATE', 'LIVE_SLIDE'];
         if (PERSISTENT_TYPES.includes(msg.type)) {
             update(ref(db, STATE_PATH + '/' + msg.type), payload);
             update(ref(db, STATE_PATH), { _last_updated_by: getClientIdForFirebase() });

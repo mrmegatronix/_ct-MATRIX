@@ -145,16 +145,16 @@
     }
 
     .nav-section-title {
-        font-size: 0.55rem; text-transform: uppercase; letter-spacing: 2px;
-        color: var(--text-dim); margin-bottom: 0.1rem; display: flex; align-items: center; gap: 4px; opacity: 0.7;
-        font-weight: 700;
+        font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px;
+        color: #94a3b8; margin-bottom: 0.1rem; display: flex; align-items: center; gap: 4px; opacity: 0.9;
+        font-weight: 800;
         margin-top: 0.4rem;
     }
 
     .nav-link {
         display: flex; align-items: center; gap: 6px;
-        padding: 4px 8px; border-radius: 6px; color: var(--text-dim);
-        text-decoration: none; font-size: 0.72rem; font-weight: 600;
+        padding: 4px 8px; border-radius: 6px; color: #cbd5e1;
+        text-decoration: none; font-size: 0.85rem; font-weight: 600;
         transition: 0.2s; cursor: pointer; margin-bottom: 1px;
     }
     .nav-link:hover { color: #fff; background: rgba(255,255,255,0.08); }
@@ -546,7 +546,7 @@
     <!-- FULL GRID OVERLAY -->
     <div id="full-grid-view" class="panel" style="display:none; grid-column: 2 / 4; grid-row: 2;">
         <div class="panel-header"><span>Playlist Grid View</span> <button class="ctrl-btn" onclick="loadWorkspaceView('HOME')">CLOSE</button></div>
-        <div id="playlist-grid" style="padding:2rem; display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; overflow-y:auto; background: #000;"></div>
+        <div id="playlist-grid" style="padding:2rem; display:grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; overflow-y:auto; background: #000;"></div>
     </div>
 
     <!-- MONITOR TRAY (C-FRAME) -->
@@ -627,6 +627,7 @@
         const dur = config.moduleDurations || {};
 
         const modules = [
+            { id: 'ct-matrix', label: 'MATRIX (Core Slides)', defaultDur: 30 },
             { id: 'ct-mmr', label: 'MMR (Meat Raffle)', defaultDur: 600 },
             { id: 'ct-wea1', label: 'WEA1 (Weather)', defaultDur: 60 },
             { id: 'ct-ace', label: 'ACE (Chase the Ace)', defaultDur: 180 },
@@ -729,6 +730,7 @@
         const dur = config.moduleDurations || {};
 
         const modules = [
+            { id: 'ct-matrix', name: 'MATRIX', title: 'Core Slides', defaultDur: 30, hasAdmin: false },
             { id: 'ct-ace', name: 'ACE', title: 'Chase Ace', defaultDur: 180, hasAdmin: true },
             { id: 'ct-mmr', name: 'MMR', title: 'Meat Raffle', defaultDur: 600, hasAdmin: true },
             { id: 'ct-quiz', name: 'QUIZ', title: 'Pub Quiz', defaultDur: 60, hasAdmin: true },
@@ -780,7 +782,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir'];
+        const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir'];
         const durations = {};
         moduleIds.forEach(id => {
             const el = document.getElementById('dur-' + id);
@@ -1028,7 +1030,7 @@
                 }
                 grid.innerHTML = slides.map((s, idx) => `
                     <div class="monitor-card" style="flex:none; ${e.data.currentIndex === idx ? 'border-color:var(--accent); box-shadow: 0 0 20px var(--accent)' : ''}" onclick="sendMaster('JUMP', '${s.id}')">
-                        <div class="monitor-thumb" style="height:120px">
+                        <div class="monitor-thumb" style="height:180px">
                             ${s.type === 'MODULE' 
                                 ? `<div style="background:#1e293b; height:100%; display:flex; align-items:center; justify-content:center; font-size:0.6rem; color:var(--accent); font-weight:900">MODULE: ${s.id}</div>`
                                 : (() => {
