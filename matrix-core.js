@@ -1021,6 +1021,33 @@ function renderActiveSlide(skipBroadcast = false) {
 
   clearTimeout(window.MATRIX.STATE.timer);
 
+  // Prevent fade-to-black loop and Master ping bugs by not recreating DOM for the same slide
+  const currentDOM = document.getElementById('slide-target');
+  if (currentDOM && currentDOM.dataset.slideId === String(slide.id)) {
+      const bar = document.getElementById('progress-bar');
+      if (bar) {
+          if (slide.type === 'MODULE') {
+              bar.style.display = 'none';
+          } else {
+              bar.style.display = '';
+              bar.style.transition = 'none';
+              bar.style.width = '0%';
+              if (!window.MATRIX.STATE.isPaused) {
+                  requestAnimationFrame(() => {
+                      requestAnimationFrame(() => {
+                          bar.style.transition = `width ${delay}ms linear`;
+                          bar.style.width = '100%';
+                      });
+                  });
+              }
+          }
+      }
+      if (!window.MATRIX.STATE.isPaused) {
+          window.MATRIX.STATE.timer = setTimeout(window.nextSlide, delay);
+      }
+      return;
+  }
+
   // 1. Show interstitial loader transition
   let loader = document.getElementById('transition-loader');
   if (!loader) {
@@ -1084,6 +1111,7 @@ function renderActiveSlide(skipBroadcast = false) {
     // Create fresh slide element
     const slideEl = document.createElement('div');
     slideEl.id = 'slide-target';
+    slideEl.dataset.slideId = slide.id;
     
     // Apply custom transition class
     const transitionClass = (slide.transition || '').toLowerCase().replace(/\s/g, '-');
