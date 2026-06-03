@@ -951,23 +951,8 @@ function jumpToProject(id, skipBroadcast = false) {
   const s = window.MATRIX.STATE;
   const idx = s.slides.findIndex(s => s.id === id);
   if (idx !== -1) {
-        
-        clearTimeout(s.timer);
-        s.timer = setTimeout(window.nextSlide, delay);
-        
-        const bar = document.getElementById('progress-bar');
-        if (bar && slide.type !== 'MODULE') {
-          bar.style.transition = 'none';
-          bar.style.width = '0%';
-          requestAnimationFrame(() => {
-            bar.style.transition = `width ${delay}ms linear`;
-            bar.style.width = '100%';
-          });
-        }
-        return;
-    }
     s.currentIndex = idx;
-    renderActiveSlide();
+    renderActiveSlide(skipBroadcast);
   }
 }
 
