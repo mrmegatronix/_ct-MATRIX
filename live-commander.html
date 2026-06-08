@@ -118,10 +118,17 @@
 
         const msg = { type: 'LIVE_SLIDE', payload, senderTabId: getTabId(), commandId: 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9), timestamp: Date.now() };
         bc.postMessage(msg);
-        if (window.parent && window.parent.sendToFirebase) {
-            window.parent.sendToFirebase(msg);
-        } else if (window.sendToFirebase) {
-            window.sendToFirebase(msg);
+        
+        try {
+            if (window.parent && window.parent.sendToFirebase) {
+                window.parent.sendToFirebase(msg);
+            } else if (window.sendToFirebase) {
+                window.sendToFirebase(msg);
+            } else {
+                window.parent.postMessage({ action: 'RELAY_FIREBASE', msg }, '*');
+            }
+        } catch (err) {
+            window.parent.postMessage({ action: 'RELAY_FIREBASE', msg }, '*');
         }
         
         // Visual feedback
@@ -138,11 +145,19 @@
     function clearLiveSlide() {
         const msg = { type: 'LIVE_SLIDE', payload: { active: false }, senderTabId: getTabId(), commandId: 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9), timestamp: Date.now() };
         bc.postMessage(msg);
-        if (window.parent && window.parent.sendToFirebase) {
-            window.parent.sendToFirebase(msg);
-        } else if (window.sendToFirebase) {
-            window.sendToFirebase(msg);
+
+        try {
+            if (window.parent && window.parent.sendToFirebase) {
+                window.parent.sendToFirebase(msg);
+            } else if (window.sendToFirebase) {
+                window.sendToFirebase(msg);
+            } else {
+                window.parent.postMessage({ action: 'RELAY_FIREBASE', msg }, '*');
+            }
+        } catch (err) {
+            window.parent.postMessage({ action: 'RELAY_FIREBASE', msg }, '*');
         }
+
         document.getElementById('live-title').value = '';
         document.getElementById('live-detail').value = '';
         
@@ -184,6 +199,15 @@
                 set(ref(db, COMMAND_PATH), payload)
                     .then(() => console.log('[COMMANDER] ✅ Firebase write OK:', msg.type))
                     .catch((err) => console.error('[COMMANDER] ❌ Firebase write FAILED:', err));
+                
+                const STATE_PATH = 'matrix_state';
+                const PERSISTENT_TYPES = ['MODULE_FILTER', 'SETTINGS_UPDATE', 'LIVE_SLIDE'];
+                if (PERSISTENT_TYPES.includes(msg.type)) {
+                    import('./firebase-config.js').then(({ update }) => {
+                        update(ref(db, STATE_PATH + '/' + msg.type), payload);
+                        update(ref(db, STATE_PATH), { _last_updated_by: getClientIdForFirebase() });
+                    });
+                }
             };
             console.log('[COMMANDER] ✅ Direct Firebase loaded.');
         });

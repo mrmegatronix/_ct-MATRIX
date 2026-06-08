@@ -631,31 +631,28 @@
             { id: 'ct-mmr', label: 'MMR (Meat Raffle)', defaultDur: 600 },
             { id: 'ct-wea1', label: 'WEA1 (Weather)', defaultDur: 60 },
             { id: 'ct-ace', label: 'ACE (Chase the Ace)', defaultDur: 180 },
-            { id: 'ct-quiz', label: 'QUIZ (Pub Quiz)', defaultDur: 60 },
-            { id: 'ct-fir', label: 'FIR (Fireplace)', defaultDur: 180 }
+            { id: 'ct-matrix', name: 'MATRIX', defaultDuration: 30 },
+            { id: 'ct-mmr', name: 'MMR', defaultDuration: 600 },
+            { id: 'ct-wea1', name: 'WEA1', defaultDuration: 60 },
+            { id: 'ct-ace', name: 'ACE', defaultDuration: 180 },
+            { id: 'ct-quiz', name: 'QUIZ', defaultDuration: 60 },
+            { id: 'ct-fir', name: 'FIR', defaultDuration: 180 }
         ];
 
         const durationRows = modules.map(m => {
-            const val = dur[m.id] || m.defaultDur;
+            const finalDur = config.moduleDurations && config.moduleDurations[m.id] ? config.moduleDurations[m.id] : m.defaultDuration;
             return `
-                <div style="display:flex; align-items:center; justify-content:space-between; padding: 6px 0; border-bottom: 1px solid var(--border);">
-                    <span style="font-size:0.72rem; font-weight:700; color:#fff;">${m.label}</span>
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <input type="number" id="dur-${m.id}" value="${val}" min="10" max="9999" style="width:70px; background:var(--surface-bright); border:1px solid var(--border); color:#fff; padding:4px 8px; border-radius:6px; font-size:0.75rem; font-weight:700; text-align:center; font-family:'JetBrains Mono',monospace;">
-                        <span style="font-size:0.6rem; opacity:0.4; font-weight:700;">SEC</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; padding: 12px 16px; background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--accent);">
+                    <div style="font-weight: 800; font-size: 0.9rem;">${m.name}</div>
+                    <div style="display:flex; align-items:center; gap: 8px;">
+                        <input type="number" id="home-dur-${m.id}" value="${finalDur}" min="10" max="9999" style="width: 70px; background: #000; border: 1px solid #333; color: #fff; padding: 6px; border-radius: 4px; text-align: center; font-weight: bold;">
+                        <span style="font-size: 0.7rem; color: #888;">SEC</span>
                     </div>
                 </div>
             `;
         }).join('');
         
         wrap.innerHTML = `
-            <div class="dashboard-home">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                    <div class="panel" style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px;">
-                        <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.5; margin-bottom: 1rem;">SYSTEM STATUS</div>
-                        <div style="font-size: 1rem; font-weight: 900; color: #10b981; margin-bottom: 0.5rem;">● MATRIX CORE ONLINE</div>
-                        <div style="font-size: 0.8rem; opacity: 0.5;">BroadcastChannel 'ct_matrix_sync' active.</div>
-                        <div style="font-size: 0.8rem; opacity: 0.5; margin-top: 4px;">Hardware: 1080p Billboard System.</div>
                     </div>
                     <div class="panel" style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px;">
                         <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.5; margin-bottom: 1rem;">QUICK ACTIONS</div>
@@ -799,6 +796,44 @@
             if (stored) config = JSON.parse(stored);
         } catch(e) {}
         config.moduleDurations = durations;
+        localStorage.setItem('matrix_config', JSON.stringify(config));
+
+        // Broadcast to engine + Firebase
+        const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const settingsMsg = {
+            type: 'SETTINGS_UPDATE',
+            payload: { moduleDurations: durations },
+            commandId: commandId,
+            timestamp: Date.now(),
+            senderTabId: getTabId()
+        };
+        bc.postMessage(settingsMsg);
+        if (window.sendToFirebase) window.sendToFirebase(settingsMsg);
+
+        showToast('DURATIONS SAVED — Refresh All to apply');
+    }
+
+    function saveHomeModuleDurations() {
+        const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir'];
+        const durations = {};
+        moduleIds.forEach(id => {
+            const el = document.getElementById('home-dur-' + id);
+            if (el) {
+                const val = parseInt(el.value);
+                if (val && val >= 10) durations[id] = val;
+            }
+        });
+
+        // Merge into existing config
+        let config = {};
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            if (stored) config = JSON.parse(stored);
+        } catch(e) {}
+        
+        const existingDurations = config.moduleDurations || {};
+        config.moduleDurations = { ...existingDurations, ...durations };
+        
         localStorage.setItem('matrix_config', JSON.stringify(config));
 
         // Broadcast to engine + Firebase
@@ -1111,6 +1146,12 @@
     window.addEventListener('resize', scaleFrames);
     window.addEventListener('load', scaleFrames);
     setInterval(scaleFrames, 500);
+
+    window.addEventListener('message', (e) => {
+        if (e.data && e.data.action === 'RELAY_FIREBASE') {
+            if (window.sendToFirebase) window.sendToFirebase(e.data.msg);
+        }
+    });
 
     window.onload = () => {
         if(sessionStorage.getItem('matrix_authed') === 'true') { 

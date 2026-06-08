@@ -110,11 +110,8 @@ async function initMatrix() {
            clearTimeout(window.MATRIX.STATE.timer);
            const elapsed = Date.now() - e.data.startTime;
            const remaining = e.data.delay - elapsed;
-           if (remaining > 0) {
-               window.MATRIX.STATE.timer = setTimeout(() => { if (window.nextSlide) window.nextSlide(false); }, remaining);
-           } else {
-               window.MATRIX.STATE.timer = setTimeout(() => { if (window.nextSlide) window.nextSlide(false); }, window.MATRIX.CONFIG.SWAP_DELAY);
-           }
+           const finalRemaining = remaining > 0 ? remaining : window.MATRIX.CONFIG.SWAP_DELAY;
+           renderActiveSlide(true, finalRemaining);
         }
         break;
       case 'SYNC_DATA': window.initMatrix(); break; 
@@ -918,12 +915,23 @@ function nextSlide(skipBroadcast = false) {
   if (!s.slides.length) return;
   
   let loopCount = 0;
+  let nextIdx = s.currentIndex;
   do {
-    s.currentIndex = (s.currentIndex + 1) % s.slides.length;
+    nextIdx = (nextIdx + 1) % s.slides.length;
     loopCount++;
-  } while (!isSlideActive(s.slides[s.currentIndex]) && loopCount < s.slides.length);
+  } while (!isSlideActive(s.slides[nextIdx]) && loopCount < s.slides.length);
   
-  renderActiveSlide(skipBroadcast);
+  if (isSlideActive(s.slides[nextIdx])) {
+    s.currentIndex = nextIdx;
+    renderActiveSlide(skipBroadcast);
+  } else {
+    // If all slides in the queue are inactive, stop looping
+    s.currentIndex = -1;
+    console.warn('[MATRIX] All slides are inactive. Hiding display.');
+    const target = document.getElementById('slide-target');
+    if (target) target.innerHTML = '';
+    // Optional: Could display a logo or "Event Starting Soon" fallback
+  }
 }
 
 function prevSlide(skipBroadcast = false) {
@@ -931,12 +939,18 @@ function prevSlide(skipBroadcast = false) {
   if (!s.slides.length) return;
   
   let loopCount = 0;
+  let prevIdx = s.currentIndex;
   do {
-    s.currentIndex = (s.currentIndex - 1 + s.slides.length) % s.slides.length;
+    prevIdx = (prevIdx - 1 + s.slides.length) % s.slides.length;
     loopCount++;
-  } while (!isSlideActive(s.slides[s.currentIndex]) && loopCount < s.slides.length);
+  } while (!isSlideActive(s.slides[prevIdx]) && loopCount < s.slides.length);
   
-  renderActiveSlide(skipBroadcast);
+  if (isSlideActive(s.slides[prevIdx])) {
+    s.currentIndex = prevIdx;
+    renderActiveSlide(skipBroadcast);
+  } else {
+    s.currentIndex = -1;
+  }
 }
 
 function togglePause() {
@@ -944,7 +958,14 @@ function togglePause() {
   s.isPaused = !s.isPaused;
   const btn = document.getElementById('play-pause-btn');
   if (btn) btn.innerText = s.isPaused ? '\u25b6' : '\u23f8';
-  if (!s.isPaused) nextSlide();
+  
+  if (s.isPaused) {
+      clearTimeout(s.timer);
+      const bar = document.getElementById('progress-bar');
+      if (bar) bar.style.transition = 'none'; // stop progress bar
+  } else {
+      nextSlide();
+  }
 }
 
 function jumpToProject(id, skipBroadcast = false) {
@@ -965,7 +986,7 @@ window.jumpToProject = jumpToProject;
  * Premium Slide Renderer
  * Generates the premium TV-quality DOM structure for each slide.
  */
-function renderActiveSlide(skipBroadcast = false) {
+function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
   const s = window.MATRIX.STATE;
   if (s.currentIndex < 0 || s.currentIndex >= s.slides.length) return;
   const slide = s.slides[s.currentIndex];
@@ -1322,14 +1343,15 @@ function renderActiveSlide(skipBroadcast = false) {
     }
 
     if (!window.MATRIX.STATE.isPaused) {
-      const delay = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
-      window.MATRIX.STATE.timer = setTimeout(nextSlide, delay);
+      const defaultDelay = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
+      const finalDelay = overrideDelay !== null ? overrideDelay : defaultDelay;
+      window.MATRIX.STATE.timer = setTimeout(nextSlide, finalDelay);
       
       if (bar && slide.type !== 'MODULE') {
         bar.style.transition = 'none';
         bar.style.width = '0%';
         requestAnimationFrame(() => {
-          bar.style.transition = `width ${delay}ms linear`;
+          bar.style.transition = `width ${finalDelay}ms linear`;
           bar.style.width = '100%';
         });
       }
