@@ -1351,8 +1351,10 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
         bar.style.transition = 'none';
         bar.style.width = '0%';
         requestAnimationFrame(() => {
-          bar.style.transition = `width ${finalDelay}ms linear`;
-          bar.style.width = '100%';
+          requestAnimationFrame(() => {
+            bar.style.transition = `width ${finalDelay}ms linear`;
+            bar.style.width = '100%';
+          });
         });
       }
     } else {
