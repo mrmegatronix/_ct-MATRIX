@@ -584,7 +584,7 @@ function buildSlideQueue(data) {
   queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5, duration: customDurations['ct-ace'] || 180 }); // 6 slides * 30s
   queue.push({ type: 'MODULE', id: 'ct-quiz', url: '../_ct-QUIZ/index.html', title: "Weekly Pub Quiz", priority: 10, duration: customDurations['ct-quiz'] || 60 });
   queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, duration: customDurations['ct-fir'] || 180 }); // 3min default
-  queue.push({ type: 'MODULE', id: 'ct-mid', url: '../_ct-MID/dist/index.html?display=true', title: "Mid Winter Christmas", pinned: true, priority: 6, duration: customDurations['ct-mid'] || 180 });
+  queue.push({ type: 'MODULE', id: 'ct-mid', url: '../_ct-MID/mid.html', title: "Mid Winter Christmas", pinned: true, priority: 6, duration: customDurations['ct-mid'] || 180 });
 
   // 4. Apply Module Filters
   let filteredQueue = queue.filter(s => {
