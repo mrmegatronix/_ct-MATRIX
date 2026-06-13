@@ -88,6 +88,7 @@
     <button class="btn" onclick="jump('ct-quiz')"><span class="btn-icon">🧠</span><span>QUIZ</span></button>
     <button class="btn" onclick="jump('ct-wea1')"><span class="btn-icon">🌦</span><span>WEA1</span></button>
     <button class="btn" onclick="jump('ct-fir')"><span class="btn-icon">🔥</span><span>FIR</span></button>
+    <button class="btn" onclick="jump('ct-mid')"><span class="btn-icon">❄️</span><span>MID</span></button>
   </div>
 
   <div class="section-title">Live Overrides</div>
@@ -159,6 +160,15 @@
       </div>
       <div class="mod-dur-wrapper"><input type="number" class="mod-dur" id="dur-ct-fir" placeholder="s"></div>
     </div>
+    <!-- MID -->
+    <div class="mod-row" id="row-ct-mid">
+      <div class="mod-name">❄️ MID</div>
+      <div class="mod-toggle">
+        <button class="mod-btn btn-on" onclick="toggleModule('MID', true)">ON</button>
+        <button class="mod-btn btn-off" onclick="toggleModule('MID', false)">OFF</button>
+      </div>
+      <div class="mod-dur-wrapper"><input type="number" class="mod-dur" id="dur-ct-mid" placeholder="s"></div>
+    </div>
   </div>
 
   <button class="save-btn" onclick="saveModuleDurations()">💾 SAVE DURATIONS</button>
@@ -175,7 +185,7 @@
     const bc_sub = new BroadcastChannel('mom_sync');
 
     // Default durations fallback
-    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-quiz': 60, 'ct-fir': 180 };
+    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-quiz': 60, 'ct-fir': 180, 'ct-mid': 180 };
 
     function getClientId() {
       let id = localStorage.getItem('matrix_client_id');
@@ -195,7 +205,7 @@
         if (stored) config = { ...config, ...JSON.parse(stored) };
       } catch(e) {}
       
-      const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir'];
+      const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-mid'];
       moduleIds.forEach(id => {
         const row = document.getElementById('row-' + id);
         if (!row) return;
@@ -316,7 +326,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir'];
+        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-mid'];
         const durations = {};
         moduleIds.forEach(id => {
             const el = document.getElementById('dur-' + id);

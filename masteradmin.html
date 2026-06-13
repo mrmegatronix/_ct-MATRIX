@@ -658,7 +658,8 @@
             { id: 'ct-wea1', name: 'WEA1', defaultDuration: 60 },
             { id: 'ct-ace', name: 'ACE', defaultDuration: 180 },
             { id: 'ct-quiz', name: 'QUIZ', defaultDuration: 60 },
-            { id: 'ct-fir', name: 'FIR', defaultDuration: 180 }
+            { id: 'ct-fir', name: 'FIR', defaultDuration: 180 },
+            { id: 'ct-mid', name: 'MID', defaultDuration: 180 }
         ];
 
         const durationRows = modules.map(m => {
@@ -719,7 +720,8 @@
             { id: 'MMR', name: 'MEAT RAFFLE', path: '_ct-MMR' },
             { id: 'QUIZ', name: 'WEEKLY QUIZ', path: '_ct-QUIZ' },
             { id: 'WEA1', name: 'WEATHER', path: '_ct-wea1' },
-            { id: 'FIR', name: 'FIREPLACE', path: '_ct-FIR' }
+            { id: 'FIR', name: 'FIREPLACE', path: '_ct-FIR' },
+            { id: 'MID', name: 'MID WINTER', path: '_ct-MID' }
         ];
 
         tray.innerHTML = modules.map(m => {
@@ -754,7 +756,8 @@
             { id: 'ct-mmr', name: 'MMR', title: 'Meat Raffle', defaultDur: 600, hasAdmin: true },
             { id: 'ct-quiz', name: 'QUIZ', title: 'Pub Quiz', defaultDur: 60, hasAdmin: true },
             { id: 'ct-wea1', name: 'WEA1', title: 'Weather', defaultDur: 60, hasAdmin: false },
-            { id: 'ct-fir', name: 'FIR', title: 'Fireplace', defaultDur: 180, hasAdmin: false }
+            { id: 'ct-fir', name: 'FIR', title: 'Fireplace', defaultDur: 180, hasAdmin: false },
+            { id: 'ct-mid', name: 'MID', title: 'Mid Winter', defaultDur: 180, hasAdmin: true }
         ];
 
         side.innerHTML = modules.map(m => {
@@ -801,7 +804,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir'];
+        const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir', 'ct-mid'];
         const durations = {};
         moduleIds.forEach(id => {
             const el = document.getElementById('dur-' + id);
@@ -836,7 +839,7 @@
     }
 
     function saveHomeModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir'];
+        const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir', 'ct-mid'];
         const durations = {};
         moduleIds.forEach(id => {
             const el = document.getElementById('home-dur-' + id);
