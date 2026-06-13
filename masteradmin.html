@@ -497,8 +497,30 @@
             <div class="nav-section-title">LIVE MODULES TREE</div>
             <div id="live-modules-tree-container"></div>
         </div>
-
+        
+        <div style="margin-top: auto; padding: 20px 0; border-top: 1px solid var(--border);">
+            <div class="nav-section-title">FIREBASE CONFIG</div>
+            <input type="text" id="fb-url-input" placeholder="https://your-project.firebaseio.com" style="width: 100%; padding: 8px; background: #000; color: #fff; border: 1px solid var(--border); font-size: 0.7rem; border-radius: 4px; margin-bottom: 8px;">
+            <button class="ctrl-btn primary" onclick="saveFirebaseConfig()" style="width: 100%; font-size: 0.7rem;">SAVE CONFIG</button>
+        </div>
     </nav>
+    
+    <script>
+        // Init Firebase Config Input
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentFbUrl = localStorage.getItem('matrix_firebase_url') || "https://ct-mmr-default-rtdb.firebaseio.com";
+            document.getElementById('fb-url-input').value = currentFbUrl;
+        });
+
+        function saveFirebaseConfig() {
+            const url = document.getElementById('fb-url-input').value.trim();
+            if (url) {
+                localStorage.setItem('matrix_firebase_url', url);
+                alert('Firebase configuration saved. The page will now reload.');
+                window.location.reload();
+            }
+        }
+    </script>
 
     <div class="workspace-left" id="workspace-left">
         <div class="panel" style="flex: 1;">

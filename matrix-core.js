@@ -584,6 +584,7 @@ function buildSlideQueue(data) {
   queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5, duration: customDurations['ct-ace'] || 180 }); // 6 slides * 30s
   queue.push({ type: 'MODULE', id: 'ct-quiz', url: '../_ct-QUIZ/index.html', title: "Weekly Pub Quiz", priority: 10, duration: customDurations['ct-quiz'] || 60 });
   queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, duration: customDurations['ct-fir'] || 180 }); // 3min default
+  queue.push({ type: 'MODULE', id: 'ct-mid', url: '../_ct-MID/dist/index.html?display=true', title: "Mid Winter Christmas", pinned: true, priority: 6, duration: customDurations['ct-mid'] || 180 });
 
   // 4. Apply Module Filters
   let filteredQueue = queue.filter(s => {
@@ -912,14 +913,41 @@ function isSlideActive(slide) {
  */
 function nextSlide(skipBroadcast = false) {
   const s = window.MATRIX.STATE;
-  if (!s.slides.length) return;
-  
   let loopCount = 0;
   let nextIdx = s.currentIndex;
+  
+  // Auto-heal: If we only have 1 or 2 active slides total, dynamically inject default fillers
+  const activeSlidesCount = s.slides.filter(slide => isSlideActive(slide)).length;
+  if (activeSlidesCount <= 2 && !window.MATRIX.STATE.hasInjectedFallbacks) {
+      console.log('[MATRIX] Auto-healing: Not enough active slides. Injecting generic fillers.');
+      window.MATRIX.STATE.hasInjectedFallbacks = true;
+      s.slides.push(
+          {
+              id: 'fallback-menu',
+              type: 'MENU',
+              title: 'Feeling Hungry?',
+              subtitle: 'Check out our delicious menu today.',
+              bgImage: 'images/bg2.jpg',
+              accentColor: '#f59e0b',
+              qr: 'https://coasterstavern.co.nz/menu/'
+          },
+          {
+              id: 'fallback-bar',
+              type: 'EVENT',
+              subType: 'Information',
+              title: 'Welcome to Coasters',
+              subtitle: 'Relax and enjoy the atmosphere.',
+              bgImage: 'images/bg1.jpg',
+              accentColor: '#3b82f6'
+          }
+      );
+  }
+
   do {
     nextIdx = (nextIdx + 1) % s.slides.length;
     loopCount++;
   } while (!isSlideActive(s.slides[nextIdx]) && loopCount < s.slides.length);
+
   
   if (isSlideActive(s.slides[nextIdx])) {
     s.currentIndex = nextIdx;

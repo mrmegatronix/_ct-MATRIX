@@ -5,10 +5,13 @@
  * Exports: db, ref, onValue, set, update, push
  */
 
+// Read from localStorage to allow user to easily override the database
+const userDbUrl = localStorage.getItem('matrix_firebase_url');
+
 const firebaseConfig = {
     apiKey: "AIzaSyAIFTmnDzP39w0gbJQU_jIXKNxUc1-gI5Q",
     authDomain: "ct-matrix-system.firebaseapp.com",
-    databaseURL: "https://ct-matrix-system-default-rtdb.firebaseio.com",
+    databaseURL: userDbUrl || "https://ct-mmr-default-rtdb.firebaseio.com",
     projectId: "ct-matrix-system",
     storageBucket: "ct-matrix-system.firebasestorage.app",
     messagingSenderId: "46848619225",
