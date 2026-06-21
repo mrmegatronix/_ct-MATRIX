@@ -111,9 +111,12 @@
             mode: document.getElementById('live-mode').value
         };
         
-        // If it's the last drinks template, attach the countdown
+        // If it's the last drinks template, attach the countdown and auto-transition flag
         if (payload.title === 'LAST DRINKS' && document.getElementById('live-mode').value === 'OVERRIDE') {
             payload.countdownFinish = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+            payload.autoBarClosed = true;
+        } else if (payload.title === 'BAR IS NOW CLOSED' && document.getElementById('live-mode').value === 'OVERRIDE') {
+            payload.autoClearAfter = 2 * 60 * 60 * 1000; // 2 hours
         }
 
         const msg = { type: 'LIVE_SLIDE', payload, senderTabId: getTabId(), commandId: 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9), timestamp: Date.now() };

@@ -1526,6 +1526,11 @@ function showStatus(msg) {
 loadPersistedState();
 
 function handleLiveSlide(payload) {
+    if (window.MATRIX.STATE.liveClearTimer) {
+        clearTimeout(window.MATRIX.STATE.liveClearTimer);
+        window.MATRIX.STATE.liveClearTimer = null;
+    }
+
     if (!payload || !payload.active) {
         if (window.MATRIX.STATE.liveTimer) {
             clearInterval(window.MATRIX.STATE.liveTimer);
@@ -1577,9 +1582,9 @@ function handleLiveSlide(payload) {
         <div style="position:absolute; inset:0; background: radial-gradient(circle at center, ${accent}22 0%, #000 70%);"></div>
         <div style="z-index:1; animation: liveSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1)">
             <h2 style="font-size: 2rem; text-transform: uppercase; letter-spacing: 10px; color: ${accent}; margin-bottom: 2rem; font-weight: 900;">LIVE BROADCAST</h2>
-            ${payload.countdownFinish ? `<div id="live-countdown-text" style="font-size: 12rem; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: #fff; line-height: 1; margin-bottom: 2rem; text-shadow: 0 0 50px ${accent};">--:--</div>` : ''}
-            <h1 style="font-size: 6rem; font-weight: 900; line-height: 0.9; margin-bottom: 2rem; color: #fff; text-shadow: 0 0 50px ${accent}44;">${payload.title || ''}</h1>
-            <p style="font-size: 3rem; color: #94a3b8; font-weight: 600; max-width: 1200px;">${payload.detail || ''}</p>
+            ${payload.countdownFinish ? `<div id="live-countdown-text" style="font-size: 12rem; font-weight: 900; font-family: 'JetBrains Mono', monospace; color: #ef4444; line-height: 1; margin-bottom: 2rem; text-shadow: 0 0 50px #ef4444;">--:--</div>` : ''}
+            <h1 style="font-size: 8rem; font-weight: 900; line-height: 0.9; margin-bottom: 2rem; color: #fff; text-shadow: 0 0 50px ${accent}44;">${payload.title || ''}</h1>
+            <p style="font-size: 4rem; color: #94a3b8; font-weight: 600; max-width: 1400px; line-height: 1.2;">${payload.detail || ''}</p>
         </div>
         <div style="position: absolute; bottom: 4rem; width: 100%; text-align: center; font-family: 'JetBrains Mono'; font-size: 1.2rem; color: ${accent}; opacity: 0.5;">
             MATRIX LIVE ALERT SYSTEM v1.0
@@ -1602,6 +1607,18 @@ function handleLiveSlide(payload) {
                 if (diff <= 0) {
                     cdEl.innerHTML = "00:00";
                     clearInterval(window.MATRIX.STATE.liveTimer);
+                    
+                    if (payload.autoBarClosed) {
+                        payload.title = 'BAR IS NOW CLOSED';
+                        payload.detail = 'Last drinks has finished. Thank you for visiting, please travel home safely.';
+                        payload.accent = '#ef4444';
+                        payload.countdownFinish = null;
+                        payload.autoBarClosed = false;
+                        payload.autoClearAfter = 2 * 60 * 60 * 1000; // 2 hours
+                        
+                        // Recursive call to transition locally
+                        setTimeout(() => handleLiveSlide(payload), 500);
+                    }
                 } else {
                     const m = Math.floor(diff / 60000).toString().padStart(2, '0');
                     const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
@@ -1609,6 +1626,13 @@ function handleLiveSlide(payload) {
                 }
             }
         }, 1000);
+    }
+    
+    // Auto-clear holding pattern (e.g. 2 hours after bar closes)
+    if (payload.autoClearAfter) {
+        window.MATRIX.STATE.liveClearTimer = setTimeout(() => {
+             handleLiveSlide({ active: false });
+        }, payload.autoClearAfter);
     }
 }
 
