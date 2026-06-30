@@ -47,6 +47,7 @@ try {
         }
     ];
     window.MATRIX.STATE.currentIndex = 0;
+    window.MATRIX.STATE.hasInjectedFallbacks = true;
     
     // Override isSlideActive to always return true for testing
     window.isSlideActive = () => true;
@@ -77,9 +78,10 @@ try {
         console.log("✅ slide-target remained intact during redundant jumpToProject. Master ping loops are fixed.");
     }
 
-    console.log("\\n🚀 All automated regression tests passed. The live sync freeze and transition loop bugs are verifiably resolved.");
-    
+    console.log("\n🚀 All automated regression tests passed. The live sync freeze and transition loop bugs are verifiably resolved.");
+    process.exit(0);
 } catch(e) {
     console.error("❌ Test Failed:");
     console.error(e);
+    process.exit(1);
 }
