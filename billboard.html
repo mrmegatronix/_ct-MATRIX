@@ -985,8 +985,8 @@
       const t = (eventType || '').toLowerCase();
       const name = (title || '').toLowerCase();
 
-      if (t.includes('rugby') || t.includes('nrl') || t.includes('warriors') || t.includes('crusaders') ||
-        name.includes('warriors') || name.includes('crusaders') || name.includes('nrl')) {
+      if (t.includes('rugby') || t.includes('nrl') || t.includes('warriors') || t.includes('crusaders') || t.includes('all blacks') ||
+        name.includes('warriors') || name.includes('crusaders') || name.includes('nrl') || name.includes('all blacks')) {
         return '_backgrounds/stadium.png';
       }
 
@@ -1007,6 +1007,7 @@
       const title = (slide.title || '').toLowerCase();
       if (title.includes('crusaders')) return '#ef4444';
       if (title.includes('warriors')) return '#10b981';
+      if (title.includes('all blacks') || subType.includes('all blacks')) return '#ffffff';
       const map = {
         'super rugby': '#ef4444',
         'rugby': '#ef4444',

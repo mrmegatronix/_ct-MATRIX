@@ -449,9 +449,8 @@ function getDefaultBackground(eventType, title) {
   const t = (eventType || '').toLowerCase();
   const name = (title || '').toLowerCase();
   
-  // Specific branding matches
-  if (t.includes('rugby') || t.includes('nrl') || t.includes('warriors') || t.includes('crusaders') || 
-      name.includes('warriors') || name.includes('crusaders') || name.includes('nrl')) {
+  if (t.includes('rugby') || t.includes('nrl') || t.includes('warriors') || t.includes('crusaders') || t.includes('all blacks') || 
+      name.includes('warriors') || name.includes('crusaders') || name.includes('nrl') || name.includes('all blacks')) {
     return '_backgrounds/stadium.png';
   }
   
@@ -511,7 +510,7 @@ function buildSlideQueue(data) {
           }
 
           const targetDate = ev.date ? parseMatrixDate(ev.date) : virtualDate;
-          const isCurrent = isEventCurrent(targetDate, ev.event_type);
+          const isCurrent = isEventCurrent(targetDate, ev.event_type, ev.title);
 
           if (isCurrent) {
             // 1. RUTHLESS TBC/TBA filtering - scan ALL text fields
@@ -519,9 +518,12 @@ function buildSlideQueue(data) {
               ev.title, ev.notes, ev.event_type, ev.location, ev.price, ev.time, ev.hiddenNotes, ev.footer
             ].join(' ').toLowerCase();
 
-            if (ruthlessString.includes('tbc') || ruthlessString.includes('tba') || 
+            const isAllBlacks = (ev.event_type || '').toLowerCase().includes('all blacks') || 
+                                (ev.title || '').toLowerCase().includes('all blacks');
+
+            if (!isAllBlacks && (ruthlessString.includes('tbc') || ruthlessString.includes('tba') || 
                 ruthlessString.includes('to be confirmed') || ruthlessString.includes('to be announced') ||
-                ruthlessString === 'tbc' || ruthlessString === 'tba') {
+                ruthlessString === 'tbc' || ruthlessString === 'tba')) {
               return;
             }
 
@@ -790,7 +792,7 @@ function adjustActiveSlideText() {
 }
 window.adjustActiveSlideText = adjustActiveSlideText;
 
-function isEventCurrent(dateOrStr, subType) {
+function isEventCurrent(dateOrStr, subType, title = '') {
     if (!dateOrStr) return true;
     const evDate = (dateOrStr instanceof Date) ? dateOrStr : parseMatrixDate(dateOrStr);
     if (!evDate) return true;
@@ -803,6 +805,11 @@ function isEventCurrent(dateOrStr, subType) {
     if (evDay < today) return false;
     
     const diffDays = Math.round((evDay - today) / (1000 * 60 * 60 * 24));
+    
+    // Bypass lookahead limit for All Blacks matches (show them up to 45 days in advance)
+    const isAllBlacks = (subType || '').toLowerCase().includes('all blacks') || 
+                        (title || '').toLowerCase().includes('all blacks');
+    if (isAllBlacks) return diffDays <= 45;
     
     // 2. 14 Day lookahead for ALL events, 7 days for Weekly Specials
     const limit = (subType || '').toLowerCase().includes('weekly special') ? 7 : 14;
@@ -834,6 +841,7 @@ function getHighlightColor(slide) {
 
   if (title.includes('crusaders')) return '#ef4444'; // Red
   if (title.includes('warriors')) return '#10b981'; // Green
+  if (title.includes('all blacks') || subType.includes('all blacks')) return '#ffffff'; // White/Silver
 
   const map = {
     'super rugby': '#ef4444',
@@ -874,7 +882,10 @@ function isSlideActive(slide) {
       const diffDays = Math.round((evDay - today) / (1000 * 3600 * 24));
 
       const subType = (slide.subType || '').toLowerCase();
-      const limit = subType.includes('weekly special') ? 7 : 14;
+      const title = (slide.title || '').toLowerCase();
+      const isAllBlacks = subType.includes('all blacks') || title.includes('all blacks');
+      
+      const limit = isAllBlacks ? 45 : (subType.includes('weekly special') ? 7 : 14);
 
       if (diffDays < 0) return false; // Past event
       if (diffDays > limit) return false; 
