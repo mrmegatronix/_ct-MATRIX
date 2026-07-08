@@ -654,6 +654,7 @@
             { id: 'ct-wea1', label: 'WEA1 (Weather)', defaultDur: 60 },
             { id: 'ct-ace', label: 'ACE (Chase the Ace)', defaultDur: 180 },
             { id: 'ct-soc', label: 'SOC (Social Club)', defaultDur: 120 },
+            { id: 'ct-tik', label: 'TIK (TikTok Feed)', defaultDur: 120 },
             { id: 'ct-matrix', name: 'MATRIX', defaultDuration: 30 },
             { id: 'ct-mmr', name: 'MMR', defaultDuration: 600 },
             { id: 'ct-wea1', name: 'WEA1', defaultDuration: 60 },
@@ -661,7 +662,8 @@
             { id: 'ct-quiz', name: 'QUIZ', defaultDuration: 60 },
             { id: 'ct-fir', name: 'FIR', defaultDuration: 180 },
             { id: 'ct-mid', name: 'MID', defaultDuration: 120 },
-            { id: 'ct-soc', name: 'SOC', defaultDuration: 120 }
+            { id: 'ct-soc', name: 'SOC', defaultDuration: 120 },
+            { id: 'ct-tik', name: 'TIK', defaultDuration: 120 }
         ];
 
         const durationRows = modules.map(m => {
@@ -724,7 +726,8 @@
             { id: 'WEA1', name: 'WEATHER', path: '_ct-wea1' },
             { id: 'FIR', name: 'FIREPLACE', path: '_ct-FIR' },
             { id: 'MID', name: 'MID WINTER', path: '_ct-MID' },
-            { id: 'SOC', name: 'SOCIAL CLUB', path: '_ct-SOC' }
+            { id: 'SOC', name: 'SOCIAL CLUB', path: '_ct-SOC' },
+            { id: 'TIK', name: 'TIKTOK FEED', path: '_ct-TIK' }
         ];
 
         tray.innerHTML = modules.map(m => {
@@ -761,7 +764,8 @@
             { id: 'ct-wea1', name: 'WEA1', title: 'Weather', defaultDur: 60, hasAdmin: false },
             { id: 'ct-fir', name: 'FIR', title: 'Fireplace', defaultDur: 180, hasAdmin: false },
             { id: 'ct-mid', name: 'MID', title: 'Mid Winter', defaultDur: 120, hasAdmin: true },
-            { id: 'ct-soc', name: 'SOC', title: 'Social Club', defaultDur: 120, hasAdmin: true }
+            { id: 'ct-soc', name: 'SOC', title: 'Social Club', defaultDur: 120, hasAdmin: true },
+            { id: 'ct-tik', name: 'TIK', title: 'TikTok Feed', defaultDur: 120, hasAdmin: false }
         ];
 
         side.innerHTML = modules.map(m => {
@@ -808,7 +812,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir', 'ct-mid', 'ct-soc'];
+        const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir', 'ct-mid', 'ct-soc', 'ct-tik'];
         const durations = {};
         moduleIds.forEach(id => {
             const el = document.getElementById('dur-' + id);
@@ -843,7 +847,7 @@
     }
 
     function saveHomeModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir', 'ct-mid', 'ct-soc'];
+        const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir', 'ct-mid', 'ct-soc', 'ct-tik'];
         const durations = {};
         moduleIds.forEach(id => {
             const el = document.getElementById('home-dur-' + id);
