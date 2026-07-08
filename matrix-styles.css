@@ -314,6 +314,7 @@ body {
   box-shadow: 0 0 15px var(--theme-glow);
   animation: pulse-glow-small 3s infinite ease-in-out;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .premium-location {
@@ -1280,6 +1281,7 @@ body {
 .footer-combined-box {
   gap: 0.8rem;
   padding: 0.3rem 0.8rem;
+  flex-shrink: 0;
 }
 
 .footer-combined-box .premium-footer {
@@ -1302,6 +1304,7 @@ body {
 .footer-combined-box .footer-qr-img {
   padding: 4px;
   border-radius: 8px;
+  flex-shrink: 0;
 }
 
 .footer-qr-img img {
