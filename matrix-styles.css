@@ -1289,7 +1289,7 @@ body {
   flex-shrink: 0;
   line-height: 1.2;
   color: #fff;
-  white-space: normal;
+  white-space: nowrap;
   font-size: clamp(1.1rem, 1.4vw, 1.6rem);
 }
 
