@@ -1285,8 +1285,9 @@ body {
 .footer-combined-box .premium-footer {
   margin: 0;
   text-align: right;
-  max-width: 250px;
-  line-height: 1.1;
+  max-width: 300px;
+  flex-shrink: 0;
+  line-height: 1.2;
   color: #fff;
   white-space: normal;
   font-size: clamp(1.1rem, 1.4vw, 1.6rem);
