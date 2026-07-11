@@ -236,6 +236,18 @@
   </nav>
 
   <script>
+    if (localStorage.getItem('matrix_migration_20260711') !== 'done') {
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            let config = stored ? JSON.parse(stored) : {};
+            if (!config.disabledModules) config.disabledModules = [];
+            if (!config.disabledModules.includes('ct-soc')) config.disabledModules.push('ct-soc');
+            if (!config.disabledModules.includes('ct-tik')) config.disabledModules.push('ct-tik');
+            localStorage.setItem('matrix_config', JSON.stringify(config));
+            localStorage.setItem('matrix_migration_20260711', 'done');
+        } catch(e) {}
+    }
+
     const bc = new BroadcastChannel('ct_matrix_sync');
     const bc_sub = new BroadcastChannel('mom_sync');
 

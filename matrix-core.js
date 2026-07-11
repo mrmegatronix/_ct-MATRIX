@@ -242,6 +242,20 @@ async function initMatrix() {
  */
 function loadPersistedState() {
   try {
+    if (localStorage.getItem('matrix_migration_20260711') !== 'done') {
+      const stored = localStorage.getItem('matrix_config');
+      let config = stored ? JSON.parse(stored) : {};
+      if (!config.disabledModules) config.disabledModules = [];
+      if (!config.disabledModules.includes('ct-soc')) config.disabledModules.push('ct-soc');
+      if (!config.disabledModules.includes('ct-tik')) config.disabledModules.push('ct-tik');
+      localStorage.setItem('matrix_config', JSON.stringify(config));
+      localStorage.setItem('matrix_migration_20260711', 'done');
+    }
+  } catch(e) {
+    console.warn('[MATRIX] Migration failed or storage access denied:', e);
+  }
+
+  try {
     const config = localStorage.getItem('matrix_config');
     if (config) window.MATRIX.CONFIG = { ...window.MATRIX.CONFIG, ...JSON.parse(config) };
     if (!window.MATRIX.CONFIG.disabledModules) {
