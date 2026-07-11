@@ -649,17 +649,11 @@
         const dur = config.moduleDurations || {};
 
         const modules = [
-            { id: 'ct-matrix', label: 'MATRIX (Core Slides)', defaultDur: 30 },
-            { id: 'ct-mmr', label: 'MMR (Meat Raffle)', defaultDur: 600 },
-            { id: 'ct-wea1', label: 'WEA1 (Weather)', defaultDur: 60 },
-            { id: 'ct-ace', label: 'ACE (Chase the Ace)', defaultDur: 180 },
-            { id: 'ct-soc', label: 'SOC (Social Club)', defaultDur: 120 },
-            { id: 'ct-tik', label: 'TIK (TikTok Feed)', defaultDur: 120 },
             { id: 'ct-matrix', name: 'MATRIX', defaultDuration: 30 },
-            { id: 'ct-mmr', name: 'MMR', defaultDuration: 600 },
-            { id: 'ct-wea1', name: 'WEA1', defaultDuration: 60 },
             { id: 'ct-ace', name: 'ACE', defaultDuration: 180 },
+            { id: 'ct-mmr', name: 'MMR', defaultDuration: 600 },
             { id: 'ct-quiz', name: 'QUIZ', defaultDuration: 60 },
+            { id: 'ct-wea1', name: 'WEA1', defaultDuration: 60 },
             { id: 'ct-fir', name: 'FIR', defaultDuration: 180 },
             { id: 'ct-mid', name: 'MID', defaultDuration: 120 },
             { id: 'ct-soc', name: 'SOC', defaultDuration: 120 },
@@ -668,12 +662,19 @@
 
         const durationRows = modules.map(m => {
             const finalDur = config.moduleDurations && config.moduleDurations[m.id] ? config.moduleDurations[m.id] : m.defaultDuration;
+            const isAll = finalDur === 'all';
             return `
                 <div style="display:flex; justify-content:space-between; align-items:center; padding: 12px 16px; background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--accent);">
                     <div style="font-weight: 800; font-size: 0.9rem;">${m.name}</div>
-                    <div style="display:flex; align-items:center; gap: 8px;">
-                        <input type="number" id="home-dur-${m.id}" value="${finalDur}" min="10" max="9999" style="width: 70px; background: #000; border: 1px solid #333; color: #fff; padding: 6px; border-radius: 4px; text-align: center; font-weight: bold;">
-                        <span style="font-size: 0.7rem; color: #888;">SEC</span>
+                    <div style="display:flex; align-items:center; gap: 12px;">
+                        <label style="display:flex; align-items:center; gap: 4px; font-size: 0.75rem; color: #aaa; cursor: pointer;">
+                            <input type="checkbox" id="home-all-${m.id}" ${isAll ? 'checked' : ''} onchange="toggleHomePlayAll('${m.id}', this.checked); saveHomeModuleDurations();" style="margin:0; width:14px; height:14px;">
+                            <span>Play All</span>
+                        </label>
+                        <div id="home-dur-container-${m.id}" style="display:${isAll ? 'none' : 'flex'}; align-items:center; gap: 8px;">
+                            <input type="number" id="home-dur-${m.id}" value="${isAll ? m.defaultDuration : finalDur}" min="10" max="9999" onchange="saveHomeModuleDurations()" style="width: 70px; background: #000; border: 1px solid #333; color: #fff; padding: 6px; border-radius: 4px; text-align: center; font-weight: bold;">
+                            <span style="font-size: 0.7rem; color: #888;">SEC</span>
+                        </div>
                     </div>
                 </div>
             `;
@@ -748,10 +749,16 @@
         const side = document.getElementById('live-modules-tree-container');
         if(!side) return;
 
-        let config = { disabledModules: [], moduleDurations: {} };
+        let config = { disabledModules: ['ct-soc', 'ct-tik'], moduleDurations: {} };
         try {
             const stored = localStorage.getItem('matrix_config');
-            if (stored) config = { ...config, ...JSON.parse(stored) };
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                config = { ...config, ...parsed };
+                if (!parsed.hasOwnProperty('disabledModules')) {
+                    config.disabledModules = ['ct-soc', 'ct-tik'];
+                }
+            }
         } catch(e) {}
         const disabled = config.disabledModules || [];
         const dur = config.moduleDurations || {};
@@ -771,6 +778,7 @@
         side.innerHTML = modules.map(m => {
             const isChecked = !disabled.includes(m.id);
             const val = dur[m.id] || m.defaultDur;
+            const isAll = val === 'all';
             
             // Generate the tree children dynamically based on hasAdmin
             const folderName = m.id === 'ct-wea1' ? '_ct-wea1' : '_ct-' + m.name;
@@ -790,9 +798,15 @@
                     <div class="tree-children" style="display:none">
                         <div style="display:flex; justify-content:space-between; align-items:center; padding: 6px 8px; margin-bottom: 4px; background: rgba(0,0,0,0.2); border-left: 2px solid var(--border);">
                             <span style="font-size: 0.65rem; color: #888;">Module Settings</span>
-                            <div style="display:flex; align-items:center; gap: 4px;" title="Duration (Seconds)">
-                                <input type="number" id="dur-${m.id}" value="${val}" min="10" max="9999" onchange="saveModuleDurations()" style="width: 45px; background: rgba(0,0,0,0.4); border: 1px solid #333; color: #fff; padding: 2px 4px; border-radius: 4px; font-size: 0.65rem; font-family: monospace; text-align: center;" onclick="event.stopPropagation()">
-                                <span style="font-size: 0.5rem; color: #666; font-weight: 700;">SEC</span>
+                            <div style="display:flex; align-items:center; gap: 8px;">
+                                <label style="display:flex; align-items:center; gap: 4px; font-size: 0.65rem; color: #aaa; cursor: pointer;" onclick="event.stopPropagation()">
+                                    <input type="checkbox" id="all-${m.id}" ${isAll ? 'checked' : ''} onchange="togglePlayAll('${m.id}', this.checked); saveModuleDurations();" style="margin:0; width:12px; height:12px;">
+                                    <span>Play All</span>
+                                </label>
+                                <div id="dur-container-${m.id}" style="display:${isAll ? 'none' : 'flex'}; align-items:center; gap: 4px;" title="Duration (Seconds)">
+                                    <input type="number" id="dur-${m.id}" value="${isAll ? m.defaultDur : val}" min="10" max="9999" onchange="saveModuleDurations()" style="width: 45px; background: rgba(0,0,0,0.4); border: 1px solid #333; color: #fff; padding: 2px 4px; border-radius: 4px; font-size: 0.65rem; font-family: monospace; text-align: center;" onclick="event.stopPropagation()">
+                                    <span style="font-size: 0.5rem; color: #666; font-weight: 700;">SEC</span>
+                                </div>
                             </div>
                         </div>
                         ${childrenHTML}
@@ -815,10 +829,15 @@
         const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir', 'ct-mid', 'ct-soc', 'ct-tik'];
         const durations = {};
         moduleIds.forEach(id => {
-            const el = document.getElementById('dur-' + id);
-            if (el) {
-                const val = parseInt(el.value);
-                if (val && val >= 10) durations[id] = val;
+            const allCb = document.getElementById('all-' + id);
+            if (allCb && allCb.checked) {
+                durations[id] = 'all';
+            } else {
+                const el = document.getElementById('dur-' + id);
+                if (el) {
+                    const val = parseInt(el.value);
+                    if (val && val >= 10) durations[id] = val;
+                }
             }
         });
 
@@ -850,10 +869,15 @@
         const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir', 'ct-mid', 'ct-soc', 'ct-tik'];
         const durations = {};
         moduleIds.forEach(id => {
-            const el = document.getElementById('home-dur-' + id);
-            if (el) {
-                const val = parseInt(el.value);
-                if (val && val >= 10) durations[id] = val;
+            const allCb = document.getElementById('home-all-' + id);
+            if (allCb && allCb.checked) {
+                durations[id] = 'all';
+            } else {
+                const el = document.getElementById('home-dur-' + id);
+                if (el) {
+                    const val = parseInt(el.value);
+                    if (val && val >= 10) durations[id] = val;
+                }
             }
         });
 
@@ -883,6 +907,20 @@
 
         showToast('DURATIONS SAVED — Refresh All to apply');
     }
+
+    window.togglePlayAll = function(id, isChecked) {
+        const container = document.getElementById('dur-container-' + id);
+        if (container) {
+            container.style.display = isChecked ? 'none' : 'flex';
+        }
+    };
+
+    window.toggleHomePlayAll = function(id, isChecked) {
+        const container = document.getElementById('home-dur-container-' + id);
+        if (container) {
+            container.style.display = isChecked ? 'none' : 'flex';
+        }
+    };
 
     const MODULE_PAGES = {
         'MATRIX': { main: 'index.html', admin: 'masteradmin.html' },

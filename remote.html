@@ -40,7 +40,7 @@
     .section-title { width: 100%; max-width: 600px; font-size: 0.65rem; font-weight: 800; color: #666; text-transform: uppercase; margin-bottom: 5px; }
     
     .modules { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 600px; flex-grow: 1; }
-    .mod-row { display: grid; grid-template-columns: 60px 1fr 60px; gap: 8px; background: var(--btn-bg); padding: 6px 10px; border-radius: 12px; align-items: center; border: 1px solid var(--border); }
+    .mod-row { display: grid; grid-template-columns: 85px 1fr auto 50px; gap: 8px; background: var(--btn-bg); padding: 6px 10px; border-radius: 12px; align-items: center; border: 1px solid var(--border); }
     .mod-name { font-size: 0.75rem; font-weight: 900; white-space: nowrap; }
     
     .mod-toggle { display: flex; background: #000; border-radius: 6px; overflow: hidden; }
@@ -113,7 +113,11 @@
         <button class="mod-btn btn-on" onclick="toggleModule('MATRIX', true)">ON</button>
         <button class="mod-btn btn-off" onclick="toggleModule('MATRIX', false)">OFF</button>
       </div>
-      <div class="mod-dur-wrapper"><input type="number" class="mod-dur" id="dur-ct-matrix" placeholder="s"></div>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <input type="checkbox" id="all-ct-matrix" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-matrix', this.checked)">
+        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      </div>
+      <div class="mod-dur-wrapper" id="dur-wrap-ct-matrix"><input type="number" class="mod-dur" id="dur-ct-matrix" placeholder="s"></div>
     </div>
     <!-- ACE -->
     <div class="mod-row" id="row-ct-ace">
@@ -122,7 +126,11 @@
         <button class="mod-btn btn-on" onclick="toggleModule('ACE', true)">ON</button>
         <button class="mod-btn btn-off" onclick="toggleModule('ACE', false)">OFF</button>
       </div>
-      <div class="mod-dur-wrapper"><input type="number" class="mod-dur" id="dur-ct-ace" placeholder="s"></div>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <input type="checkbox" id="all-ct-ace" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-ace', this.checked)">
+        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      </div>
+      <div class="mod-dur-wrapper" id="dur-wrap-ct-ace"><input type="number" class="mod-dur" id="dur-ct-ace" placeholder="s"></div>
     </div>
     <!-- MMR -->
     <div class="mod-row" id="row-ct-mmr">
@@ -131,7 +139,11 @@
         <button class="mod-btn btn-on" onclick="toggleModule('MMR', true)">ON</button>
         <button class="mod-btn btn-off" onclick="toggleModule('MMR', false)">OFF</button>
       </div>
-      <div class="mod-dur-wrapper"><input type="number" class="mod-dur" id="dur-ct-mmr" placeholder="s"></div>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <input type="checkbox" id="all-ct-mmr" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-mmr', this.checked)">
+        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      </div>
+      <div class="mod-dur-wrapper" id="dur-wrap-ct-mmr"><input type="number" class="mod-dur" id="dur-ct-mmr" placeholder="s"></div>
     </div>
     <!-- QUIZ -->
     <div class="mod-row" id="row-ct-quiz">
@@ -140,7 +152,11 @@
         <button class="mod-btn btn-on" onclick="toggleModule('QUIZ', true)">ON</button>
         <button class="mod-btn btn-off" onclick="toggleModule('QUIZ', false)">OFF</button>
       </div>
-      <div class="mod-dur-wrapper"><input type="number" class="mod-dur" id="dur-ct-quiz" placeholder="s"></div>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <input type="checkbox" id="all-ct-quiz" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-quiz', this.checked)">
+        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      </div>
+      <div class="mod-dur-wrapper" id="dur-wrap-ct-quiz"><input type="number" class="mod-dur" id="dur-ct-quiz" placeholder="s"></div>
     </div>
 
     <!-- WEA1 -->
@@ -150,7 +166,11 @@
         <button class="mod-btn btn-on" onclick="toggleModule('WEA1', true)">ON</button>
         <button class="mod-btn btn-off" onclick="toggleModule('WEA1', false)">OFF</button>
       </div>
-      <div class="mod-dur-wrapper"><input type="number" class="mod-dur" id="dur-ct-wea1" placeholder="s"></div>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <input type="checkbox" id="all-ct-wea1" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-wea1', this.checked)">
+        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      </div>
+      <div class="mod-dur-wrapper" id="dur-wrap-ct-wea1"><input type="number" class="mod-dur" id="dur-ct-wea1" placeholder="s"></div>
     </div>
     <!-- FIR -->
     <div class="mod-row" id="row-ct-fir">
@@ -159,7 +179,11 @@
         <button class="mod-btn btn-on" onclick="toggleModule('FIR', true)">ON</button>
         <button class="mod-btn btn-off" onclick="toggleModule('FIR', false)">OFF</button>
       </div>
-      <div class="mod-dur-wrapper"><input type="number" class="mod-dur" id="dur-ct-fir" placeholder="s"></div>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <input type="checkbox" id="all-ct-fir" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-fir', this.checked)">
+        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      </div>
+      <div class="mod-dur-wrapper" id="dur-wrap-ct-fir"><input type="number" class="mod-dur" id="dur-ct-fir" placeholder="s"></div>
     </div>
     <!-- MID -->
     <div class="mod-row" id="row-ct-mid">
@@ -168,7 +192,11 @@
         <button class="mod-btn btn-on" onclick="toggleModule('MID', true)">ON</button>
         <button class="mod-btn btn-off" onclick="toggleModule('MID', false)">OFF</button>
       </div>
-      <div class="mod-dur-wrapper"><input type="number" class="mod-dur" id="dur-ct-mid" placeholder="s"></div>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <input type="checkbox" id="all-ct-mid" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-mid', this.checked)">
+        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      </div>
+      <div class="mod-dur-wrapper" id="dur-wrap-ct-mid"><input type="number" class="mod-dur" id="dur-ct-mid" placeholder="s"></div>
     </div>
     <!-- SOC -->
     <div class="mod-row" id="row-ct-soc">
@@ -177,7 +205,24 @@
         <button class="mod-btn btn-on" onclick="toggleModule('SOC', true)">ON</button>
         <button class="mod-btn btn-off" onclick="toggleModule('SOC', false)">OFF</button>
       </div>
-      <div class="mod-dur-wrapper"><input type="number" class="mod-dur" id="dur-ct-soc" placeholder="s"></div>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <input type="checkbox" id="all-ct-soc" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-soc', this.checked)">
+        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      </div>
+      <div class="mod-dur-wrapper" id="dur-wrap-ct-soc"><input type="number" class="mod-dur" id="dur-ct-soc" placeholder="s"></div>
+    </div>
+    <!-- TIK -->
+    <div class="mod-row" id="row-ct-tik">
+      <div class="mod-name">🎵 TIK</div>
+      <div class="mod-toggle">
+        <button class="mod-btn btn-on" onclick="toggleModule('TIK', true)">ON</button>
+        <button class="mod-btn btn-off" onclick="toggleModule('TIK', false)">OFF</button>
+      </div>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <input type="checkbox" id="all-ct-tik" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-tik', this.checked)">
+        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      </div>
+      <div class="mod-dur-wrapper" id="dur-wrap-ct-tik"><input type="number" class="mod-dur" id="dur-ct-tik" placeholder="s"></div>
     </div>
   </div>
 
@@ -195,7 +240,7 @@
     const bc_sub = new BroadcastChannel('mom_sync');
 
     // Default durations fallback
-    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-quiz': 60, 'ct-fir': 180, 'ct-mid': 180, 'ct-soc': 120 };
+    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-quiz': 60, 'ct-fir': 180, 'ct-mid': 120, 'ct-soc': 120, 'ct-tik': 120 };
 
     function getClientId() {
       let id = localStorage.getItem('matrix_client_id');
@@ -209,21 +254,38 @@
     }
 
     function initUI() {
-      let config = { disabledModules: [], moduleDurations: {} };
+      let config = { disabledModules: ['ct-soc', 'ct-tik'], moduleDurations: {} };
       try {
         const stored = localStorage.getItem('matrix_config');
-        if (stored) config = { ...config, ...JSON.parse(stored) };
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            config = { ...config, ...parsed };
+            if (!parsed.hasOwnProperty('disabledModules')) {
+                config.disabledModules = ['ct-soc', 'ct-tik'];
+            }
+        }
       } catch(e) {}
       
-      const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-mid', 'ct-soc'];
+      const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-mid', 'ct-soc', 'ct-tik'];
       moduleIds.forEach(id => {
         const row = document.getElementById('row-' + id);
         if (!row) return;
         
         // Setup Durations
         const durInput = document.getElementById('dur-' + id);
-        if (durInput) {
-            durInput.value = config.moduleDurations[id] || DEFAULT_DURS[id];
+        const allCb = document.getElementById('all-' + id);
+        const durVal = config.moduleDurations && config.moduleDurations[id] !== undefined ? config.moduleDurations[id] : DEFAULT_DURS[id];
+        
+        if (durVal === 'all') {
+            if (allCb) allCb.checked = true;
+            const wrap = document.getElementById('dur-wrap-' + id);
+            if (wrap) wrap.style.visibility = 'hidden';
+            if (durInput) durInput.value = DEFAULT_DURS[id];
+        } else {
+            if (allCb) allCb.checked = false;
+            const wrap = document.getElementById('dur-wrap-' + id);
+            if (wrap) wrap.style.visibility = 'visible';
+            if (durInput) durInput.value = durVal;
         }
 
         // Setup Toggles
@@ -336,13 +398,18 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-mid', 'ct-soc'];
+        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-mid', 'ct-soc', 'ct-tik'];
         const durations = {};
         moduleIds.forEach(id => {
-            const el = document.getElementById('dur-' + id);
-            if (el) {
-                const val = parseInt(el.value);
-                if (val && val >= 10) durations[id] = val;
+            const allCb = document.getElementById('all-' + id);
+            if (allCb && allCb.checked) {
+                durations[id] = 'all';
+            } else {
+                const el = document.getElementById('dur-' + id);
+                if (el) {
+                    const val = parseInt(el.value);
+                    if (val && val >= 10) durations[id] = val;
+                }
             }
         });
 
@@ -368,6 +435,13 @@
         vibrate();
         showStatus('DURATIONS SAVED');
     }
+
+    window.toggleRemotePlayAll = function(id, isChecked) {
+        const wrap = document.getElementById('dur-wrap-' + id);
+        if (wrap) {
+            wrap.style.visibility = isChecked ? 'hidden' : 'visible';
+        }
+    };
 
     function vibrate(pattern = 50) {
       if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(pattern);

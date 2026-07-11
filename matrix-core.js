@@ -13,7 +13,8 @@ window.MATRIX = {
     WEEKS_LOOKAHEAD: 2,
     SHOW_BANNER: true,
     ADMIN_PIN: '1234',
-    GSHEETS_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjplY4qgdlDPmFO4sKUoWHnBPoeqf-rY3Tc0Y50wgDbDutbTn4j_hXhW3aXhYVjvfbIlwcIOF07250/pub?gid=1948723750&single=true&output=csv'
+    GSHEETS_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjplY4qgdlDPmFO4sKUoWHnBPoeqf-rY3Tc0Y50wgDbDutbTn4j_hXhW3aXhYVjvfbIlwcIOF07250/pub?gid=1948723750&single=true&output=csv',
+    disabledModules: ['ct-soc', 'ct-tik']
   },
   STATE: {
     slides: [],
@@ -156,6 +157,32 @@ async function initMatrix() {
     }, 15 * 60 * 1000);
   }
 
+  // 2 AM Auto Reset Watchdog
+  if (!window.MATRIX.STATE.dailyResetTimer) {
+    window.MATRIX.STATE.dailyResetTimer = setInterval(() => {
+      const now = new Date();
+      if (now.getHours() === 2 && now.getMinutes() === 0) {
+        const todayStr = now.toDateString();
+        if (window.MATRIX.STATE.last2amResetDate !== todayStr) {
+          window.MATRIX.STATE.last2amResetDate = todayStr;
+          const liveOverlay = document.getElementById('live-slide-overlay');
+          if (liveOverlay || window.MATRIX.STATE.isClosedSlideActive) {
+            console.log('[MATRIX] 2 AM Auto-Reset: Clearing closed slide override and resetting modules.');
+            handleLiveSlide({ active: false });
+            window.MATRIX.CONFIG.disabledModules = ['ct-soc', 'ct-tik'];
+            localStorage.setItem('matrix_config', JSON.stringify(window.MATRIX.CONFIG));
+            if (bc) {
+              bc.postMessage({ type: 'LIVE_SLIDE', payload: { active: false } });
+              bc.postMessage({ type: 'SETTINGS_UPDATE', payload: { disabledModules: ['ct-soc', 'ct-tik'] } });
+              bc.postMessage({ type: 'SYNC_DATA' });
+            }
+            window.initMatrix();
+          }
+        }
+      }
+    }, 30000);
+  }
+
   // 6. Hard-lock all active slide durations to 30s (override any internal module timers if needed)
   window.MATRIX.CONFIG.SWAP_DELAY = 30000;
   window.MATRIX.CONFIG.MODULE_DELAY = 60000;
@@ -217,6 +244,9 @@ function loadPersistedState() {
   try {
     const config = localStorage.getItem('matrix_config');
     if (config) window.MATRIX.CONFIG = { ...window.MATRIX.CONFIG, ...JSON.parse(config) };
+    if (!window.MATRIX.CONFIG.disabledModules) {
+      window.MATRIX.CONFIG.disabledModules = ['ct-soc', 'ct-tik'];
+    }
 
     const manual = localStorage.getItem('matrix_manual_slides');
     if (manual) window.MATRIX.STATE.manualSlides = JSON.parse(manual);
@@ -436,7 +466,16 @@ function parseCSVToEvents(text) {
       transition: clean[24],
       zoom: clean[25]
     };
-  }).filter(e => e.title || e.date);
+  }).filter(e => {
+    if (!e.title && !e.date) return false;
+    const nameStr = (e.title || '').toLowerCase();
+    const timeStr = (e.time || '').toLowerCase();
+    const descStr = (e.notes || '').toLowerCase();
+    if (nameStr.includes('tbc') || timeStr.includes('tbc') || descStr.includes('tbc')) {
+      return false;
+    }
+    return true;
+  });
 
   return [{ week_starting: 'Cloud Data', events }];
 }
@@ -581,14 +620,19 @@ function buildSlideQueue(data) {
   // 3. Project Modules (Base Infrastructure)
   // Durations are defaults — overridden by CONFIG.moduleDurations if set in admin
   const customDurations = window.MATRIX.CONFIG.moduleDurations || {};
-  queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5, duration: customDurations['ct-mmr'] || 600 }); // Play all slides (10min default)
-  queue.push({ type: 'MODULE', id: 'ct-wea1', url: '../_ct-wea1/index.html', title: "Christchurch Weather", priority: 80, duration: customDurations['ct-wea1'] || 60 });
-  queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5, duration: customDurations['ct-ace'] || 180 }); // 6 slides * 30s
-  queue.push({ type: 'MODULE', id: 'ct-quiz', url: '../_ct-QUIZ/index.html', title: "Weekly Pub Quiz", priority: 10, duration: customDurations['ct-quiz'] || 60 });
-  queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, duration: customDurations['ct-fir'] || 180 }); // 3min default
-  queue.push({ type: 'MODULE', id: 'ct-mid', url: '../_ct-MID/mid.html', title: "Mid Winter Christmas", pinned: true, priority: 6, duration: customDurations['ct-mid'] || 120 });
-  queue.push({ type: 'MODULE', id: 'ct-soc', url: '../_ct-SOC/dist/index.html#/tv', title: "Social Club TV Slides", pinned: true, priority: 8, duration: customDurations['ct-soc'] || 120 });
-  queue.push({ type: 'MODULE', id: 'ct-tik', url: '../_ct-TIK/index.html', title: "Coasters Tavern TikTok", pinned: true, priority: 7, duration: customDurations['ct-tik'] || 120 });
+  const getModDur = (id, defaultDur) => {
+    const val = customDurations[id];
+    if (val === 'all') return defaultDur;
+    return val || defaultDur;
+  };
+  queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5, duration: getModDur('ct-mmr', 600) }); // Play all slides (10min default)
+  queue.push({ type: 'MODULE', id: 'ct-wea1', url: '../_ct-wea1/index.html', title: "Christchurch Weather", priority: 80, duration: getModDur('ct-wea1', 60) });
+  queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5, duration: getModDur('ct-ace', 180) }); // 6 slides * 30s
+  queue.push({ type: 'MODULE', id: 'ct-quiz', url: '../_ct-QUIZ/index.html', title: "Weekly Pub Quiz", priority: 10, duration: getModDur('ct-quiz', 60) });
+  queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, duration: getModDur('ct-fir', 180) }); // 3min default
+  queue.push({ type: 'MODULE', id: 'ct-mid', url: '../_ct-MID/mid.html', title: "Mid Winter Christmas", pinned: true, priority: 6, duration: getModDur('ct-mid', 120) });
+  queue.push({ type: 'MODULE', id: 'ct-soc', url: '../_ct-SOC/dist/index.html#/tv', title: "Social Club TV Slides", pinned: true, priority: 8, duration: getModDur('ct-soc', 120) });
+  queue.push({ type: 'MODULE', id: 'ct-tik', url: '../_ct-TIK/index.html', title: "Coasters Tavern TikTok", pinned: true, priority: 7, duration: getModDur('ct-tik', 120) });
 
   // 4. Apply Module Filters
   let filteredQueue = queue.filter(s => {
@@ -1088,7 +1132,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
   if (currentDOM && currentDOM.dataset.slideId === String(slide.id)) {
       const bar = document.getElementById('progress-bar');
       if (bar) {
-          if (slide.type === 'MODULE') {
+          if (slide.id === 'ct-fir') {
               bar.style.display = 'none';
           } else {
               bar.style.display = '';
@@ -1378,7 +1422,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
 
     const bar = document.getElementById('progress-bar');
     if (bar) {
-      if (slide.type === 'MODULE') {
+      if (slide.id === 'ct-fir') {
         bar.style.display = 'none';
       } else {
         bar.style.display = '';
@@ -1390,7 +1434,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
       const finalDelay = overrideDelay !== null ? overrideDelay : defaultDelay;
       window.MATRIX.STATE.timer = setTimeout(nextSlide, finalDelay);
       
-      if (bar && slide.type !== 'MODULE') {
+      if (bar && slide.id !== 'ct-fir') {
         bar.style.transition = 'none';
         bar.style.width = '0%';
         requestAnimationFrame(() => {
@@ -1553,6 +1597,7 @@ function handleLiveSlide(payload) {
         }
         const liveOverlay = document.getElementById('live-slide-overlay');
         if (liveOverlay) liveOverlay.remove();
+        window.MATRIX.STATE.isClosedSlideActive = false;
         window.MATRIX.STATE.isPaused = false;
         renderActiveSlide(false);
         return;
@@ -1629,7 +1674,22 @@ function handleLiveSlide(payload) {
                         payload.accent = '#ef4444';
                         payload.countdownFinish = null;
                         payload.autoBarClosed = false;
-                        payload.autoClearAfter = 2 * 60 * 60 * 1000; // 2 hours
+                        window.MATRIX.STATE.isClosedSlideActive = true;
+                        window.MATRIX.STATE.isPaused = true;
+                        if (window.MATRIX.STATE.timer) clearTimeout(window.MATRIX.STATE.timer);
+                        
+                        if (bc) {
+                            bc.postMessage({
+                                type: 'LIVE_SLIDE',
+                                payload: {
+                                    active: true,
+                                    title: 'BAR IS NOW CLOSED',
+                                    detail: 'Last drinks has finished. Thank you for visiting, please travel home safely.',
+                                    accent: '#ef4444',
+                                    mode: 'OVERRIDE'
+                                }
+                            });
+                        }
                         
                         // Recursive call to transition locally
                         setTimeout(() => handleLiveSlide(payload), 500);

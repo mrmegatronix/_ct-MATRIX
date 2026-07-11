@@ -844,7 +844,7 @@
       position: absolute;
       bottom: 0;
       left: 0;
-      height: 4px;
+      height: 14px;
       background: var(--theme-color);
       width: 0%;
       z-index: 500;
@@ -1084,7 +1084,7 @@
       const bar = document.getElementById('progress-bar');
       if (bar) {
         bar.style.transition = 'none';
-        if (slide.type === 'MODULE') {
+        if (slide.id === 'ct-fir') {
           bar.style.display = 'none';
         } else {
           bar.style.display = '';
