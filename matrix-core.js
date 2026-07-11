@@ -650,7 +650,7 @@ function buildSlideQueue(data) {
   queue.push({ type: 'MODULE', id: 'ct-quiz', url: '../_ct-QUIZ/index.html', title: "Weekly Pub Quiz", priority: 10, duration: getModDur('ct-quiz', 60) });
   queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, duration: getModDur('ct-fir', 180) }); // 3min default
   queue.push({ type: 'MODULE', id: 'ct-mid', url: '../_ct-MID/mid.html', title: "Mid Winter Christmas", pinned: true, priority: 6, duration: getModDur('ct-mid', 120) });
-  queue.push({ type: 'MODULE', id: 'ct-soc', url: '../_ct-SOC/dist/index.html#/tv', title: "Social Club TV Slides", pinned: true, priority: 8, duration: getModDur('ct-soc', 120) });
+  queue.push({ type: 'MODULE', id: 'ct-soc', url: 'https://ctsc-app.web.app/#/tv', title: "Social Club TV Slides", pinned: true, priority: 8, duration: getModDur('ct-soc', 120) });
   queue.push({ type: 'MODULE', id: 'ct-tik', url: '../_ct-TIK/index.html', title: "Coasters Tavern TikTok", pinned: true, priority: 7, duration: getModDur('ct-tik', 120) });
 
   // 4. Apply Module Filters
