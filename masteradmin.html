@@ -828,18 +828,31 @@
     function saveModuleDurations() {
         const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir', 'ct-mid', 'ct-soc', 'ct-tik'];
         const durations = {};
+        let hasErrors = false;
         moduleIds.forEach(id => {
             const allCb = document.getElementById('all-' + id);
+            const el = document.getElementById('dur-' + id);
+            if (el) el.style.borderColor = '';
+            
             if (allCb && allCb.checked) {
                 durations[id] = 'all';
             } else {
-                const el = document.getElementById('dur-' + id);
                 if (el) {
                     const val = parseInt(el.value);
-                    if (val && val >= 10) durations[id] = val;
+                    if (val && val >= 10) {
+                        durations[id] = val;
+                    } else {
+                        el.style.borderColor = '#ef4444';
+                        hasErrors = true;
+                    }
                 }
             }
         });
+
+        if (hasErrors) {
+            showToast('ERROR: Minimum duration is 10s');
+            return;
+        }
 
         // Merge into existing config
         let config = {};
@@ -868,18 +881,31 @@
     function saveHomeModuleDurations() {
         const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir', 'ct-mid', 'ct-soc', 'ct-tik'];
         const durations = {};
+        let hasErrors = false;
         moduleIds.forEach(id => {
             const allCb = document.getElementById('home-all-' + id);
+            const el = document.getElementById('home-dur-' + id);
+            if (el) el.style.borderColor = '';
+            
             if (allCb && allCb.checked) {
                 durations[id] = 'all';
             } else {
-                const el = document.getElementById('home-dur-' + id);
                 if (el) {
                     const val = parseInt(el.value);
-                    if (val && val >= 10) durations[id] = val;
+                    if (val && val >= 10) {
+                        durations[id] = val;
+                    } else {
+                        el.style.borderColor = '#ef4444';
+                        hasErrors = true;
+                    }
                 }
             }
         });
+
+        if (hasErrors) {
+            showToast('ERROR: Minimum duration is 10s');
+            return;
+        }
 
         // Merge into existing config
         let config = {};
@@ -1023,7 +1049,14 @@
     }
 
     function checkPin() {
-        const correct = '5551';
+        let correct = '5551';
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed.ADMIN_PIN) correct = String(parsed.ADMIN_PIN);
+            }
+        } catch(e) {}
         const box = document.getElementById('pin-box');
         if(pinBuffer === correct) { 
             document.getElementById('auth-screen').style.opacity = '0';

@@ -360,12 +360,17 @@ async function fetchCloudCSV() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const csv = await res.text();
     if (csv && csv.trim().length > 10) {
-      try { localStorage.setItem('matrix_cached_csv', csv); } catch(e) { /* quota */ }
+      const parsed = parseCSVToEvents(csv);
+      if (parsed && parsed.length > 0 && parsed[0].events && parsed[0].events.length > 0) {
+        try { localStorage.setItem('matrix_cached_csv', csv); } catch(e) { /* quota */ }
+      }
       console.log('[MATRIX] GSheet loaded OK (' + csv.length + ' bytes)');
-      return parseCSVToEvents(csv);
+      if (window.updateSyncStatus) window.updateSyncStatus('online');
+      return parsed;
     }
   } catch (e) {
     console.warn('[MATRIX] GSheet fetch failed:', e.message || e);
+    if (window.updateSyncStatus) window.updateSyncStatus('sync-error');
   } finally {
     clearTimeout(timeoutId);
   }
@@ -1720,3 +1725,47 @@ if (document.fonts) {
     }
   });
 }
+
+// Sync Status Dot initialization
+(function() {
+    function createSyncStatusDot() {
+        let dot = document.getElementById('sync-status-dot');
+        if (!dot) {
+            dot = document.createElement('div');
+            dot.id = 'sync-status-dot';
+            dot.style.cssText = `
+                position: fixed; bottom: 25px; right: 25px;
+                width: 12px; height: 12px; border-radius: 50%;
+                background-color: #10b981; box-shadow: 0 0 10px #10b981;
+                z-index: 10000; transition: all 0.5s ease;
+                pointer-events: none; opacity: 0.7;
+            `;
+            document.body.appendChild(dot);
+        }
+    }
+
+    window.updateSyncStatus = function(status) {
+        createSyncStatusDot();
+        const dot = document.getElementById('sync-status-dot');
+        if (!dot) return;
+        if (status === 'online') {
+            dot.style.backgroundColor = '#10b981';
+            dot.style.boxShadow = '0 0 10px #10b981';
+        } else if (status === 'offline') {
+            dot.style.backgroundColor = '#ef4444';
+            dot.style.boxShadow = '0 0 10px #ef4444';
+        } else if (status === 'sync-error') {
+            dot.style.backgroundColor = '#f59e0b';
+            dot.style.boxShadow = '0 0 10px #f59e0b';
+        }
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => window.updateSyncStatus(navigator.onLine ? 'online' : 'offline'));
+    } else {
+        window.updateSyncStatus(navigator.onLine ? 'online' : 'offline');
+    }
+
+    window.addEventListener('online', () => window.updateSyncStatus('online'));
+    window.addEventListener('offline', () => window.updateSyncStatus('offline'));
+})();
