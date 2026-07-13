@@ -1279,19 +1279,21 @@ body {
    COMBINED FOOTER BOX (Text + QR)
    ========================================================================== */
 .footer-combined-box {
-  gap: 0.8rem;
+  gap: 1.2rem;
   padding: 0.3rem 0.8rem;
   flex-shrink: 0;
 }
 
 .footer-combined-box .premium-footer {
   margin: 0;
+  margin-right: 0.4rem;
   text-align: right;
   max-width: 300px;
-  flex-shrink: 0;
+  flex-shrink: 1;
   line-height: 1.2;
   color: #fff;
-  white-space: nowrap;
+  white-space: normal;
+  text-wrap: pretty;
   font-size: clamp(1.1rem, 1.4vw, 1.6rem);
 }
 
@@ -1314,8 +1316,8 @@ body {
 }
 
 .footer-combined-box .footer-qr-img img {
-  width: 65px;
-  height: 65px;
+  width: 68.25px;
+  height: 68.25px;
   display: block;
 }
 
