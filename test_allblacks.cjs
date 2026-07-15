@@ -22,6 +22,24 @@ class MockBroadcastChannel {
 }
 window.BroadcastChannel = MockBroadcastChannel;
 
+// Mock Date to be 01/07/2026 for consistent testing of future events
+dom.window.eval(`
+  const RealDate = Date;
+  class MockDate extends RealDate {
+    constructor(...args) {
+      if (args.length === 0) {
+        super('2026-07-01T00:00:00');
+      } else {
+        super(...args);
+      }
+    }
+    static now() {
+      return new RealDate('2026-07-01T00:00:00').getTime();
+    }
+  }
+  Date = MockDate;
+`);
+
 // Read the matrix-core.js script content
 const code = fs.readFileSync('./matrix-core.js', 'utf8');
 dom.window.eval(code);

@@ -84,7 +84,18 @@ function parseCSVToEvents(text) {
       event_type: clean[2] || 'Event',
       title: (clean[3] || '').replace(/\n/g, '<br>'),
       notes: (clean[4] || '').replace(/\n/g, '<br>'),
-      time: clean[5], // Start Time
+      time: (() => {
+        let t = (clean[5] || '').trim();
+        if (/^\$\d+$/.test(t)) {
+          const type = (clean[2] || '').toLowerCase();
+          const title = (clean[3] || '').toLowerCase();
+          if (type.includes('karaoke') || title.includes('karaoke')) {
+            return '8:00 pm';
+          }
+          return '';
+        }
+        return t;
+      })(), // Start Time
       price: clean[6], // Price
       location: clean[7],
       footer: clean[8],

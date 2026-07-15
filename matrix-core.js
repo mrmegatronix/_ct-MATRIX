@@ -464,7 +464,18 @@ function parseCSVToEvents(text) {
       title: (clean[3] || '').replace(/\n/g, '<br>'),
       notes: (clean[4] || '').replace(/\n/g, '<br>'),
       billboardNotes: (clean[5] || '').replace(/\n/g, '<br>'),
-      time: clean[6], // Start Time
+      time: (() => {
+        let t = (clean[6] || '').trim();
+        if (/^\$\d+$/.test(t)) {
+          const type = (clean[2] || '').toLowerCase();
+          const title = (clean[3] || '').toLowerCase();
+          if (type.includes('karaoke') || title.includes('karaoke')) {
+            return '8:00 pm';
+          }
+          return '';
+        }
+        return t;
+      })(), // Start Time
       price: clean[7], // Price
       location: clean[8],
       footer: clean[9],
@@ -490,7 +501,8 @@ function parseCSVToEvents(text) {
     const nameStr = (e.title || '').toLowerCase();
     const timeStr = (e.time || '').toLowerCase();
     const descStr = (e.notes || '').toLowerCase();
-    if (nameStr.includes('tbc') || timeStr.includes('tbc') || descStr.includes('tbc')) {
+    const isAllBlacks = nameStr.includes('all blacks') || (e.event_type || '').toLowerCase().includes('all blacks');
+    if (!isAllBlacks && (nameStr.includes('tbc') || timeStr.includes('tbc') || descStr.includes('tbc'))) {
       return false;
     }
     return true;
