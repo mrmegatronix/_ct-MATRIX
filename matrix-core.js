@@ -105,7 +105,6 @@ async function initMatrix() {
 
         if (e.data.index !== undefined) {
            window.MATRIX.STATE.currentIndex = e.data.index;
-           renderActiveSlide(true); // Render it locally, but DON'T broadcast it back
            
            // Sync our timer to their timer!
            clearTimeout(window.MATRIX.STATE.timer);
@@ -1242,7 +1241,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
       existing.removeAttribute('id');
       existing.classList.remove('active');
       existing.classList.add('exit');
-      setTimeout(() => existing.remove(), 1200);
+      setTimeout(() => existing.remove(), 800);
     }
 
     // Create fresh slide element
@@ -1492,7 +1491,33 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
         }, 600); // Wait for CSS transition
       }, 1000); // 1-second hold to ensure modules/images load behind it
     }
+    preloadNextSlideImage();
   }, transitionDelay);
+}
+
+/**
+ * Preload the next active slide's background image to avoid a blank/black flash during transitions.
+ */
+function preloadNextSlideImage() {
+  const s = window.MATRIX.STATE;
+  if (!s.slides || s.slides.length <= 1) return;
+  
+  let nextIdx = s.currentIndex;
+  let loopCount = 0;
+  do {
+    nextIdx = (nextIdx + 1) % s.slides.length;
+    loopCount++;
+  } while (!isSlideActive(s.slides[nextIdx]) && loopCount < s.slides.length);
+  
+  const nextSlide = s.slides[nextIdx];
+  if (nextSlide && nextSlide.type !== 'MODULE') {
+    const rawBg = nextSlide.bgImage || getDefaultBackground(nextSlide.subType, nextSlide.title);
+    const isHex = /^#([A-Fa-f0-9]{3,8})$/.test((rawBg || '').trim());
+    if (rawBg && !isHex) {
+      const img = new Image();
+      img.src = rawBg.replace(/\\/g, '/');
+    }
+  }
 }
 
 /**

@@ -162,7 +162,7 @@ function renderActiveSlide() {
     oldSlide.removeAttribute('id');
     oldSlide.classList.remove('active');
     oldSlide.classList.add('exit');
-    setTimeout(() => oldSlide.remove(), 1200);
+    setTimeout(() => oldSlide.remove(), 800);
   }
 
   const slideEl = document.createElement('div');
