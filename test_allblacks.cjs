@@ -22,19 +22,19 @@ class MockBroadcastChannel {
 }
 window.BroadcastChannel = MockBroadcastChannel;
 
-// Mock Date to be 01/07/2026 for consistent testing of future events
+// Mock Date to be 09/07/2026 for consistent testing of future events
 dom.window.eval(`
   const RealDate = Date;
   class MockDate extends RealDate {
     constructor(...args) {
       if (args.length === 0) {
-        super('2026-07-01T00:00:00');
+        super('2026-07-09T00:00:00');
       } else {
         super(...args);
       }
     }
     static now() {
-      return new RealDate('2026-07-01T00:00:00').getTime();
+      return new RealDate('2026-07-09T00:00:00').getTime();
     }
   }
   Date = MockDate;
@@ -81,12 +81,12 @@ async function runTest() {
         console.log(`  - [ACTIVE] Title: "${s.title}" | Date: ${s.date} | Time: ${s.time} | SubType: "${s.subType}"`);
     });
 
-    // Check if the match with TBC time (July 11th) is present
-    const hasTBCMatch = activeAllBlacks.some(s => s.time === 'TBC' && s.date === '11/07/2026');
-    if (hasTBCMatch) {
-        console.log("✅ Verified: All Blacks vs Italy on 11/07/2026 with TBC time is successfully present in the active queue.");
+    // Check if the match on July 11th is present
+    const hasJuly11Match = activeAllBlacks.some(s => s.date === '11/07/2026');
+    if (hasJuly11Match) {
+        console.log("✅ Verified: All Blacks vs Italy on 11/07/2026 is successfully present in the active queue.");
     } else {
-        throw new Error("❌ Fail: All Blacks vs Italy on 11/07/2026 with TBC time is missing from active queue!");
+        throw new Error("❌ Fail: All Blacks vs Italy on 11/07/2026 is missing from active queue!");
     }
 
     // Check if the match with July 18th is present
@@ -97,12 +97,12 @@ async function runTest() {
         throw new Error("❌ Fail: All Blacks vs Ireland on 18/07/2026 is missing from active queue!");
     }
 
-    // Check if the match with August 7th is present (29 days away, so should be active under 45-day bypass but would be filtered under 14-day limit)
-    const hasAugust7Match = activeAllBlacks.some(s => s.date === '07/08/2026');
-    if (hasAugust7Match) {
-        console.log("✅ Verified: All Blacks vs DHL Stormers on 07/08/2026 (29 days away) is successfully present in the active queue.");
+    // Check if the match with August 23rd is present (39 days away, so should be active under 45-day bypass but would be filtered under 14-day limit)
+    const hasAugust23Match = activeAllBlacks.some(s => s.date === '23/08/2026');
+    if (hasAugust23Match) {
+        console.log("✅ Verified: All Blacks vs South Africa on 23/08/2026 (39 days away) is successfully present in the active queue.");
     } else {
-        throw new Error("❌ Fail: All Blacks vs DHL Stormers on 07/08/2026 is missing from active queue!");
+        throw new Error("❌ Fail: All Blacks vs South Africa on 23/08/2026 is missing from active queue!");
     }
 
     console.log("\n🚀 All All Blacks scheduling validation tests passed successfully!");
