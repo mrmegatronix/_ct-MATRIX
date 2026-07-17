@@ -7,14 +7,14 @@
 window.MATRIX = {
   VERSION: '2.0.0',
   CONFIG: {
-    SWAP_DELAY: 30000,
+    SWAP_DELAY: 20000,
     MODULE_DELAY: 60000,
     SYNC_CHANNEL: 'ct_matrix_sync',
     WEEKS_LOOKAHEAD: 2,
     SHOW_BANNER: true,
     ADMIN_PIN: '1234',
     GSHEETS_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjplY4qgdlDPmFO4sKUoWHnBPoeqf-rY3Tc0Y50wgDbDutbTn4j_hXhW3aXhYVjvfbIlwcIOF07250/pub?gid=1948723750&single=true&output=csv',
-    disabledModules: ['ct-soc', 'ct-tik']
+    disabledModules: ['ct-quiz', 'ct-tik', 'ct-soc']
   },
   STATE: {
     slides: [],
@@ -168,11 +168,11 @@ async function initMatrix() {
           if (liveOverlay || window.MATRIX.STATE.isClosedSlideActive) {
             console.log('[MATRIX] 2 AM Auto-Reset: Clearing closed slide override and resetting modules.');
             handleLiveSlide({ active: false });
-            window.MATRIX.CONFIG.disabledModules = ['ct-soc', 'ct-tik'];
+            window.MATRIX.CONFIG.disabledModules = ['ct-quiz', 'ct-tik', 'ct-soc'];
             localStorage.setItem('matrix_config', JSON.stringify(window.MATRIX.CONFIG));
             if (bc) {
               bc.postMessage({ type: 'LIVE_SLIDE', payload: { active: false } });
-              bc.postMessage({ type: 'SETTINGS_UPDATE', payload: { disabledModules: ['ct-soc', 'ct-tik'] } });
+              bc.postMessage({ type: 'SETTINGS_UPDATE', payload: { disabledModules: ['ct-quiz', 'ct-tik', 'ct-soc'] } });
               bc.postMessage({ type: 'SYNC_DATA' });
             }
             window.initMatrix();
@@ -182,8 +182,31 @@ async function initMatrix() {
     }, 30000);
   }
 
-  // 6. Hard-lock all active slide durations to 30s (override any internal module timers if needed)
-  window.MATRIX.CONFIG.SWAP_DELAY = 30000;
+  // 8 AM Auto Reset Watchdog
+  if (!window.MATRIX.STATE.dailyReset8amTimer) {
+    window.MATRIX.STATE.dailyReset8amTimer = setInterval(() => {
+      const now = new Date();
+      if (now.getHours() === 8 && now.getMinutes() === 0) {
+        const todayStr = now.toDateString() + '_8am';
+        if (window.MATRIX.STATE.last8amResetDate !== todayStr) {
+          window.MATRIX.STATE.last8amResetDate = todayStr;
+          console.log('[MATRIX] 8 AM Auto-Reset: Resetting slideshow to default modules (enabling all except quiz, tiktok, and social club).');
+          handleLiveSlide({ active: false });
+          window.MATRIX.CONFIG.disabledModules = ['ct-quiz', 'ct-tik', 'ct-soc'];
+          localStorage.setItem('matrix_config', JSON.stringify(window.MATRIX.CONFIG));
+          if (bc) {
+            bc.postMessage({ type: 'LIVE_SLIDE', payload: { active: false } });
+            bc.postMessage({ type: 'SETTINGS_UPDATE', payload: { disabledModules: ['ct-quiz', 'ct-tik', 'ct-soc'] } });
+            bc.postMessage({ type: 'SYNC_DATA' });
+          }
+          window.initMatrix();
+        }
+      }
+    }, 30000);
+  }
+
+  // 6. Hard-lock all active slide durations to 20s (override any internal module timers if needed)
+  window.MATRIX.CONFIG.SWAP_DELAY = 20000;
   window.MATRIX.CONFIG.MODULE_DELAY = 60000;
 
   // 6. GSheet Watchdog (optional but keeping for consistency)
@@ -241,14 +264,12 @@ async function initMatrix() {
  */
 function loadPersistedState() {
   try {
-    if (localStorage.getItem('matrix_migration_20260711') !== 'done') {
+    if (localStorage.getItem('matrix_migration_20260717_8am') !== 'done') {
       const stored = localStorage.getItem('matrix_config');
       let config = stored ? JSON.parse(stored) : {};
-      if (!config.disabledModules) config.disabledModules = [];
-      if (!config.disabledModules.includes('ct-soc')) config.disabledModules.push('ct-soc');
-      if (!config.disabledModules.includes('ct-tik')) config.disabledModules.push('ct-tik');
+      config.disabledModules = ['ct-quiz', 'ct-tik', 'ct-soc'];
       localStorage.setItem('matrix_config', JSON.stringify(config));
-      localStorage.setItem('matrix_migration_20260711', 'done');
+      localStorage.setItem('matrix_migration_20260717_8am', 'done');
     }
   } catch(e) {
     console.warn('[MATRIX] Migration failed or storage access denied:', e);
@@ -258,7 +279,7 @@ function loadPersistedState() {
     const config = localStorage.getItem('matrix_config');
     if (config) window.MATRIX.CONFIG = { ...window.MATRIX.CONFIG, ...JSON.parse(config) };
     if (!window.MATRIX.CONFIG.disabledModules) {
-      window.MATRIX.CONFIG.disabledModules = ['ct-soc', 'ct-tik'];
+      window.MATRIX.CONFIG.disabledModules = ['ct-quiz', 'ct-tik', 'ct-soc'];
     }
 
     const manual = localStorage.getItem('matrix_manual_slides');
@@ -634,7 +655,7 @@ function buildSlideQueue(data) {
               bgImage: ev.bgImage || getDefaultBackground(ev.event_type, ev.title),
               fgImage: ev.fgImage,
               bubbleText: ev.bubbleText,
-              duration: ev.duration || 30, // Default to 30s for all slides
+              duration: ev.duration || 20, // Default to 20s for all slides
               footerQR: ev.footerQR,
               footerLink: ev.footerLink,
               transition: ev.transition || (ev.slideType === 'MENU' ? 'PanDown' : ''),
