@@ -57,6 +57,17 @@ async function runTest() {
     // We mock buildSlideQueue call with parsed CSV content
     const parsedData = window.parseCSVToEvents(csvData);
     
+    // Inject mock All Blacks match 42 days away starting at 7:30 pm (inside opening hours)
+    // to verify the 45-day lookahead limit bypass logic
+    parsedData[0].events.push({
+      date: '20/08/2026',
+      day: 'Thursday',
+      event_type: 'All Blacks',
+      title: 'All Blacks vs Test Team',
+      time: '7:30 pm',
+      slideType: 'EVENT'
+    });
+    
     console.log(`Parsed ${parsedData[0].events.length} events from CSV.`);
     
     // Test isEventCurrent logic
@@ -72,8 +83,9 @@ async function runTest() {
     const queue = window.MATRIX.STATE.slides;
     
     const activeAllBlacks = queue.filter(slide => 
-        (slide.subType || '').toLowerCase().includes('all blacks') || 
-        (slide.title || '').toLowerCase().includes('all blacks')
+        ((slide.subType || '').toLowerCase().includes('all blacks') || 
+         (slide.title || '').toLowerCase().includes('all blacks')) &&
+        window.isSlideActive(slide)
     );
     
     console.log(`Active All Blacks slides in queue: ${activeAllBlacks.length}`);
@@ -97,12 +109,12 @@ async function runTest() {
         throw new Error("❌ Fail: All Blacks vs Ireland on 18/07/2026 is missing from active queue!");
     }
 
-    // Check if the match with August 23rd is present (39 days away, so should be active under 45-day bypass but would be filtered under 14-day limit)
-    const hasAugust23Match = activeAllBlacks.some(s => s.date === '23/08/2026');
-    if (hasAugust23Match) {
-        console.log("✅ Verified: All Blacks vs South Africa on 23/08/2026 (39 days away) is successfully present in the active queue.");
+    // Check if the mock match with August 20th is present (42 days away, so should be active under 45-day bypass but would be filtered under 14-day limit)
+    const hasAugust20Match = activeAllBlacks.some(s => s.date === '20/08/2026');
+    if (hasAugust20Match) {
+        console.log("✅ Verified: All Blacks vs Test Team on 20/08/2026 (42 days away) is successfully present in the active queue.");
     } else {
-        throw new Error("❌ Fail: All Blacks vs South Africa on 23/08/2026 is missing from active queue!");
+        throw new Error("❌ Fail: All Blacks vs Test Team on 20/08/2026 is missing from active queue!");
     }
 
     console.log("\n🚀 All All Blacks scheduling validation tests passed successfully!");

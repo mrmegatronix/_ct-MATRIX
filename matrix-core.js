@@ -966,6 +966,16 @@ function isSlideActive(slide) {
     }
   }
 
+  // Filter out events/games occurring outside of venue opening hours (10:00 AM - 11:00 PM)
+  if (slide.time) {
+    const gameTime = parseTimeStringToHours(slide.time);
+    if (gameTime !== null) {
+      if (gameTime < 10.0 || gameTime > 23.0) {
+        return false; // Skip events outside opening hours
+      }
+    }
+  }
+
   // Filter out TBC bands and enforce time rule
   if (slide.isBand || slide.type === 'BAND') {
     const t = String(slide.title || '').toLowerCase();
@@ -1606,6 +1616,41 @@ function parseMatrixDate(dateStr) {
   // 3. Fallback to native (with caution)
   const d = new Date(str);
   return isNaN(d.getTime()) ? null : d;
+}
+
+/**
+ * Robust Time Parser
+ * Converts time strings like "7:10 pm", "3:00 am", "~9:30 PM", or "22:00" to decimal hours.
+ * Returns null if the format is not recognized.
+ */
+function parseTimeStringToHours(timeStr) {
+  if (!timeStr) return null;
+  const clean = String(timeStr).toLowerCase().replace(/[~\s\u202f]/g, '').trim();
+  
+  // 12-hour format: hh:mmam/pm or hham/pm
+  const match12 = clean.match(/^(\d{1,2})(?::(\d{2}))?(am|pm)$/);
+  if (match12) {
+    let hours = parseInt(match12[1]);
+    const minutes = match12[2] ? parseInt(match12[2]) : 0;
+    const ampm = match12[3];
+    
+    if (ampm === 'pm' && hours < 12) hours += 12;
+    if (ampm === 'am' && hours === 12) hours = 0;
+    
+    return hours + minutes / 60;
+  }
+  
+  // 24-hour format: hh:mm or hh
+  const match24 = clean.match(/^(\d{1,2})(?::(\d{2}))?$/);
+  if (match24) {
+    const hours = parseInt(match24[1]);
+    const minutes = match24[2] ? parseInt(match24[2]) : 0;
+    if (hours >= 0 && hours < 24) {
+      return hours + minutes / 60;
+    }
+  }
+  
+  return null;
 }
 
 /**
