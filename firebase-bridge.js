@@ -87,7 +87,7 @@ if (window.self === window.top) {
             // 1. New (different commandId from last processed)
             // 2. Not from this device (prevents echo)
             const isNew = cmd.commandId !== window.lastCommandId;
-            const isFromOtherDevice = cmd.source !== getClientId();
+            const isFromOtherDevice = cmd.source !== getClientId() || (cmd.senderTabId && cmd.senderTabId !== getTabId());
 
             console.log('[FIREBASE BRIDGE] Command received from Firebase:', {
                 type: cmd.type,
