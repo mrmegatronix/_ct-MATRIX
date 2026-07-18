@@ -286,6 +286,13 @@
         height: auto;
         width: auto;
         flex: none;
+        border-width: 2px;
+    }
+    #playlist-grid .monitor-label {
+        font-size: 0.95rem;
+        height: 38px;
+        padding: 6px 12px;
+        font-weight: 800;
     }
 
     .monitor-thumb { 
@@ -1181,7 +1188,7 @@
                     <div class="monitor-card" style="flex:none; ${e.data.currentIndex === idx ? 'border-color:var(--accent); box-shadow: 0 0 20px var(--accent)' : ''}" onclick="sendMaster('JUMP', '${s.id}')">
                         <div class="monitor-thumb" style="height:180px">
                             ${s.type === 'MODULE' 
-                                ? `<div style="background:#1e293b; height:100%; display:flex; align-items:center; justify-content:center; font-size:0.6rem; color:var(--accent); font-weight:900">MODULE: ${s.id}</div>`
+                                ? `<div style="background:#1e293b; height:100%; display:flex; align-items:center; justify-content:center; font-size:1.15rem; color:var(--accent); font-weight:900">MODULE: ${s.id}</div>`
                                 : (() => {
                                     const isHex = /^#([A-Fa-f0-9]{3,8})$/.test((s.bgImage || '').trim());
                                     const bgStyle = isHex 
@@ -1189,8 +1196,8 @@
                                         : (s.bgImage ? `background: url('${s.bgImage}') center/cover;` : `background: #090d16;`);
                                     return `<div style="${bgStyle} height:100%; position:relative">
                                              <div style="position:absolute; inset:0; background:rgba(0,0,0,0.6); display:flex; flex-direction:column; justify-content:center; padding:10px">
-                                                <div style="font-size:0.5rem; font-weight:900; color:var(--accent)">${s.subType}</div>
-                                                <div style="font-size:0.7rem; font-weight:800; line-height:1">${s.title ? s.title.slice(0, 30) : ''}</div>
+                                                <div style="font-size:0.95rem; font-weight:900; color:var(--accent)">${s.subType}</div>
+                                                <div style="font-size:1.25rem; font-weight:800; line-height:1.2">${s.title ? s.title.slice(0, 30) : ''}</div>
                                              </div>
                                            </div>`;
                                   })()
