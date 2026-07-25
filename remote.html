@@ -88,7 +88,6 @@
     <button class="btn" onclick="jump('ct-quiz')"><span class="btn-icon">🧠</span><span>QUIZ</span></button>
     <button class="btn" onclick="jump('ct-wea1')"><span class="btn-icon">🌦</span><span>WEA1</span></button>
     <button class="btn" onclick="jump('ct-fir')"><span class="btn-icon">🔥</span><span>FIR</span></button>
-    <button class="btn" onclick="jump('ct-mid')"><span class="btn-icon">❄️</span><span>MID</span></button>
     <button class="btn" onclick="jump('ct-soc')"><span class="btn-icon">🤝</span><span>SOC</span></button>
   </div>
 
@@ -185,19 +184,6 @@
       </div>
       <div class="mod-dur-wrapper" id="dur-wrap-ct-fir"><input type="number" class="mod-dur" id="dur-ct-fir" placeholder="s"></div>
     </div>
-    <!-- MID -->
-    <div class="mod-row" id="row-ct-mid">
-      <div class="mod-name">❄️ MID</div>
-      <div class="mod-toggle">
-        <button class="mod-btn btn-on" onclick="toggleModule('MID', true)">ON</button>
-        <button class="mod-btn btn-off" onclick="toggleModule('MID', false)">OFF</button>
-      </div>
-      <div style="display: flex; align-items: center; gap: 4px;">
-        <input type="checkbox" id="all-ct-mid" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-mid', this.checked)">
-        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
-      </div>
-      <div class="mod-dur-wrapper" id="dur-wrap-ct-mid"><input type="number" class="mod-dur" id="dur-ct-mid" placeholder="s"></div>
-    </div>
     <!-- SOC -->
     <div class="mod-row" id="row-ct-soc">
       <div class="mod-name">🤝 SOC</div>
@@ -250,7 +236,7 @@
     const bc_sub = new BroadcastChannel('mom_sync');
 
     // Default durations fallback
-    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-quiz': 60, 'ct-fir': 180, 'ct-mid': 120, 'ct-soc': 120, 'ct-tik': 120 };
+    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-quiz': 60, 'ct-fir': 180, 'ct-soc': 120, 'ct-tik': 120 };
 
     function getClientId() {
       let id = localStorage.getItem('matrix_client_id');
@@ -276,7 +262,7 @@
         }
       } catch(e) {}
       
-      const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-mid', 'ct-soc', 'ct-tik'];
+      const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik'];
       moduleIds.forEach(id => {
         const row = document.getElementById('row-' + id);
         if (!row) return;
@@ -284,7 +270,7 @@
         // Setup Durations
         const durInput = document.getElementById('dur-' + id);
         const allCb = document.getElementById('all-' + id);
-        const durVal = config.moduleDurations && config.moduleDurations[id] !== undefined ? config.moduleDurations[id] : DEFAULT_DURS[id];
+        const durVal = config.moduleDurations && config.moduleDurations[id] !== undefined ? config.moduleDurations[id] : 'all';
         
         if (durVal === 'all') {
             if (allCb) allCb.checked = true;
@@ -408,7 +394,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-mid', 'ct-soc', 'ct-tik'];
+        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {
