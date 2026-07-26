@@ -14,7 +14,7 @@ window.MATRIX = {
     SHOW_BANNER: true,
     ADMIN_PIN: '1234',
     GSHEETS_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjplY4qgdlDPmFO4sKUoWHnBPoeqf-rY3Tc0Y50wgDbDutbTn4j_hXhW3aXhYVjvfbIlwcIOF07250/pub?gid=1948723750&single=true&output=csv',
-    disabledModules: ['ct-quiz', 'ct-tik', 'ct-soc']
+    disabledModules: ['ct-quiz', 'ct-soc']
   },
   STATE: {
     slides: [],
@@ -682,7 +682,7 @@ function buildSlideQueue(data) {
   queue.push({ type: 'MODULE', id: 'ct-quiz', url: '../_ct-QUIZ/index.html', title: "Weekly Pub Quiz", priority: 10, duration: getModDur('ct-quiz', 60) });
   queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, duration: getModDur('ct-fir', 180) }); // 3min default
   queue.push({ type: 'MODULE', id: 'ct-soc', url: 'https://ctsc-app.web.app/#/tv', title: "Social Club TV Slides", pinned: true, priority: 8, duration: getModDur('ct-soc', 120) });
-  queue.push({ type: 'MODULE', id: 'ct-tik', url: '../_ct-TIK/index.html', title: "Coasters Tavern TikTok", pinned: true, priority: 7, duration: getModDur('ct-tik', 120) });
+  queue.push({ type: 'MODULE', id: 'ct-tik', url: 'https://mrmegatronix.github.io/_ct-TIK/', title: "Coasters Tavern TikTok", pinned: true, priority: 7, duration: getModDur('ct-tik', 120) });
 
   // 4. Apply Module Filters
   let filteredQueue = queue.filter(s => {
