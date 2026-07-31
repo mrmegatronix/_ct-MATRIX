@@ -186,31 +186,6 @@ async function initMatrix() {
     }, 30000);
   }
 
-  // 8 AM Auto Reset Watchdog — UNCONDITIONAL full playlist restart
-  if (!window.MATRIX.STATE.dailyReset8amTimer) {
-    window.MATRIX.STATE.dailyReset8amTimer = setInterval(() => {
-      const now = new Date();
-      if (now.getHours() === 8 && now.getMinutes() === 0) {
-        const todayStr = now.toDateString() + '_8am';
-        if (window.MATRIX.STATE.last8amResetDate !== todayStr) {
-          window.MATRIX.STATE.last8amResetDate = todayStr;
-          console.log('[MATRIX] 8 AM Auto-Reset: Full playlist restart with default modules.');
-          handleLiveSlide({ active: false });
-          clearTimeout(window.MATRIX.STATE.timer);
-          window.MATRIX.STATE.timer = null;
-          window.MATRIX.CONFIG.disabledModules = ['ct-quiz', 'ct-soc'];
-          localStorage.setItem('matrix_config', JSON.stringify(window.MATRIX.CONFIG));
-          if (bc) {
-            bc.postMessage({ type: 'LIVE_SLIDE', payload: { active: false } });
-            bc.postMessage({ type: 'SETTINGS_UPDATE', payload: { disabledModules: ['ct-quiz', 'ct-soc'] } });
-            bc.postMessage({ type: 'SYNC_DATA' });
-          }
-          window.MATRIX.STATE.currentIndex = -1;
-          window.initMatrix();
-        }
-      }
-    }, 30000);
-  }
 
   // 6. Hard-lock all active slide durations to 20s (override any internal module timers if needed)
   window.MATRIX.CONFIG.SWAP_DELAY = 20000;
