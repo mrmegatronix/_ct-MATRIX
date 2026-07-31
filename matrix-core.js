@@ -156,7 +156,7 @@ async function initMatrix() {
     }, 15 * 60 * 1000);
   }
 
-  // 2 AM Auto Reset Watchdog
+  // 2 AM Auto Reset Watchdog — UNCONDITIONAL full playlist restart
   if (!window.MATRIX.STATE.dailyResetTimer) {
     window.MATRIX.STATE.dailyResetTimer = setInterval(() => {
       const now = new Date();
@@ -164,25 +164,29 @@ async function initMatrix() {
         const todayStr = now.toDateString();
         if (window.MATRIX.STATE.last2amResetDate !== todayStr) {
           window.MATRIX.STATE.last2amResetDate = todayStr;
-          const liveOverlay = document.getElementById('live-slide-overlay');
-          if (liveOverlay || window.MATRIX.STATE.isClosedSlideActive) {
-            console.log('[MATRIX] 2 AM Auto-Reset: Clearing closed slide override and resetting modules.');
-            handleLiveSlide({ active: false });
-            window.MATRIX.CONFIG.disabledModules = ['ct-quiz', 'ct-tik', 'ct-soc'];
-            localStorage.setItem('matrix_config', JSON.stringify(window.MATRIX.CONFIG));
-            if (bc) {
-              bc.postMessage({ type: 'LIVE_SLIDE', payload: { active: false } });
-              bc.postMessage({ type: 'SETTINGS_UPDATE', payload: { disabledModules: ['ct-quiz', 'ct-tik', 'ct-soc'] } });
-              bc.postMessage({ type: 'SYNC_DATA' });
-            }
-            window.initMatrix();
+          console.log('[MATRIX] 2 AM Auto-Reset: Full playlist restart.');
+          // Clear any active live slide override
+          handleLiveSlide({ active: false });
+          // Clear the current slide timer to prevent stuck loops
+          clearTimeout(window.MATRIX.STATE.timer);
+          window.MATRIX.STATE.timer = null;
+          // Reset to default disabled modules (ct-tik enabled)
+          window.MATRIX.CONFIG.disabledModules = ['ct-quiz', 'ct-soc'];
+          localStorage.setItem('matrix_config', JSON.stringify(window.MATRIX.CONFIG));
+          if (bc) {
+            bc.postMessage({ type: 'LIVE_SLIDE', payload: { active: false } });
+            bc.postMessage({ type: 'SETTINGS_UPDATE', payload: { disabledModules: ['ct-quiz', 'ct-soc'] } });
+            bc.postMessage({ type: 'SYNC_DATA' });
           }
+          // Reset slide index to start from beginning
+          window.MATRIX.STATE.currentIndex = -1;
+          window.initMatrix();
         }
       }
     }, 30000);
   }
 
-  // 8 AM Auto Reset Watchdog
+  // 8 AM Auto Reset Watchdog — UNCONDITIONAL full playlist restart
   if (!window.MATRIX.STATE.dailyReset8amTimer) {
     window.MATRIX.STATE.dailyReset8amTimer = setInterval(() => {
       const now = new Date();
@@ -190,15 +194,18 @@ async function initMatrix() {
         const todayStr = now.toDateString() + '_8am';
         if (window.MATRIX.STATE.last8amResetDate !== todayStr) {
           window.MATRIX.STATE.last8amResetDate = todayStr;
-          console.log('[MATRIX] 8 AM Auto-Reset: Resetting slideshow to default modules (enabling all except quiz, tiktok, and social club).');
+          console.log('[MATRIX] 8 AM Auto-Reset: Full playlist restart with default modules.');
           handleLiveSlide({ active: false });
-          window.MATRIX.CONFIG.disabledModules = ['ct-quiz', 'ct-tik', 'ct-soc'];
+          clearTimeout(window.MATRIX.STATE.timer);
+          window.MATRIX.STATE.timer = null;
+          window.MATRIX.CONFIG.disabledModules = ['ct-quiz', 'ct-soc'];
           localStorage.setItem('matrix_config', JSON.stringify(window.MATRIX.CONFIG));
           if (bc) {
             bc.postMessage({ type: 'LIVE_SLIDE', payload: { active: false } });
-            bc.postMessage({ type: 'SETTINGS_UPDATE', payload: { disabledModules: ['ct-quiz', 'ct-tik', 'ct-soc'] } });
+            bc.postMessage({ type: 'SETTINGS_UPDATE', payload: { disabledModules: ['ct-quiz', 'ct-soc'] } });
             bc.postMessage({ type: 'SYNC_DATA' });
           }
+          window.MATRIX.STATE.currentIndex = -1;
           window.initMatrix();
         }
       }
@@ -208,6 +215,30 @@ async function initMatrix() {
   // 6. Hard-lock all active slide durations to 20s (override any internal module timers if needed)
   window.MATRIX.CONFIG.SWAP_DELAY = 20000;
   window.MATRIX.CONFIG.MODULE_DELAY = 60000;
+
+  // 7. Stuck-Slide Safety Watchdog — force advance if a slide has been active too long
+  if (!window.MATRIX.STATE.stuckSlideWatchdog) {
+    window.MATRIX.STATE.stuckSlideWatchdog = setInterval(() => {
+      const s = window.MATRIX.STATE;
+      if (s.isPaused || s.isClosedSlideActive || s.slides.length <= 1) return;
+      if (!s.currentSlideStartTime) return;
+
+      const elapsed = Date.now() - s.currentSlideStartTime;
+      const slide = s.slides[s.currentIndex];
+      if (!slide) return;
+
+      // Max allowed time: configured duration + 60s buffer, minimum 120s
+      const configuredDuration = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
+      const maxAllowed = Math.max(configuredDuration + 60000, 120000);
+
+      if (elapsed > maxAllowed) {
+        console.warn(`[MATRIX] Stuck-slide watchdog: Slide "${slide.title || slide.id}" stuck for ${Math.round(elapsed/1000)}s (max ${Math.round(maxAllowed/1000)}s). Force advancing.`);
+        clearTimeout(s.timer);
+        s.timer = null;
+        nextSlide();
+      }
+    }, 15000); // Check every 15 seconds
+  }
 
   // 6. GSheet Watchdog (optional but keeping for consistency)
   if (!window.MATRIX.STATE.watchdog) {
@@ -267,7 +298,7 @@ function loadPersistedState() {
     if (localStorage.getItem('matrix_migration_20260717_8am') !== 'done') {
       const stored = localStorage.getItem('matrix_config');
       let config = stored ? JSON.parse(stored) : {};
-      config.disabledModules = ['ct-quiz', 'ct-tik', 'ct-soc'];
+      config.disabledModules = ['ct-quiz', 'ct-soc'];
       localStorage.setItem('matrix_config', JSON.stringify(config));
       localStorage.setItem('matrix_migration_20260717_8am', 'done');
     }
@@ -279,7 +310,7 @@ function loadPersistedState() {
     const config = localStorage.getItem('matrix_config');
     if (config) window.MATRIX.CONFIG = { ...window.MATRIX.CONFIG, ...JSON.parse(config) };
     if (!window.MATRIX.CONFIG.disabledModules) {
-      window.MATRIX.CONFIG.disabledModules = ['ct-quiz', 'ct-tik', 'ct-soc'];
+      window.MATRIX.CONFIG.disabledModules = ['ct-quiz', 'ct-soc'];
     }
 
     const manual = localStorage.getItem('matrix_manual_slides');
