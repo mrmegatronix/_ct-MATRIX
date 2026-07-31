@@ -1219,7 +1219,7 @@
             const w = wrap.clientWidth || wrap.offsetWidth;
             const h = wrap.clientHeight || wrap.offsetHeight;
             if (w > 0 && h > 0) {
-                const scale = Math.min(w / 400, h / 200);
+                const scale = Math.min(w / 1920, h / 1080);
                 billboardFrame.style.transform = `translate(-50%, -50%) scale(${scale})`;
             }
         }
