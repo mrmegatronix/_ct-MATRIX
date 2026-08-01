@@ -1311,6 +1311,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
       document.documentElement.style.setProperty('--theme-color', moduleColor);
       document.documentElement.style.setProperty('--theme-glow', `${moduleColor}60`);
       slideEl.innerHTML = `<iframe src="${slide.url}" class="module-frame" id="module-${slide.id}" style="opacity: 0; transition: opacity 0.5s;" onload="this.style.opacity=1; try { this.contentDocument.head.insertAdjacentHTML('beforeend', '<style>body { background: #000 !important; } #progress-bar, #progress-container, .timer-bar { display: none !important; }</style>'); } catch(e) {}"></iframe>`;
+    } else {
       const isPromo = slide.type === 'PROMO';
       const isLogo = slide.isLogo || (!slide.title && !slide.subtitle && slide.bgImage && slide.bgImage.includes('LOGO'));
       
