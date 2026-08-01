@@ -1369,6 +1369,43 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
               MATRIX LIVE ALERT SYSTEM v1.0
             </div>
         `;
+      } else if (slide.type === 'LOYALTY' || (slide.title && slide.title.toLowerCase().includes('loyalty app'))) {
+        const appleQr = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=' + encodeURIComponent('https://apps.apple.com/us/app/coasters-tavern/id1592410581');
+        const googleQr = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=' + encodeURIComponent('https://play.google.com/store/apps/details?id=com.posbiz.coasters&hl=en');
+        slideEl.innerHTML = `
+            <div class="slide-bg" style="background: radial-gradient(circle at 50% 15%, #1a150e 0%, #0d0c10 50%, #050406 100%);">
+              <div style="position:absolute; inset:0; background: radial-gradient(circle at center, rgba(212, 175, 55, 0.15) 0%, transparent 70%);"></div>
+            </div>
+            <div class="social-card animate-content-enter" style="gap: 2rem; padding: 3% 5%;">
+              <div style="display:inline-flex; align-items:center; gap:8px; border: 1.5px solid #d4af37; background: rgba(212,175,55,0.15); color: #fef08a; padding: 0.6rem 2.2rem; border-radius: 999px; font-weight: 800; font-size: 1.6rem; letter-spacing: 0.2em; text-transform: uppercase; box-shadow: 0 0 25px rgba(212,175,55,0.3);">
+                ★ COASTERS REWARDS CLUB ★
+              </div>
+              <div class="social-title" style="font-size: clamp(4rem, 6vw, 7rem); margin-top: 0.5rem;">DOWNLOAD OUR LOYALTY APP</div>
+              <div style="font-size: clamp(1.8rem, 2.4vw, 3rem); color: #e2e8f0; font-weight: 600; max-width: 85%;">
+                Earn points on every purchase • Redeem food & drink vouchers • Exclusive VIP specials
+              </div>
+              <div style="display: flex; gap: 4rem; justify-content: center; align-items: stretch; margin-top: 1rem;">
+                <div style="background: rgba(18,18,24,0.85); border: 2px solid rgba(255,255,255,0.3); border-radius: 2rem; padding: 2rem 3.5rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
+                  <div style="font-weight: 800; font-size: 1.6rem; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.1em;">iOS / Apple</div>
+                  <div style="background: #fff; padding: 1rem; border-radius: 1.2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                    <img src="${appleQr}" style="width: 180px; height: 180px; display: block;" alt="Apple App Store QR">
+                  </div>
+                  <div style="background: #000; border: 1px solid rgba(255,255,255,0.4); padding: 0.8rem 2rem; border-radius: 1rem; color: #fff; font-weight: 800; font-size: 1.4rem;">
+                    App Store
+                  </div>
+                </div>
+                <div style="background: rgba(18,18,24,0.85); border: 2px solid rgba(1,135,95,0.6); border-radius: 2rem; padding: 2rem 3.5rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
+                  <div style="font-weight: 800; font-size: 1.6rem; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.1em;">Android</div>
+                  <div style="background: #fff; padding: 1rem; border-radius: 1.2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                    <img src="${googleQr}" style="width: 180px; height: 180px; display: block;" alt="Google Play QR">
+                  </div>
+                  <div style="background: #000; border: 1px solid rgba(1,135,95,0.6); padding: 0.8rem 2rem; border-radius: 1rem; color: #fff; font-weight: 800; font-size: 1.4rem;">
+                    Google Play
+                  </div>
+                </div>
+              </div>
+            </div>
+        `;
       } else if (slide.type === 'SOCIAL LINK') {
         const icon = (slide.title || '').toLowerCase().includes('facebook') ? '📘' : ((slide.title || '').toLowerCase().includes('instagram') ? '📸' : '📱');
         slideEl.innerHTML = `
