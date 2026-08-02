@@ -110,7 +110,7 @@
       gap: 12px;
       padding: 0.5vh 2.2vw;
       border-radius: 999px;
-      font-size: clamp(1.4rem, 1.8vw, 2.3rem);
+      font-size: clamp(1.3rem, 1.7vw, 2.2rem);
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: 0.16em;
@@ -122,6 +122,7 @@
       text-shadow: 0 0 12px var(--baby-blue-glow);
       box-shadow: 0 0 30px var(--baby-blue-glow);
       animation: pulse-glow-tag 3s infinite ease-in-out;
+      white-space: nowrap;
     }
 
     .day-tag .free-pill {
@@ -133,20 +134,22 @@
       font-weight: 900;
       letter-spacing: 0.08em;
       box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+      white-space: nowrap;
     }
 
     /* Main Title - White with Dark Blue Accent Glow matching CT-Matrix Core */
     .main-title {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(3.8rem, 5.2vw, 6.6rem);
+      font-size: clamp(3.6rem, 5.0vw, 6.4rem);
       font-weight: 900;
       line-height: 1.05;
       text-transform: uppercase;
-      letter-spacing: -0.03em;
+      letter-spacing: -0.02em;
       color: #ffffff;
       text-shadow: 0 0 40px rgba(29, 78, 216, 0.85), 0 0 80px rgba(30, 58, 138, 0.6), 0 4px 20px rgba(0, 0, 0, 0.95);
       filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 1));
       text-align: center;
+      white-space: nowrap;
     }
 
     .accent-bar {
@@ -159,12 +162,12 @@
     }
 
     .tagline {
-      font-size: clamp(1.65rem, 2.1vw, 2.7rem);
+      font-size: clamp(1.5rem, 1.95vw, 2.5rem);
       font-weight: 700;
       color: rgba(243, 244, 246, 0.95);
       letter-spacing: 0.02em;
       text-shadow: 0 3px 12px rgba(0,0,0,0.9);
-      text-wrap: balance;
+      white-space: nowrap;
     }
 
     /* Main Content Layout: 3 Columns (Left QR, Center Mock Phone, Right QR) */
@@ -174,9 +177,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 4vw;
+      gap: 3.5vw;
       width: 100%;
-      max-width: 94vw;
+      max-width: 96vw;
       flex: 1;
       padding: 0.5vh 0;
     }
@@ -189,15 +192,15 @@
       -webkit-backdrop-filter: blur(24px);
       border: 2.5px solid var(--card-border);
       border-radius: 28px;
-      padding: 2.8vh 2.2vw;
+      padding: 2.5vh 2vw;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      gap: 1.8vh;
+      gap: 1.5vh;
       box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(137, 207, 240, 0.25);
       overflow: hidden;
-      width: clamp(310px, 24vw, 390px);
+      width: clamp(330px, 25vw, 410px);
       height: 60vh;
       flex-shrink: 0;
     }
@@ -213,18 +216,21 @@
     }
 
     .card-badge-header {
-      font-size: clamp(1.6rem, 2.0vw, 2.5rem);
+      font-size: clamp(1.5rem, 1.9vw, 2.3rem);
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: 0.12em;
       color: var(--baby-blue-light);
       text-shadow: 0 0 12px var(--baby-blue-glow);
+      white-space: nowrap;
+      text-align: center;
+      width: 100%;
     }
 
     .qr-frame {
       position: relative;
-      width: clamp(170px, 23vh, 250px);
-      height: clamp(170px, 23vh, 250px);
+      width: clamp(170px, 22.5vh, 245px);
+      height: clamp(170px, 22.5vh, 245px);
       background: #ffffff;
       border-radius: 20px;
       padding: 12px;
@@ -245,8 +251,9 @@
     .store-button {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 14px;
-      padding: 1.2vh 2vw;
+      padding: 1.1vh 1.8vw;
       border-radius: 16px;
       background: #000000;
       border: 2px solid rgba(137, 207, 240, 0.5);
@@ -254,7 +261,7 @@
       text-decoration: none;
       box-shadow: 0 8px 22px rgba(0, 0, 0, 0.75);
       width: 100%;
-      justify-content: center;
+      white-space: nowrap;
     }
 
     .store-button svg {
@@ -268,37 +275,45 @@
       flex-direction: column;
       align-items: flex-start;
       line-height: 1.15;
+      white-space: nowrap;
     }
 
     .btn-small {
-      font-size: clamp(0.9rem, 1.1vw, 1.3rem);
+      font-size: clamp(0.85rem, 1.05vw, 1.25rem);
       text-transform: uppercase;
       letter-spacing: 0.1em;
       color: #cbd5e1;
       font-weight: 600;
+      white-space: nowrap;
     }
 
     .btn-large {
-      font-size: clamp(1.45rem, 1.8vw, 2.3rem);
+      font-size: clamp(1.4rem, 1.75vw, 2.2rem);
       font-weight: 900;
       letter-spacing: -0.01em;
       color: #ffffff;
+      white-space: nowrap;
     }
 
     .scan-label {
-      font-size: clamp(1.2rem, 1.5vw, 1.8rem);
+      font-size: clamp(1.15rem, 1.45vw, 1.75rem);
       font-weight: 700;
       color: var(--baby-blue);
-      letter-spacing: 0.05em;
-      display: flex;
+      letter-spacing: 0.04em;
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
+      white-space: nowrap;
+      width: 100%;
+      text-align: center;
     }
 
     .scan-label svg {
-      width: 2vh;
-      height: 2vh;
+      width: 2.2vh;
+      height: 2.2vh;
       stroke: var(--baby-blue);
+      flex-shrink: 0;
     }
 
     /* Central Mock Phone Frame with Live App Slideshow */
@@ -461,12 +476,14 @@
     .footer-center {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 16px;
       color: var(--baby-blue-light);
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.06em;
       text-align: center;
+      white-space: nowrap;
     }
 
     .pulse-dot {
@@ -564,7 +581,7 @@
 
         <div class="scan-label">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          Scan with iPhone
+          <span>Scan with iPhone</span>
         </div>
       </div>
 
@@ -623,7 +640,7 @@
 
         <div class="scan-label">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-          Scan with Android
+          <span>Scan with Android</span>
         </div>
       </div>
 
