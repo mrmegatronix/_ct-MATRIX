@@ -145,7 +145,7 @@
       box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
     }
 
-    /* Main Title with Baby Blue Neon Glow */
+    /* Main Title with Darker Baby Blue Gradient */
     .main-title {
       font-family: 'Playfair Display', Georgia, serif;
       font-size: clamp(3.6rem, 5.2vw, 6.8rem);
@@ -153,11 +153,11 @@
       line-height: 1.02;
       text-transform: uppercase;
       letter-spacing: -0.01em;
-      background: linear-gradient(135deg, #ffffff 20%, #d8f3ff 60%, #89cff0 100%);
+      background: linear-gradient(180deg, #cbeaff 0%, #60a5fa 45%, #1d4ed8 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 35px rgba(137, 207, 240, 0.75), 0 0 70px rgba(137, 207, 240, 0.35), 0 4px 35px rgba(0, 0, 0, 0.9);
-      filter: drop-shadow(0 0 25px rgba(137, 207, 240, 0.6));
+      text-shadow: 0 4px 25px rgba(0, 0, 0, 0.95);
+      filter: drop-shadow(0 0 16px rgba(37, 99, 235, 0.5));
     }
 
     .tagline {
@@ -167,11 +167,6 @@
       letter-spacing: 0.02em;
       text-shadow: 0 3px 12px rgba(0,0,0,0.9);
       text-wrap: balance;
-    }
-
-    .tagline .highlight-free {
-      color: var(--baby-blue);
-      text-shadow: 0 0 15px var(--baby-blue-glow);
     }
 
     /* Main Content Layout */
@@ -188,68 +183,65 @@
       padding: 0.4vh 0;
     }
 
-    /* Left Real Mock Phone Images */
+    /* Left Real Mock Phone Images - Background-Free Floating Devices */
     .phone-mockup-wrapper {
       position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100%;
-      max-height: 48vh;
-      gap: 1.2vw;
+      max-height: 56vh;
+      gap: 1.5vw;
     }
 
     .phone-mockup-card {
       position: relative;
       height: 100%;
-      max-height: 47vh;
-      border-radius: 22px;
-      padding: 5px;
-      background: rgba(10, 14, 22, 0.85);
-      border: 2.2px solid rgba(137, 207, 240, 0.6);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95), 0 0 35px var(--baby-blue-glow);
+      max-height: 56vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      overflow: visible;
       animation: float-phone 5s ease-in-out infinite alternate;
     }
 
     .phone-mockup-secondary {
       position: relative;
-      height: 88%;
-      max-height: 42vh;
-      border-radius: 18px;
-      padding: 5px;
-      background: rgba(10, 14, 22, 0.7);
-      border: 1.8px solid rgba(137, 207, 240, 0.4);
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.85);
+      height: 90%;
+      max-height: 50vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
-      opacity: 0.9;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      overflow: visible;
+      opacity: 0.95;
       transform: scale(0.95);
       animation: float-phone 6s ease-in-out 1s infinite alternate;
     }
 
     .phone-img {
       height: 100%;
-      max-height: 45vh;
+      max-height: 54vh;
       width: auto;
       object-fit: contain;
-      border-radius: 18px;
       display: block;
-      filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8));
+      filter: drop-shadow(0 18px 38px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 20px rgba(137, 207, 240, 0.3));
     }
 
     .phone-img-sec {
       height: 100%;
-      max-height: 40vh;
+      max-height: 48vh;
       width: auto;
       object-fit: contain;
-      border-radius: 14px;
       display: block;
+      filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.9));
     }
 
     /* Right Column: Perks + QR Codes */
@@ -528,7 +520,7 @@
         ★ COASTERS LOYALTY APP <span class="free-pill">IT'S FREE TO JOIN</span> ★
       </div>
       <h1 class="main-title">DOWNLOAD OUR LOYALTY APP</h1>
-      <p class="tagline">Earn points on every purchase & unlock instant food & drink rewards • <span class="highlight-free">It's 100% Free to Join!</span></p>
+      <p class="tagline">Earn points on every purchase & unlock instant food & drink rewards</p>
     </div>
 
     <!-- Main Content Layout: Real Phone Mockup Left, Perks + Dual QR Right -->
@@ -539,14 +531,14 @@
         <div class="phone-mockup-card">
           <img 
             class="phone-img" 
-            src="images/coasters-loyalty-mockup.jpg" 
+            src="images/phone-loyalty-transparent.png" 
             alt="Coasters Tavern Loyalty App Membership Card"
           >
         </div>
         <div class="phone-mockup-secondary">
           <img 
             class="phone-img-sec" 
-            src="images/coasters-loyalty-menu.jpg" 
+            src="images/phone-whatson-transparent.png" 
             alt="Coasters Tavern Specials and Food Menu"
           >
         </div>
