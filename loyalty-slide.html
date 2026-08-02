@@ -10,12 +10,12 @@
   <style>
     :root {
       --baby-blue: #89CFF0;
-      --baby-blue-light: #d8f3ff;
-      --baby-blue-glow: rgba(137, 207, 240, 0.55);
+      --baby-blue-light: #e0f2fe;
+      --baby-blue-glow: rgba(137, 207, 240, 0.6);
       --gold: #d4af37;
       --gold-light: #fef08a;
-      --card-bg: rgba(14, 18, 26, 0.92);
-      --card-border: rgba(137, 207, 240, 0.45);
+      --card-bg: rgba(12, 18, 28, 0.94);
+      --card-border: rgba(137, 207, 240, 0.5);
     }
 
     * {
@@ -46,12 +46,12 @@
       align-items: center;
       justify-content: space-between;
       box-sizing: border-box;
-      padding: 1.6vh 3vw 1.8vh 3vw;
-      background: radial-gradient(circle at 50% 8%, #0d1e2e 0%, #080f18 45%, #03060a 100%);
+      padding: 2.2vh 3.5vw 2.6vh 3.5vw;
+      background: radial-gradient(circle at 50% 8%, #0d2136 0%, #07111c 45%, #03060a 100%);
       overflow: hidden;
     }
 
-    /* Ambient Glow Backgrounds with Baby Blue Theme */
+    /* Ambient Glow Backgrounds */
     .ambient-glow-top {
       position: absolute;
       top: -25vh;
@@ -59,33 +59,22 @@
       transform: translateX(-50%);
       width: 85vw;
       height: 65vh;
-      background: radial-gradient(ellipse, rgba(137, 207, 240, 0.3) 0%, rgba(56, 189, 248, 0.12) 50%, transparent 70%);
+      background: radial-gradient(ellipse, rgba(137, 207, 240, 0.35) 0%, rgba(56, 189, 248, 0.15) 50%, transparent 70%);
       filter: blur(80px);
       pointer-events: none;
       z-index: 1;
       animation: pulse-ambient 6s ease-in-out infinite alternate;
     }
 
-    .ambient-glow-phone {
+    .ambient-glow-center {
       position: absolute;
-      left: 12vw;
-      top: 35vh;
-      width: 35vw;
-      height: 35vw;
-      background: radial-gradient(circle, rgba(137, 207, 240, 0.22) 0%, transparent 65%);
-      filter: blur(65px);
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .ambient-glow-qr {
-      position: absolute;
-      right: 12vw;
-      top: 35vh;
-      width: 38vw;
-      height: 38vw;
-      background: radial-gradient(circle, rgba(212, 175, 55, 0.18) 0%, transparent 65%);
-      filter: blur(65px);
+      left: 50%;
+      top: 55%;
+      transform: translate(-50%, -50%);
+      width: 50vw;
+      height: 60vh;
+      background: radial-gradient(circle, rgba(137, 207, 240, 0.25) 0%, rgba(29, 78, 216, 0.15) 50%, transparent 70%);
+      filter: blur(80px);
       pointer-events: none;
       z-index: 1;
     }
@@ -110,7 +99,7 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
-      gap: 0.4vh;
+      gap: 0.5vh;
       margin-top: 0;
       width: 100%;
     }
@@ -118,15 +107,15 @@
     .day-tag {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      padding: 0.45vh 2vw;
+      gap: 12px;
+      padding: 0.5vh 2.2vw;
       border-radius: 999px;
       font-size: clamp(1.4rem, 1.8vw, 2.3rem);
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: 0.16em;
       border: 2px solid var(--baby-blue);
-      background: rgba(137, 207, 240, 0.16);
+      background: rgba(137, 207, 240, 0.18);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       color: var(--baby-blue-light);
@@ -138,9 +127,10 @@
     .day-tag .free-pill {
       background: linear-gradient(135deg, var(--gold), #f59e0b);
       color: #000;
-      padding: 0.15vh 0.8vw;
+      padding: 0.2vh 1vw;
       border-radius: 999px;
-      font-size: 0.8em;
+      font-size: 0.82em;
+      font-weight: 900;
       letter-spacing: 0.08em;
       box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
     }
@@ -148,7 +138,7 @@
     /* Main Title - White with Dark Blue Accent Glow matching CT-Matrix Core */
     .main-title {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(3.6rem, 5.2vw, 6.8rem);
+      font-size: clamp(3.8rem, 5.2vw, 6.6rem);
       font-weight: 900;
       line-height: 1.05;
       text-transform: uppercase;
@@ -160,16 +150,16 @@
     }
 
     .accent-bar {
-      width: 45%;
+      width: 44%;
       height: 5px;
       border-radius: 3px;
-      margin: 0.2vh auto 0.4vh auto;
-      background: linear-gradient(90deg, transparent, #1d4ed8, #3b82f6, #1d4ed8, transparent);
+      margin: 0.3vh auto 0.4vh auto;
+      background: linear-gradient(90deg, transparent, #1d4ed8, #38bdf8, #1d4ed8, transparent);
       box-shadow: 0 0 25px rgba(29, 78, 216, 0.85);
     }
 
     .tagline {
-      font-size: clamp(1.7rem, 2.1vw, 2.8rem);
+      font-size: clamp(1.65rem, 2.1vw, 2.7rem);
       font-weight: 700;
       color: rgba(243, 244, 246, 0.95);
       letter-spacing: 0.02em;
@@ -177,157 +167,39 @@
       text-wrap: balance;
     }
 
-    /* Main Content Layout */
+    /* Main Content Layout: 3 Columns (Left QR, Center Mock Phone, Right QR) */
     .content-container {
       position: relative;
       z-index: 2;
-      display: grid;
-      grid-template-columns: 0.95fr 1.05fr;
+      display: flex;
       align-items: center;
-      gap: 2.5vw;
+      justify-content: center;
+      gap: 4vw;
       width: 100%;
-      max-width: 92vw;
+      max-width: 94vw;
       flex: 1;
-      padding: 0.4vh 0;
+      padding: 0.5vh 0;
     }
 
-    /* Left Real Mock Phone Images - Background-Free Floating Devices */
-    .phone-mockup-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      max-height: 56vh;
-      gap: 1.5vw;
-    }
-
-    .phone-mockup-card {
-      position: relative;
-      height: 100%;
-      max-height: 56vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      padding: 0;
-      overflow: visible;
-      animation: float-phone 5s ease-in-out infinite alternate;
-    }
-
-    .phone-mockup-secondary {
-      position: relative;
-      height: 90%;
-      max-height: 50vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      padding: 0;
-      overflow: visible;
-      opacity: 0.95;
-      transform: scale(0.95);
-      animation: float-phone 6s ease-in-out 1s infinite alternate;
-    }
-
-    .phone-img {
-      height: 100%;
-      max-height: 54vh;
-      width: auto;
-      object-fit: contain;
-      display: block;
-      filter: drop-shadow(0 18px 38px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 20px rgba(137, 207, 240, 0.3));
-    }
-
-    .phone-img-sec {
-      height: 100%;
-      max-height: 48vh;
-      width: auto;
-      object-fit: contain;
-      display: block;
-      filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.9));
-    }
-
-    /* Right Column: Perks + QR Codes */
-    .right-content {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5vh;
-      justify-content: center;
-      width: 100%;
-    }
-
-    /* Rewards Benefits Chips */
-    .benefits-bar {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.4vw;
-      width: 100%;
-    }
-
-    .benefit-chip {
-      display: flex;
-      align-items: center;
-      gap: 1.2vw;
-      padding: 1.4vh 1.6vw;
-      background: rgba(16, 22, 34, 0.9);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1.8px solid var(--card-border);
-      border-radius: 18px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(137, 207, 240, 0.2);
-    }
-
-    .chip-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 4.8vh;
-      height: 4.8vh;
-      border-radius: 12px;
-      background: linear-gradient(135deg, var(--baby-blue), #38bdf8);
-      color: #040a12;
-      font-weight: 900;
-      font-size: 2.6vh;
-      box-shadow: 0 4px 15px rgba(137, 207, 240, 0.6);
-      flex-shrink: 0;
-    }
-
-    .chip-text {
-      font-size: clamp(1.4rem, 1.8vw, 2.2rem);
-      font-weight: 800;
-      color: #ffffff;
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
-      line-height: 1.2;
-    }
-
-    /* Store Cards Grid */
-    .stores-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2vw;
-      width: 100%;
-    }
-
+    /* Store Cards (Apple & Google Play) */
     .store-card {
       position: relative;
       background: var(--card-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 2.2px solid var(--card-border);
-      border-radius: 24px;
-      padding: 2vh 1.8vw;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 2.5px solid var(--card-border);
+      border-radius: 28px;
+      padding: 2.8vh 2.2vw;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1.4vh;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 25px rgba(137, 207, 240, 0.2);
+      justify-content: space-between;
+      gap: 1.8vh;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(137, 207, 240, 0.25);
       overflow: hidden;
+      width: clamp(310px, 24vw, 390px);
+      height: 60vh;
+      flex-shrink: 0;
     }
 
     .store-card::before {
@@ -341,22 +213,22 @@
     }
 
     .card-badge-header {
-      font-size: clamp(1.4rem, 1.8vw, 2.2rem);
+      font-size: clamp(1.6rem, 2.0vw, 2.5rem);
       font-weight: 900;
       text-transform: uppercase;
-      letter-spacing: 0.15em;
+      letter-spacing: 0.12em;
       color: var(--baby-blue-light);
-      text-shadow: 0 0 10px var(--baby-blue-glow);
+      text-shadow: 0 0 12px var(--baby-blue-glow);
     }
 
     .qr-frame {
       position: relative;
-      width: clamp(140px, 19vh, 220px);
-      height: clamp(140px, 19vh, 220px);
+      width: clamp(170px, 23vh, 250px);
+      height: clamp(170px, 23vh, 250px);
       background: #ffffff;
-      border-radius: 16px;
-      padding: 8px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      border-radius: 20px;
+      padding: 12px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -366,26 +238,28 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
-      border-radius: 8px;
+      border-radius: 12px;
       image-rendering: pixelated;
     }
 
     .store-button {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      padding: 0.9vh 1.6vw;
-      border-radius: 12px;
+      gap: 14px;
+      padding: 1.2vh 2vw;
+      border-radius: 16px;
       background: #000000;
-      border: 1.5px solid rgba(137, 207, 240, 0.4);
+      border: 2px solid rgba(137, 207, 240, 0.5);
       color: #ffffff;
       text-decoration: none;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.75);
+      width: 100%;
+      justify-content: center;
     }
 
     .store-button svg {
-      width: 2.8vh;
-      height: 2.8vh;
+      width: 3.4vh;
+      height: 3.4vh;
       flex-shrink: 0;
     }
 
@@ -405,26 +279,163 @@
     }
 
     .btn-large {
-      font-size: clamp(1.4rem, 1.8vw, 2.2rem);
+      font-size: clamp(1.45rem, 1.8vw, 2.3rem);
       font-weight: 900;
       letter-spacing: -0.01em;
       color: #ffffff;
     }
 
     .scan-label {
-      font-size: clamp(1.1rem, 1.4vw, 1.7rem);
+      font-size: clamp(1.2rem, 1.5vw, 1.8rem);
       font-weight: 700;
       color: var(--baby-blue);
       letter-spacing: 0.05em;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     .scan-label svg {
-      width: 1.6vh;
-      height: 1.6vh;
+      width: 2vh;
+      height: 2vh;
       stroke: var(--baby-blue);
+    }
+
+    /* Central Mock Phone Frame with Live App Slideshow */
+    .phone-center-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      max-height: 62vh;
+      flex-shrink: 0;
+    }
+
+    .phone-device {
+      position: relative;
+      height: 61vh;
+      width: calc(61vh * (497 / 937));
+      max-width: 350px;
+      background: #080c14;
+      border-radius: 42px;
+      padding: 10px;
+      box-shadow: 
+        0 25px 65px rgba(0, 0, 0, 0.95),
+        0 0 50px rgba(29, 78, 216, 0.45),
+        0 0 30px rgba(137, 207, 240, 0.35),
+        inset 0 0 0 2px rgba(255, 255, 255, 0.18);
+      border: 3.5px solid rgba(137, 207, 240, 0.55);
+      display: flex;
+      flex-direction: column;
+      animation: float-phone 5s ease-in-out infinite alternate;
+    }
+
+    .phone-screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 32px;
+      overflow: hidden;
+      background: #000000;
+    }
+
+    /* Dynamic Speaker / Camera Notch */
+    .phone-notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 96px;
+      height: 18px;
+      background: #080c14;
+      border-bottom-left-radius: 14px;
+      border-bottom-right-radius: 14px;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .notch-speaker {
+      width: 36px;
+      height: 3.5px;
+      background: #222a36;
+      border-radius: 2px;
+    }
+
+    .notch-camera {
+      width: 7px;
+      height: 7px;
+      background: #111a26;
+      border-radius: 50%;
+      box-shadow: 0 0 2px rgba(137, 207, 240, 0.5);
+    }
+
+    /* Slideshow Container */
+    .phone-slideshow {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .app-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+      transform: scale(1.02);
+    }
+
+    .app-slide.active {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* Phone Screen Glare / Reflection */
+    .screen-glare {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.02) 40%, transparent 60%);
+      pointer-events: none;
+      z-index: 10;
+      border-radius: 32px;
+    }
+
+    /* Slide Dots Indicator */
+    .slide-dots {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+      z-index: 25;
+      background: rgba(0, 0, 0, 0.65);
+      padding: 5px 12px;
+      border-radius: 20px;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .dot.active {
+      width: 20px;
+      border-radius: 4px;
+      background: var(--baby-blue);
+      box-shadow: 0 0 10px var(--baby-blue);
     }
 
     /* Footer Banner */
@@ -433,35 +444,29 @@
       z-index: 2;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       width: 100%;
       max-width: 90vw;
-      padding: 1.1vh 2.5vw;
-      background: rgba(4, 8, 14, 0.85);
-      backdrop-filter: blur(12px);
-      border-radius: 16px;
-      border: 1.5px solid rgba(137, 207, 240, 0.4);
-      font-size: clamp(1.3rem, 1.7vw, 2.1rem);
+      padding: 1.2vh 2.5vw;
+      background: rgba(4, 8, 14, 0.88);
+      backdrop-filter: blur(14px);
+      border-radius: 18px;
+      border: 1.8px solid rgba(137, 207, 240, 0.45);
+      font-size: clamp(1.4rem, 1.8vw, 2.3rem);
       color: #cbd5e1;
       font-weight: 700;
-      margin-bottom: 0.4vh;
+      margin-bottom: 0.6vh;
     }
 
-    .footer-left {
+    .footer-center {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 16px;
       color: var(--baby-blue-light);
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .footer-right {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
+      text-align: center;
     }
 
     .pulse-dot {
@@ -471,6 +476,7 @@
       background: #38bdf8;
       box-shadow: 0 0 12px #38bdf8;
       animation: blink 1.5s infinite;
+      flex-shrink: 0;
     }
 
     /* Progress Bar matching CT-Matrix standard */
@@ -503,8 +509,8 @@
     }
 
     @keyframes float-phone {
-      0% { transform: translateY(0px) rotate(0deg); }
-      100% { transform: translateY(-8px) rotate(0.8deg); }
+      0% { transform: translateY(0px); }
+      100% { transform: translateY(-7px); }
     }
 
     @keyframes blink {
@@ -518,8 +524,7 @@
   <div class="slide-viewport">
     <!-- Ambient Glow Effects -->
     <div class="ambient-glow-top"></div>
-    <div class="ambient-glow-phone"></div>
-    <div class="ambient-glow-qr"></div>
+    <div class="ambient-glow-center"></div>
     <div class="grid-overlay"></div>
 
     <!-- Header Section -->
@@ -532,122 +537,133 @@
       <p class="tagline">Earn points on every purchase & unlock instant food & drink rewards</p>
     </div>
 
-    <!-- Main Content Layout: Real Phone Mockup Left, Perks + Dual QR Right -->
+    <!-- Main Content Layout: Left QR, Center Phone Slideshow, Right QR -->
     <div class="content-container">
       
-      <!-- Left Column: Realistic Phone Mockup Display -->
-      <div class="phone-mockup-wrapper">
-        <div class="phone-mockup-card">
+      <!-- Left Column: Apple App Store Card -->
+      <div class="store-card apple-card">
+        <div class="card-badge-header">iOS / Apple</div>
+
+        <div class="qr-frame">
           <img 
-            class="phone-img" 
-            src="images/phone-loyalty-transparent.png" 
-            alt="Coasters Tavern Loyalty App Membership Card"
+            class="qr-img" 
+            src="https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=10&data=https%3A%2F%2Fapps.apple.com%2Fus%2Fapp%2Fcoasters-tavern%2Fid1592410581" 
+            alt="Apple App Store QR Code"
           >
         </div>
-        <div class="phone-mockup-secondary">
-          <img 
-            class="phone-img-sec" 
-            src="images/phone-whatson-transparent.png" 
-            alt="Coasters Tavern Specials and Food Menu"
-          >
+
+        <a href="https://apps.apple.com/us/app/coasters-tavern/id1592410581" target="_blank" class="store-button">
+          <svg viewBox="0 0 384 512" fill="currentColor">
+            <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
+          </svg>
+          <div class="btn-text-group">
+            <span class="btn-small">Download on the</span>
+            <span class="btn-large">App Store</span>
+          </div>
+        </a>
+
+        <div class="scan-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Scan with iPhone
         </div>
       </div>
 
-      <!-- Right Column: Perks and App Store QR Codes -->
-      <div class="right-content">
-        
-        <!-- Rewards Benefits Chips -->
-        <div class="benefits-bar">
-          <div class="benefit-chip">
-            <div class="chip-icon">⭐</div>
-            <div class="chip-text">Earn Points On Every Purchase</div>
-          </div>
-          <div class="benefit-chip">
-            <div class="chip-icon">🍻</div>
-            <div class="chip-text">Redeem For Food & Drinks</div>
-          </div>
-        </div>
-
-        <!-- Store Cards Grid (Apple + Google Play QR) -->
-        <div class="stores-grid">
-          <!-- Apple App Store Card -->
-          <div class="store-card apple-card">
-            <div class="card-badge-header">iOS / Apple</div>
-
-            <div class="qr-frame">
-              <img 
-                class="qr-img" 
-                src="https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=10&data=https%3A%2F%2Fapps.apple.com%2Fus%2Fapp%2Fcoasters-tavern%2Fid1592410581" 
-                alt="Apple App Store QR Code"
-              >
+      <!-- Center Column: Sleek Phone Mockup with Looping Screenshots Slideshow -->
+      <div class="phone-center-wrapper">
+        <div class="phone-device">
+          <div class="phone-screen">
+            <div class="phone-notch">
+              <div class="notch-speaker"></div>
+              <div class="notch-camera"></div>
+            </div>
+            
+            <div class="phone-slideshow" id="appSlideshow">
+              <img class="app-slide active" src="images/app-screen-home.png" alt="Coasters Loyalty App Home">
+              <img class="app-slide" src="images/app-screen-menu.png" alt="Coasters Food & Drink Menu">
+              <img class="app-slide" src="images/app-screen-insta.png" alt="Coasters What's On & Events">
+              <img class="app-slide" src="images/app-screen-drawer.png" alt="Coasters App Navigation">
             </div>
 
-            <a href="https://apps.apple.com/us/app/coasters-tavern/id1592410581" target="_blank" class="store-button">
-              <svg viewBox="0 0 384 512" fill="currentColor">
-                <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
-              </svg>
-              <div class="btn-text-group">
-                <span class="btn-small">Download on the</span>
-                <span class="btn-large">App Store</span>
-              </div>
-            </a>
+            <div class="screen-glare"></div>
 
-            <div class="scan-label">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              Scan with iPhone
-            </div>
-          </div>
-
-          <!-- Google Play Card -->
-          <div class="store-card google-card">
-            <div class="card-badge-header">Android</div>
-
-            <div class="qr-frame">
-              <img 
-                class="qr-img" 
-                src="https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=10&data=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.posbiz.coasters%26hl%3Den" 
-                alt="Google Play QR Code"
-              >
-            </div>
-
-            <a href="https://play.google.com/store/apps/details?id=com.posbiz.coasters&hl=en" target="_blank" class="store-button">
-              <svg viewBox="0 0 512 512">
-                <path fill="#4285F4" d="M47.7 21.6C44.3 25.3 42.4 30.8 42.4 38v436c0 7.2 1.9 12.7 5.3 16.4l2.4 2.4L273.7 269.2v-6.4L50.1 19.2l-2.4 2.4z"/>
-                <path fill="#FBBC04" d="M348.5 344l-74.8-74.8v-6.4l74.8-74.8 1.8 1 88.5 50.3c25.3 14.4 25.3 37.9 0 52.3l-88.5 50.3-1.8 2.1z"/>
-                <path fill="#EA4335" d="M350.3 342.9L273.7 266 50.1 489.6c8.3 8.8 22.1 9.9 37.7 1.1l262.5-147.8"/>
-                <path fill="#34A853" d="M350.3 169.1L87.8 21.3C72.2 12.5 58.4 13.6 50.1 22.4L273.7 246l76.6-76.9z"/>
-              </svg>
-              <div class="btn-text-group">
-                <span class="btn-small">GET IT ON</span>
-                <span class="btn-large">Google Play</span>
-              </div>
-            </a>
-
-            <div class="scan-label">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              Scan with Android
+            <div class="slide-dots" id="slideDots">
+              <div class="dot active"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Right Column: Google Play Card -->
+      <div class="store-card google-card">
+        <div class="card-badge-header">Android</div>
+
+        <div class="qr-frame">
+          <img 
+            class="qr-img" 
+            src="https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=10&data=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.posbiz.coasters%26hl%3Den" 
+            alt="Google Play QR Code"
+          >
+        </div>
+
+        <a href="https://play.google.com/store/apps/details?id=com.posbiz.coasters&hl=en" target="_blank" class="store-button">
+          <svg viewBox="0 0 512 512">
+            <path fill="#4285F4" d="M47.7 21.6C44.3 25.3 42.4 30.8 42.4 38v436c0 7.2 1.9 12.7 5.3 16.4l2.4 2.4L273.7 269.2v-6.4L50.1 19.2l-2.4 2.4z"/>
+            <path fill="#FBBC04" d="M348.5 344l-74.8-74.8v-6.4l74.8-74.8 1.8 1 88.5 50.3c25.3 14.4 25.3 37.9 0 52.3l-88.5 50.3-1.8 2.1z"/>
+            <path fill="#EA4335" d="M350.3 342.9L273.7 266 50.1 489.6c8.3 8.8 22.1 9.9 37.7 1.1l262.5-147.8"/>
+            <path fill="#34A853" d="M350.3 169.1L87.8 21.3C72.2 12.5 58.4 13.6 50.1 22.4L273.7 246l76.6-76.9z"/>
+          </svg>
+          <div class="btn-text-group">
+            <span class="btn-small">GET IT ON</span>
+            <span class="btn-large">Google Play</span>
+          </div>
+        </a>
+
+        <div class="scan-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Scan with Android
+        </div>
+      </div>
+
     </div>
 
     <!-- Footer Banner -->
     <div class="footer-banner">
-      <div class="footer-left">
+      <div class="footer-center">
         <div class="pulse-dot"></div>
-        <span>Free Download • Join in 30 Seconds</span>
-      </div>
-      <div class="footer-right">
-        <span>Available on Apple App Store & Google Play</span>
-        <span>•</span>
-        <span>coasterstavern.co.nz</span>
+        <span>Scan a code above with your mobile phone to get started</span>
+        <div class="pulse-dot"></div>
       </div>
     </div>
   </div>
 
   <!-- Standard 14px Progress Bar at Bottom of Page -->
   <div class="timer-bar" id="progress-bar"></div>
+
+  <!-- Slideshow Script -->
+  <script>
+    (function() {
+      const slides = document.querySelectorAll('.app-slide');
+      const dots = document.querySelectorAll('.slide-dots .dot');
+      let currentIndex = 0;
+
+      function showSlide(index) {
+        slides.forEach((slide, i) => {
+          slide.classList.toggle('active', i === index);
+        });
+        dots.forEach((dot, i) => {
+          dot.classList.toggle('active', i === index);
+        });
+      }
+
+      setInterval(() => {
+        currentIndex = (currentIndex + 1) % slides.length;
+        showSlide(currentIndex);
+      }, 3600);
+    })();
+  </script>
 
 </body>
 </html>
