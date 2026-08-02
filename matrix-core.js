@@ -696,6 +696,7 @@ function buildSlideQueue(data) {
   queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, duration: getModDur('ct-fir', 180) }); // 3min default
   queue.push({ type: 'MODULE', id: 'ct-soc', url: 'https://ctsc-app.web.app/#/tv', title: "Social Club TV Slides", pinned: true, priority: 8, duration: getModDur('ct-soc', 120) });
   queue.push({ type: 'MODULE', id: 'ct-tik', url: 'https://mrmegatronix.github.io/_ct-TIK/', title: "Coasters Tavern TikTok", pinned: true, priority: 7, duration: getModDur('ct-tik', 120) });
+  queue.push({ type: 'MODULE', id: 'ct-loyalty', url: 'loyalty-slide.html', title: "Coasters Loyalty App", pinned: true, priority: 6, duration: getModDur('ct-loyalty', 60), accentColor: '#89CFF0' });
 
   // 4. Apply Module Filters
   let filteredQueue = queue.filter(s => {
@@ -1316,6 +1317,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
       if (slide.id === 'ct-quiz') moduleColor = '#3b82f6';
       if (slide.id === 'ct-soc') moduleColor = '#d4af37';
       if (slide.id === 'ct-tik') moduleColor = '#ff0050';
+      if (slide.id === 'ct-loyalty') moduleColor = '#89CFF0';
       
       document.documentElement.style.setProperty('--theme-color', moduleColor);
       document.documentElement.style.setProperty('--theme-glow', `${moduleColor}60`);

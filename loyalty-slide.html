@@ -9,12 +9,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
   <style>
     :root {
+      --baby-blue: #89CFF0;
+      --baby-blue-light: #d8f3ff;
+      --baby-blue-glow: rgba(137, 207, 240, 0.55);
       --gold: #d4af37;
       --gold-light: #fef08a;
-      --gold-glow: rgba(212, 175, 55, 0.45);
-      --amber: #f59e0b;
-      --card-bg: rgba(16, 16, 22, 0.9);
-      --card-border: rgba(212, 175, 55, 0.45);
+      --card-bg: rgba(14, 18, 26, 0.92);
+      --card-border: rgba(137, 207, 240, 0.45);
     }
 
     * {
@@ -27,7 +28,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #060508;
+      background-color: #04070c;
       font-family: 'Outfit', sans-serif;
       color: #ffffff;
       display: flex;
@@ -40,20 +41,17 @@
       position: relative;
       width: 100vw;
       height: 100vh;
-      aspect-ratio: 16 / 9;
-      width: 100vw;
-      height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
       box-sizing: border-box;
-      padding: 1.6vh 3vw 1.2vh 3vw;
-      background: radial-gradient(circle at 50% 8%, #221a12 0%, #0d0c12 45%, #050407 100%);
+      padding: 1.6vh 3vw 1.8vh 3vw;
+      background: radial-gradient(circle at 50% 8%, #0d1e2e 0%, #080f18 45%, #03060a 100%);
       overflow: hidden;
     }
 
-    /* Ambient Glow Backgrounds */
+    /* Ambient Glow Backgrounds with Baby Blue Theme */
     .ambient-glow-top {
       position: absolute;
       top: -25vh;
@@ -61,8 +59,8 @@
       transform: translateX(-50%);
       width: 85vw;
       height: 65vh;
-      background: radial-gradient(ellipse, rgba(212, 175, 55, 0.25) 0%, rgba(245, 158, 11, 0.1) 50%, transparent 70%);
-      filter: blur(75px);
+      background: radial-gradient(ellipse, rgba(137, 207, 240, 0.3) 0%, rgba(56, 189, 248, 0.12) 50%, transparent 70%);
+      filter: blur(80px);
       pointer-events: none;
       z-index: 1;
       animation: pulse-ambient 6s ease-in-out infinite alternate;
@@ -74,8 +72,8 @@
       top: 35vh;
       width: 35vw;
       height: 35vw;
-      background: radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, transparent 65%);
-      filter: blur(60px);
+      background: radial-gradient(circle, rgba(137, 207, 240, 0.22) 0%, transparent 65%);
+      filter: blur(65px);
       pointer-events: none;
       z-index: 1;
     }
@@ -86,8 +84,8 @@
       top: 35vh;
       width: 38vw;
       height: 38vw;
-      background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 65%);
-      filter: blur(60px);
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.18) 0%, transparent 65%);
+      filter: blur(65px);
       pointer-events: none;
       z-index: 1;
     }
@@ -97,14 +95,14 @@
       position: absolute;
       inset: 0;
       background-image: 
-        linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
+        linear-gradient(rgba(137, 207, 240, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(137, 207, 240, 0.04) 1px, transparent 1px);
       background-size: 40px 40px;
       pointer-events: none;
       z-index: 1;
     }
 
-    /* Header Section Matching ct-matrix scale */
+    /* Header Section */
     .header-section {
       position: relative;
       z-index: 2;
@@ -117,42 +115,37 @@
       width: 100%;
     }
 
-    .brand-tag-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-    }
-
-    .app-icon-badge {
-      width: clamp(38px, 4.2vh, 52px);
-      height: clamp(38px, 4.2vh, 52px);
-      border-radius: 12px;
-      border: 2px solid var(--gold);
-      box-shadow: 0 0 20px var(--gold-glow);
-      object-fit: cover;
-    }
-
     .day-tag {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 0.4vh 1.8vw;
+      gap: 10px;
+      padding: 0.45vh 2vw;
       border-radius: 999px;
       font-size: clamp(1.4rem, 1.8vw, 2.3rem);
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: 0.16em;
-      border: 2px solid var(--gold);
-      background: rgba(212, 175, 55, 0.15);
+      border: 2px solid var(--baby-blue);
+      background: rgba(137, 207, 240, 0.16);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      color: var(--gold-light);
-      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
-      box-shadow: 0 0 30px var(--gold-glow);
+      color: var(--baby-blue-light);
+      text-shadow: 0 0 12px var(--baby-blue-glow);
+      box-shadow: 0 0 30px var(--baby-blue-glow);
       animation: pulse-glow-tag 3s infinite ease-in-out;
     }
 
+    .day-tag .free-pill {
+      background: linear-gradient(135deg, var(--gold), #f59e0b);
+      color: #000;
+      padding: 0.15vh 0.8vw;
+      border-radius: 999px;
+      font-size: 0.8em;
+      letter-spacing: 0.08em;
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+    }
+
+    /* Main Title with Baby Blue Neon Glow */
     .main-title {
       font-family: 'Playfair Display', Georgia, serif;
       font-size: clamp(3.6rem, 5.2vw, 6.8rem);
@@ -160,11 +153,11 @@
       line-height: 1.02;
       text-transform: uppercase;
       letter-spacing: -0.01em;
-      background: linear-gradient(135deg, #ffffff 25%, #fef08a 65%, #d4af37 100%);
+      background: linear-gradient(135deg, #ffffff 20%, #d8f3ff 60%, #89cff0 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      text-shadow: 0 4px 35px rgba(0, 0, 0, 0.9);
-      filter: drop-shadow(0 12px 25px rgba(0,0,0,0.9));
+      text-shadow: 0 0 35px rgba(137, 207, 240, 0.75), 0 0 70px rgba(137, 207, 240, 0.35), 0 4px 35px rgba(0, 0, 0, 0.9);
+      filter: drop-shadow(0 0 25px rgba(137, 207, 240, 0.6));
     }
 
     .tagline {
@@ -176,7 +169,12 @@
       text-wrap: balance;
     }
 
-    /* Main Content Layout: Left Real Phone Screenshots, Right Perks & Dual QR */
+    .tagline .highlight-free {
+      color: var(--baby-blue);
+      text-shadow: 0 0 15px var(--baby-blue-glow);
+    }
+
+    /* Main Content Layout */
     .content-container {
       position: relative;
       z-index: 2;
@@ -190,7 +188,7 @@
       padding: 0.4vh 0;
     }
 
-    /* Left Real App Store Screenshot Column */
+    /* Left Real Mock Phone Images */
     .phone-mockup-wrapper {
       position: relative;
       display: flex;
@@ -207,9 +205,9 @@
       max-height: 47vh;
       border-radius: 22px;
       padding: 5px;
-      background: rgba(14, 14, 20, 0.85);
-      border: 2.2px solid rgba(212, 175, 55, 0.55);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95), 0 0 35px var(--gold-glow);
+      background: rgba(10, 14, 22, 0.85);
+      border: 2.2px solid rgba(137, 207, 240, 0.6);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95), 0 0 35px var(--baby-blue-glow);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -223,14 +221,14 @@
       max-height: 42vh;
       border-radius: 18px;
       padding: 5px;
-      background: rgba(14, 14, 20, 0.7);
-      border: 1.8px solid rgba(212, 175, 55, 0.35);
+      background: rgba(10, 14, 22, 0.7);
+      border: 1.8px solid rgba(137, 207, 240, 0.4);
       box-shadow: 0 18px 40px rgba(0, 0, 0, 0.85);
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      opacity: 0.85;
+      opacity: 0.9;
       transform: scale(0.95);
       animation: float-phone 6s ease-in-out 1s infinite alternate;
     }
@@ -276,12 +274,12 @@
       align-items: center;
       gap: 1.2vw;
       padding: 1.4vh 1.6vw;
-      background: rgba(26, 25, 36, 0.88);
+      background: rgba(16, 22, 34, 0.9);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1.8px solid var(--card-border);
       border-radius: 18px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(212, 175, 55, 0.15);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(137, 207, 240, 0.2);
     }
 
     .chip-icon {
@@ -291,11 +289,11 @@
       width: 4.8vh;
       height: 4.8vh;
       border-radius: 12px;
-      background: linear-gradient(135deg, var(--gold), var(--amber));
-      color: #000;
+      background: linear-gradient(135deg, var(--baby-blue), #38bdf8);
+      color: #040a12;
       font-weight: 900;
       font-size: 2.6vh;
-      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.6);
+      box-shadow: 0 4px 15px rgba(137, 207, 240, 0.6);
       flex-shrink: 0;
     }
 
@@ -328,7 +326,7 @@
       flex-direction: column;
       align-items: center;
       gap: 1.4vh;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 25px rgba(212, 175, 55, 0.15);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 25px rgba(137, 207, 240, 0.2);
       overflow: hidden;
     }
 
@@ -339,7 +337,7 @@
       left: 0;
       right: 0;
       height: 4px;
-      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      background: linear-gradient(90deg, transparent, var(--baby-blue), transparent);
     }
 
     .card-badge-header {
@@ -347,7 +345,8 @@
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: 0.15em;
-      color: #cbd5e1;
+      color: var(--baby-blue-light);
+      text-shadow: 0 0 10px var(--baby-blue-glow);
     }
 
     .qr-frame {
@@ -378,7 +377,7 @@
       padding: 0.9vh 1.6vw;
       border-radius: 12px;
       background: #000000;
-      border: 1.5px solid rgba(255, 255, 255, 0.35);
+      border: 1.5px solid rgba(137, 207, 240, 0.4);
       color: #ffffff;
       text-decoration: none;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
@@ -415,7 +414,7 @@
     .scan-label {
       font-size: clamp(1.1rem, 1.4vw, 1.7rem);
       font-weight: 700;
-      color: #94a3b8;
+      color: var(--baby-blue);
       letter-spacing: 0.05em;
       display: flex;
       align-items: center;
@@ -425,7 +424,7 @@
     .scan-label svg {
       width: 1.6vh;
       height: 1.6vh;
-      stroke: var(--gold);
+      stroke: var(--baby-blue);
     }
 
     /* Footer Banner */
@@ -438,21 +437,21 @@
       width: 100%;
       max-width: 90vw;
       padding: 1.1vh 2.5vw;
-      background: rgba(0, 0, 0, 0.75);
+      background: rgba(4, 8, 14, 0.85);
       backdrop-filter: blur(12px);
       border-radius: 16px;
-      border: 1.5px solid rgba(212, 175, 55, 0.35);
+      border: 1.5px solid rgba(137, 207, 240, 0.4);
       font-size: clamp(1.3rem, 1.7vw, 2.1rem);
       color: #cbd5e1;
       font-weight: 700;
-      margin-bottom: 0.2vh;
+      margin-bottom: 0.4vh;
     }
 
     .footer-left {
       display: flex;
       align-items: center;
       gap: 12px;
-      color: var(--gold-light);
+      color: var(--baby-blue-light);
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -469,9 +468,27 @@
       width: 10px;
       height: 10px;
       border-radius: 50%;
-      background: #22c55e;
-      box-shadow: 0 0 12px #22c55e;
+      background: #38bdf8;
+      box-shadow: 0 0 12px #38bdf8;
       animation: blink 1.5s infinite;
+    }
+
+    /* Progress Bar matching CT-Matrix standard */
+    .timer-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      height: 14px;
+      background: linear-gradient(90deg, #89CFF0, #ffffff);
+      box-shadow: 0 0 25px rgba(137, 207, 240, 0.8);
+      z-index: 1000;
+      width: 0%;
+      animation: slideTimerProgress 60s linear infinite;
+    }
+
+    @keyframes slideTimerProgress {
+      0% { width: 0%; }
+      100% { width: 100%; }
     }
 
     /* Animations */
@@ -481,8 +498,8 @@
     }
 
     @keyframes pulse-glow-tag {
-      0%, 100% { box-shadow: 0 0 25px var(--gold-glow), 0 0 8px var(--gold-glow); }
-      50% { box-shadow: 0 0 40px var(--gold-glow), 0 0 15px var(--gold-glow); }
+      0%, 100% { box-shadow: 0 0 25px var(--baby-blue-glow), 0 0 8px var(--baby-blue-glow); }
+      50% { box-shadow: 0 0 45px var(--baby-blue-glow), 0 0 15px var(--baby-blue-glow); }
     }
 
     @keyframes float-phone {
@@ -507,33 +524,30 @@
 
     <!-- Header Section -->
     <div class="header-section">
-      <div class="brand-tag-row">
-        <img class="app-icon-badge" src="images/app-icon.jpg" alt="Coasters Tavern App Icon">
-        <div class="day-tag">
-          ★ COASTERS REWARDS CLUB ★
-        </div>
+      <div class="day-tag">
+        ★ COASTERS LOYALTY APP <span class="free-pill">IT'S FREE TO JOIN</span> ★
       </div>
       <h1 class="main-title">DOWNLOAD OUR LOYALTY APP</h1>
-      <p class="tagline">Earn points on every purchase & unlock instant food & drink rewards!</p>
+      <p class="tagline">Earn points on every purchase & unlock instant food & drink rewards • <span class="highlight-free">It's 100% Free to Join!</span></p>
     </div>
 
     <!-- Main Content Layout: Real Phone Mockup Left, Perks + Dual QR Right -->
     <div class="content-container">
       
-      <!-- Left Column: Official Store Screenshots with Phone Display -->
+      <!-- Left Column: Realistic Phone Mockup Display -->
       <div class="phone-mockup-wrapper">
         <div class="phone-mockup-card">
           <img 
             class="phone-img" 
-            src="images/app-screenshot-3.jpg" 
-            alt="Coasters Tavern Official App Whats On Screen"
+            src="images/coasters-loyalty-mockup.jpg" 
+            alt="Coasters Tavern Loyalty App Membership Card"
           >
         </div>
         <div class="phone-mockup-secondary">
           <img 
             class="phone-img-sec" 
-            src="images/app-screenshot-2.jpg" 
-            alt="Coasters Tavern Official App QR Scanner Screen"
+            src="images/coasters-loyalty-menu.jpg" 
+            alt="Coasters Tavern Specials and Food Menu"
           >
         </div>
       </div>
@@ -541,7 +555,7 @@
       <!-- Right Column: Perks and App Store QR Codes -->
       <div class="right-content">
         
-        <!-- Rewards Benefits Chips (Cleaned: $5 and Birthday removed) -->
+        <!-- Rewards Benefits Chips -->
         <div class="benefits-bar">
           <div class="benefit-chip">
             <div class="chip-icon">⭐</div>
@@ -561,7 +575,7 @@
 
             <div class="qr-frame">
               <img 
-                class="qr-img"
+                class="qr-img" 
                 src="https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=10&data=https%3A%2F%2Fapps.apple.com%2Fus%2Fapp%2Fcoasters-tavern%2Fid1592410581" 
                 alt="Apple App Store QR Code"
               >
@@ -589,7 +603,7 @@
 
             <div class="qr-frame">
               <img 
-                class="qr-img"
+                class="qr-img" 
                 src="https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=10&data=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.posbiz.coasters%26hl%3Den" 
                 alt="Google Play QR Code"
               >
@@ -630,6 +644,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Standard 14px Progress Bar at Bottom of Page -->
+  <div class="timer-bar" id="progress-bar"></div>
 
 </body>
 </html>
