@@ -145,19 +145,27 @@
       box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
     }
 
-    /* Main Title with Darker Baby Blue Gradient */
+    /* Main Title - White with Dark Blue Accent Glow matching CT-Matrix Core */
     .main-title {
-      font-family: 'Playfair Display', Georgia, serif;
+      font-family: 'Playfair Display', serif;
       font-size: clamp(3.6rem, 5.2vw, 6.8rem);
       font-weight: 900;
-      line-height: 1.02;
+      line-height: 1.05;
       text-transform: uppercase;
-      letter-spacing: -0.01em;
-      background: linear-gradient(180deg, #cbeaff 0%, #60a5fa 45%, #1d4ed8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 4px 25px rgba(0, 0, 0, 0.95);
-      filter: drop-shadow(0 0 16px rgba(37, 99, 235, 0.5));
+      letter-spacing: -0.03em;
+      color: #ffffff;
+      text-shadow: 0 0 40px rgba(29, 78, 216, 0.85), 0 0 80px rgba(30, 58, 138, 0.6), 0 4px 20px rgba(0, 0, 0, 0.95);
+      filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 1));
+      text-align: center;
+    }
+
+    .accent-bar {
+      width: 45%;
+      height: 5px;
+      border-radius: 3px;
+      margin: 0.2vh auto 0.4vh auto;
+      background: linear-gradient(90deg, transparent, #1d4ed8, #3b82f6, #1d4ed8, transparent);
+      box-shadow: 0 0 25px rgba(29, 78, 216, 0.85);
     }
 
     .tagline {
@@ -520,6 +528,7 @@
         ★ COASTERS LOYALTY APP <span class="free-pill">IT'S FREE TO JOIN</span> ★
       </div>
       <h1 class="main-title">DOWNLOAD OUR LOYALTY APP</h1>
+      <div class="accent-bar"></div>
       <p class="tagline">Earn points on every purchase & unlock instant food & drink rewards</p>
     </div>
 
