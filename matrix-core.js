@@ -609,18 +609,25 @@ function buildSlideQueue(data) {
           const isCurrent = isEventCurrent(targetDate, ev.event_type, ev.title);
 
           if (isCurrent) {
-            // 1. RUTHLESS TBC/TBA filtering - scan ALL text fields
+            // 1. RUTHLESS TBC/TBA filtering - scan ALL text fields (no exceptions)
             const ruthlessString = [
               ev.title, ev.notes, ev.event_type, ev.location, ev.price, ev.time, ev.hiddenNotes, ev.footer
-            ].join(' ').toLowerCase();
+            ].map(x => String(x || '')).join(' ').toLowerCase();
+
+            if (ruthlessString.includes('tbc') || ruthlessString.includes('tba') || 
+                ruthlessString.includes('to be confirmed') || ruthlessString.includes('to be announced')) {
+              return;
+            }
 
             const isAllBlacks = (ev.event_type || '').toLowerCase().includes('all blacks') || 
                                 (ev.title || '').toLowerCase().includes('all blacks');
 
-            if (!isAllBlacks && (ruthlessString.includes('tbc') || ruthlessString.includes('tba') || 
-                ruthlessString.includes('to be confirmed') || ruthlessString.includes('to be announced') ||
-                ruthlessString === 'tbc' || ruthlessString === 'tba')) {
-              return;
+            // 2. All Blacks games between 11pm and 10am: do not display slide
+            if (isAllBlacks && ev.time) {
+              const gameTime = parseTimeStringToHours(ev.time);
+              if (gameTime !== null && (gameTime < 10.0 || gameTime >= 23.0)) {
+                return;
+              }
             }
 
             // 2. 8 PM CURFEW for Today's Specials/Menus
@@ -992,22 +999,24 @@ function isSlideActive(slide) {
     }
   }
 
-  // Filter out events/games occurring outside of venue opening hours (10:00 AM - 11:00 PM)
+  // Universal TBC / TBA filtering across ALL slides (no exceptions)
+  const slideText = [
+    slide.title, slide.subtitle, slide.description, slide.notes, 
+    slide.location, slide.time, slide.footer, slide.subType, slide.category
+  ].map(x => String(x || '')).join(' ').toLowerCase();
+
+  if (slideText.includes('tbc') || slideText.includes('tba') || 
+      slideText.includes('to be confirmed') || slideText.includes('to be announced')) {
+    return false;
+  }
+
+  // Filter out events/games occurring outside of venue opening hours (between 11:00 PM and 10:00 AM)
   if (slide.time) {
     const gameTime = parseTimeStringToHours(slide.time);
     if (gameTime !== null) {
-      if (gameTime < 10.0 || gameTime > 23.0) {
-        return false; // Skip events outside opening hours
+      if (gameTime < 10.0 || gameTime >= 23.0) {
+        return false; // Skip events between 11pm and 10am
       }
-    }
-  }
-
-  // Filter out TBC bands and enforce time rule
-  if (slide.isBand || slide.type === 'BAND') {
-    const t = String(slide.title || '').toLowerCase();
-    const s = String(slide.subtitle || '').toLowerCase();
-    if (t.includes('tbc') || s.includes('tbc') || t.includes('to be confirmed') || s.includes('to be confirmed')) {
-      return false; // Skip unconfirmed bands
     }
   }
 

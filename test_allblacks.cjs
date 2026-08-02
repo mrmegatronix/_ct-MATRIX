@@ -93,31 +93,42 @@ async function runTest() {
         console.log(`  - [ACTIVE] Title: "${s.title}" | Date: ${s.date} | Time: ${s.time} | SubType: "${s.subType}"`);
     });
 
-    // Check if the match on July 11th is present
+    // Check if the match on July 11th is present (5:10 pm - valid)
     const hasJuly11Match = activeAllBlacks.some(s => s.date === '11/07/2026');
     if (hasJuly11Match) {
-        console.log("✅ Verified: All Blacks vs Italy on 11/07/2026 is successfully present in the active queue.");
+        console.log("✅ Verified: All Blacks vs Italy on 11/07/2026 (5:10 pm) is successfully present in the active queue.");
     } else {
         throw new Error("❌ Fail: All Blacks vs Italy on 11/07/2026 is missing from active queue!");
     }
 
-    // Check if the match with July 18th is present
+    // Check if the match on July 18th is present (7:10 pm - valid)
     const hasJuly18Match = activeAllBlacks.some(s => s.date === '18/07/2026');
     if (hasJuly18Match) {
-        console.log("✅ Verified: All Blacks vs Ireland on 18/07/2026 is successfully present in the active queue.");
+        console.log("✅ Verified: All Blacks vs Ireland on 18/07/2026 (7:10 pm) is successfully present in the active queue.");
     } else {
         throw new Error("❌ Fail: All Blacks vs Ireland on 18/07/2026 is missing from active queue!");
     }
 
-    // Check if the mock match with August 20th is present (42 days away, so should be active under 45-day bypass but would be filtered under 14-day limit)
-    const hasAugust20Match = activeAllBlacks.some(s => s.date === '20/08/2026');
-    if (hasAugust20Match) {
-        console.log("✅ Verified: All Blacks vs Test Team on 20/08/2026 (42 days away) is successfully present in the active queue.");
+    // Check if 3:00 am games are excluded (between 11pm and 10am)
+    const has3amMatch = activeAllBlacks.some(s => (s.time || '').toLowerCase().includes('3:00 am'));
+    if (!has3amMatch) {
+        console.log("✅ Verified: All Blacks 3:00 am matches (between 11pm and 10am) are correctly EXCLUDED.");
     } else {
-        throw new Error("❌ Fail: All Blacks vs Test Team on 20/08/2026 is missing from active queue!");
+        throw new Error("❌ Fail: All Blacks 3:00 am match was incorrectly included in active queue!");
     }
 
-    console.log("\n🚀 All All Blacks scheduling validation tests passed successfully!");
+    // Check if TBC matches are excluded
+    const hasTbcMatch = queue.some(s => {
+        const str = [s.title, s.subtitle, s.description, s.notes, s.location, s.time, s.footer, s.subType].join(' ').toLowerCase();
+        return str.includes('tbc') || str.includes('tba');
+    });
+    if (!hasTbcMatch) {
+        console.log("✅ Verified: Slides with 'TBC' or 'TBA' are completely EXCLUDED from active queue.");
+    } else {
+        throw new Error("❌ Fail: Slide with 'TBC' was found in active queue!");
+    }
+
+    console.log("\n🚀 All All Blacks scheduling and TBC filtering validation tests passed successfully!");
     process.exit(0);
 }
 
