@@ -14,7 +14,7 @@
       --baby-blue-glow: rgba(137, 207, 240, 0.6);
       --gold: #d4af37;
       --gold-light: #fef08a;
-      --card-bg: rgba(12, 18, 28, 0.94);
+      --card-bg: rgba(10, 12, 16, 0.94);
       --card-border: rgba(137, 207, 240, 0.5);
     }
 
@@ -28,7 +28,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #04070c;
+      background-color: #000000;
       font-family: 'Outfit', sans-serif;
       color: #ffffff;
       display: flex;
@@ -47,7 +47,7 @@
       justify-content: space-between;
       box-sizing: border-box;
       padding: 2.2vh 3.5vw 2.6vh 3.5vw;
-      background: radial-gradient(circle at 50% 8%, #0d2136 0%, #07111c 45%, #03060a 100%);
+      background: #000000;
       overflow: hidden;
     }
 
@@ -59,11 +59,11 @@
       transform: translateX(-50%);
       width: 85vw;
       height: 65vh;
-      background: radial-gradient(ellipse, rgba(137, 207, 240, 0.35) 0%, rgba(56, 189, 248, 0.15) 50%, transparent 70%);
+      background: radial-gradient(ellipse, rgba(137, 207, 240, 0.3) 0%, rgba(56, 189, 248, 0.12) 50%, transparent 70%);
       filter: blur(80px);
       pointer-events: none;
       z-index: 1;
-      animation: pulse-ambient 6s ease-in-out infinite alternate;
+      animation: ambient-enter 1.2s ease-out both, pulse-ambient 6s ease-in-out infinite alternate 1.2s;
     }
 
     .ambient-glow-center {
@@ -73,10 +73,11 @@
       transform: translate(-50%, -50%);
       width: 50vw;
       height: 60vh;
-      background: radial-gradient(circle, rgba(137, 207, 240, 0.25) 0%, rgba(29, 78, 216, 0.15) 50%, transparent 70%);
+      background: radial-gradient(circle, rgba(137, 207, 240, 0.2) 0%, rgba(29, 78, 216, 0.12) 50%, transparent 70%);
       filter: blur(80px);
       pointer-events: none;
       z-index: 1;
+      animation: ambient-enter 1.2s ease-out both, pulse-ambient 6s ease-in-out infinite alternate 1.2s;
     }
 
     /* Subtle Grid Overlay */
@@ -84,8 +85,8 @@
       position: absolute;
       inset: 0;
       background-image: 
-        linear-gradient(rgba(137, 207, 240, 0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(137, 207, 240, 0.04) 1px, transparent 1px);
+        linear-gradient(rgba(137, 207, 240, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(137, 207, 240, 0.035) 1px, transparent 1px);
       background-size: 40px 40px;
       pointer-events: none;
       z-index: 1;
@@ -121,7 +122,7 @@
       color: var(--baby-blue-light);
       text-shadow: 0 0 12px var(--baby-blue-glow);
       box-shadow: 0 0 30px var(--baby-blue-glow);
-      animation: pulse-glow-tag 3s infinite ease-in-out;
+      animation: tag-enter 0.75s cubic-bezier(0.16, 1, 0.3, 1) both, pulse-glow-tag 3s infinite ease-in-out 0.75s;
       white-space: nowrap;
     }
 
@@ -150,6 +151,7 @@
       filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 1));
       text-align: center;
       white-space: nowrap;
+      animation: title-enter 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
     }
 
     .accent-bar {
@@ -159,15 +161,19 @@
       margin: 0.3vh auto 0.4vh auto;
       background: linear-gradient(90deg, transparent, #1d4ed8, #38bdf8, #1d4ed8, transparent);
       box-shadow: 0 0 25px rgba(29, 78, 216, 0.85);
+      animation: bar-enter 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.22s both;
     }
 
     .tagline {
-      font-size: clamp(1.5rem, 1.95vw, 2.5rem);
+      font-size: clamp(1.15rem, 1.42vw, 1.95rem);
       font-weight: 700;
       color: rgba(243, 244, 246, 0.95);
-      letter-spacing: 0.02em;
+      letter-spacing: 0.015em;
       text-shadow: 0 3px 12px rgba(0,0,0,0.9);
       white-space: nowrap;
+      text-align: center;
+      max-width: 96vw;
+      animation: tagline-enter 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
     }
 
     /* Main Content Layout: 3 Columns (Left QR, Center Mock Phone, Right QR) */
@@ -198,11 +204,19 @@
       align-items: center;
       justify-content: space-between;
       gap: 1.5vh;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 30px rgba(137, 207, 240, 0.25);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(137, 207, 240, 0.2);
       overflow: hidden;
       width: clamp(330px, 25vw, 410px);
       height: 60vh;
       flex-shrink: 0;
+    }
+
+    .store-card.apple-card {
+      animation: card-enter-left 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.38s both;
+    }
+
+    .store-card.google-card {
+      animation: card-enter-right 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.48s both;
     }
 
     .store-card::before {
@@ -234,7 +248,7 @@
       background: #ffffff;
       border-radius: 20px;
       padding: 12px;
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -259,7 +273,7 @@
       border: 2px solid rgba(137, 207, 240, 0.5);
       color: #ffffff;
       text-decoration: none;
-      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.75);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.85);
       width: 100%;
       white-space: nowrap;
     }
@@ -325,6 +339,7 @@
       height: 100%;
       max-height: 62vh;
       flex-shrink: 0;
+      animation: phone-enter 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
     }
 
     .phone-device {
@@ -337,8 +352,8 @@
       padding: 10px;
       box-shadow: 
         0 25px 65px rgba(0, 0, 0, 0.95),
-        0 0 50px rgba(29, 78, 216, 0.45),
-        0 0 30px rgba(137, 207, 240, 0.35),
+        0 0 50px rgba(29, 78, 216, 0.4),
+        0 0 30px rgba(137, 207, 240, 0.3),
         inset 0 0 0 2px rgba(255, 255, 255, 0.18);
       border: 3.5px solid rgba(137, 207, 240, 0.55);
       display: flex;
@@ -463,7 +478,7 @@
       width: 100%;
       max-width: 90vw;
       padding: 1.2vh 2.5vw;
-      background: rgba(4, 8, 14, 0.88);
+      background: rgba(10, 12, 16, 0.92);
       backdrop-filter: blur(14px);
       border-radius: 18px;
       border: 1.8px solid rgba(137, 207, 240, 0.45);
@@ -471,6 +486,7 @@
       color: #cbd5e1;
       font-weight: 700;
       margin-bottom: 0.6vh;
+      animation: footer-enter 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.55s both;
     }
 
     .footer-center {
@@ -514,7 +530,52 @@
       100% { width: 100%; }
     }
 
-    /* Animations */
+    /* Page Entrance Animations */
+    @keyframes tag-enter {
+      0% { opacity: 0; transform: translateY(-35px) scale(0.92); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes title-enter {
+      0% { opacity: 0; transform: translateY(-25px) scale(0.96); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes bar-enter {
+      0% { opacity: 0; transform: scaleX(0); }
+      100% { opacity: 1; transform: scaleX(1); }
+    }
+
+    @keyframes tagline-enter {
+      0% { opacity: 0; transform: translateY(15px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes card-enter-left {
+      0% { opacity: 0; transform: translateX(-50px) translateY(20px) scale(0.94); }
+      100% { opacity: 1; transform: translateX(0) translateY(0) scale(1); }
+    }
+
+    @keyframes card-enter-right {
+      0% { opacity: 0; transform: translateX(50px) translateY(20px) scale(0.94); }
+      100% { opacity: 1; transform: translateX(0) translateY(0) scale(1); }
+    }
+
+    @keyframes phone-enter {
+      0% { opacity: 0; transform: translateY(60px) scale(0.9); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes footer-enter {
+      0% { opacity: 0; transform: translateY(40px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes ambient-enter {
+      0% { opacity: 0; }
+      100% { opacity: 0.85; }
+    }
+
     @keyframes pulse-ambient {
       0% { opacity: 0.7; transform: translateX(-50%) scale(1); }
       100% { opacity: 1; transform: translateX(-50%) scale(1.1); }
@@ -551,7 +612,7 @@
       </div>
       <h1 class="main-title">DOWNLOAD OUR LOYALTY APP</h1>
       <div class="accent-bar"></div>
-      <p class="tagline">Earn points on every purchase & unlock instant food & drink rewards</p>
+      <p class="tagline">Stay in the loop with our latest updates + Scan your app on every purchase to earn points & unlock instant food & drink rewards</p>
     </div>
 
     <!-- Main Content Layout: Left QR, Center Phone Slideshow, Right QR -->
