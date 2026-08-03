@@ -7,7 +7,7 @@
 window.MATRIX = {
   VERSION: '2.0.0',
   CONFIG: {
-    SWAP_DELAY: 20000,
+    SWAP_DELAY: 30000,
     MODULE_DELAY: 60000,
     SYNC_CHANNEL: 'ct_matrix_sync',
     WEEKS_LOOKAHEAD: 2,
@@ -187,8 +187,8 @@ async function initMatrix() {
   }
 
 
-  // 6. Hard-lock all active slide durations to 20s (override any internal module timers if needed)
-  window.MATRIX.CONFIG.SWAP_DELAY = 20000;
+  // 6. Hard-lock all active slide durations to 30s (override any internal module timers if needed)
+  window.MATRIX.CONFIG.SWAP_DELAY = 30000;
   window.MATRIX.CONFIG.MODULE_DELAY = 60000;
 
   // 7. Stuck-Slide Safety Watchdog — force advance if a slide has been active too long
@@ -668,7 +668,7 @@ function buildSlideQueue(data) {
               bgImage: ev.bgImage || getDefaultBackground(ev.event_type, ev.title),
               fgImage: ev.fgImage,
               bubbleText: ev.bubbleText,
-              duration: ev.duration || 20, // Default to 20s for all slides
+              duration: ev.duration || 30, // Default to 30s for all slides
               footerQR: ev.footerQR,
               footerLink: ev.footerLink,
               transition: ev.transition || (ev.slideType === 'MENU' ? 'PanDown' : ''),
