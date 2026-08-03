@@ -210,6 +210,19 @@
       </div>
       <div class="mod-dur-wrapper" id="dur-wrap-ct-tik"><input type="number" class="mod-dur" id="dur-ct-tik" placeholder="s"></div>
     </div>
+    <!-- LOYALTY -->
+    <div class="mod-row" id="row-ct-loyalty">
+      <div class="mod-name">💳 LOYALTY</div>
+      <div class="mod-toggle">
+        <button class="mod-btn btn-on" onclick="toggleModule('LOYALTY', true)">ON</button>
+        <button class="mod-btn btn-off" onclick="toggleModule('LOYALTY', false)">OFF</button>
+      </div>
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <input type="checkbox" id="all-ct-loyalty" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-loyalty', this.checked)">
+        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      </div>
+      <div class="mod-dur-wrapper" id="dur-wrap-ct-loyalty"><input type="number" class="mod-dur" id="dur-ct-loyalty" placeholder="s"></div>
+    </div>
   </div>
 
   <button class="save-btn" onclick="saveModuleDurations()">💾 SAVE DURATIONS</button>
@@ -236,7 +249,7 @@
     const bc_sub = new BroadcastChannel('mom_sync');
 
     // Default durations fallback
-    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-quiz': 60, 'ct-fir': 180, 'ct-soc': 120, 'ct-tik': 120 };
+    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-quiz': 60, 'ct-fir': 180, 'ct-soc': 120, 'ct-tik': 120, 'ct-loyalty': 60 };
 
     function getClientId() {
       let id = localStorage.getItem('matrix_client_id');
@@ -262,7 +275,7 @@
         }
       } catch(e) {}
       
-      const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik'];
+      const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty'];
       moduleIds.forEach(id => {
         const row = document.getElementById('row-' + id);
         if (!row) return;
@@ -394,7 +407,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik'];
+        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {

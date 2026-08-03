@@ -650,7 +650,8 @@
             { id: 'ct-wea1', name: 'WEA1', defaultDuration: 60 },
             { id: 'ct-fir', name: 'FIR', defaultDuration: 180 },
             { id: 'ct-soc', name: 'SOC', defaultDuration: 120 },
-            { id: 'ct-tik', name: 'TIK', defaultDuration: 120 }
+            { id: 'ct-tik', name: 'TIK', defaultDuration: 120 },
+            { id: 'ct-loyalty', name: 'LOYALTY', defaultDuration: 60 }
         ];
 
         const durationRows = modules.map(m => {
@@ -720,7 +721,8 @@
             { id: 'WEA1', name: 'WEATHER', path: '_ct-wea1' },
             { id: 'FIR', name: 'FIREPLACE', path: '_ct-FIR' },
             { id: 'SOC', name: 'SOCIAL CLUB', path: '_ct-SOC' },
-            { id: 'TIK', name: 'TIKTOK FEED', path: '_ct-TIK' }
+            { id: 'TIK', name: 'TIKTOK FEED', path: '_ct-TIK' },
+            { id: 'LOYALTY', name: 'LOYALTY APP', path: '_ct-MATRIX', customUrl: 'loyalty-slide.html' }
         ];
 
         tray.innerHTML = modules.map(m => {
@@ -763,7 +765,8 @@
             { id: 'ct-wea1', name: 'WEA1', title: 'Weather', defaultDur: 60, hasAdmin: false },
             { id: 'ct-fir', name: 'FIR', title: 'Fireplace', defaultDur: 180, hasAdmin: false },
             { id: 'ct-soc', name: 'SOC', title: 'Social Club', defaultDur: 120, hasAdmin: true },
-            { id: 'ct-tik', name: 'TIK', title: 'TikTok Feed', defaultDur: 120, hasAdmin: false }
+            { id: 'ct-tik', name: 'TIK', title: 'TikTok Feed', defaultDur: 120, hasAdmin: false },
+            { id: 'ct-loyalty', name: 'LOYALTY', title: 'Loyalty App', defaultDur: 60, hasAdmin: false, customUrl: 'loyalty-slide.html' }
         ];
 
         side.innerHTML = modules.map(m => {
@@ -773,7 +776,8 @@
             
             // Generate the tree children dynamically based on hasAdmin
             const folderName = m.id === 'ct-wea1' ? '_ct-wea1' : '_ct-' + m.name;
-            let childrenHTML = `<a href="javascript:void(0)" class="tree-item" onclick="loadModule('${m.name}', '../${folderName}/index.html')">${m.id === 'ct-wea1' ? 'Live Conditions' : (m.id === 'ct-fir' ? 'Looping Fire' : 'Module View')}</a>`;
+            const slideUrl = m.customUrl || `../${folderName}/index.html`;
+            let childrenHTML = `<a href="javascript:void(0)" class="tree-item" onclick="loadModule('${m.name}', '${slideUrl}')">${m.id === 'ct-wea1' ? 'Live Conditions' : (m.id === 'ct-fir' ? 'Looping Fire' : (m.id === 'ct-loyalty' ? 'Loyalty App Slide' : 'Module View'))}</a>`;
             if (m.hasAdmin) {
                 childrenHTML += `<a href="javascript:void(0)" class="tree-item" onclick="loadModule('${m.name}', '../${folderName}/admin.html')">Admin Panel</a>`;
             }
@@ -817,7 +821,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir', 'ct-mid', 'ct-soc', 'ct-tik'];
+        const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir', 'ct-mid', 'ct-soc', 'ct-tik', 'ct-loyalty'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {
@@ -870,7 +874,7 @@
     }
 
     function saveHomeModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir', 'ct-mid', 'ct-soc', 'ct-tik'];
+        const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir', 'ct-mid', 'ct-soc', 'ct-tik', 'ct-loyalty'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {
