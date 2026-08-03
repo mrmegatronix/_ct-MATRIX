@@ -562,13 +562,13 @@
 </div>
 
 <script>
-    if (localStorage.getItem('matrix_migration_20260717_8am') !== 'done') {
+    if (localStorage.getItem('matrix_migration_20260804_enable_all_modules') !== 'done') {
         try {
             const stored = localStorage.getItem('matrix_config');
             let config = stored ? JSON.parse(stored) : {};
-            config.disabledModules = ['ct-quiz', 'ct-tik', 'ct-soc'];
+            config.disabledModules = [];
             localStorage.setItem('matrix_config', JSON.stringify(config));
-            localStorage.setItem('matrix_migration_20260717_8am', 'done');
+            localStorage.setItem('matrix_migration_20260804_enable_all_modules', 'done');
         } catch(e) {}
     }
 
@@ -743,14 +743,14 @@
         const side = document.getElementById('live-modules-tree-container');
         if(!side) return;
 
-        let config = { disabledModules: ['ct-quiz', 'ct-tik', 'ct-soc'], moduleDurations: {} };
+        let config = { disabledModules: [], moduleDurations: {} };
         try {
             const stored = localStorage.getItem('matrix_config');
             if (stored) {
                 const parsed = JSON.parse(stored);
                 config = { ...config, ...parsed };
                 if (!parsed.hasOwnProperty('disabledModules')) {
-                    config.disabledModules = ['ct-quiz', 'ct-tik', 'ct-soc'];
+                    config.disabledModules = [];
                 }
             }
         } catch(e) {}

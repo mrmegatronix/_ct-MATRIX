@@ -235,13 +235,13 @@
   </nav>
 
   <script>
-    if (localStorage.getItem('matrix_migration_20260717_8am') !== 'done') {
+    if (localStorage.getItem('matrix_migration_20260804_enable_all_modules') !== 'done') {
         try {
             const stored = localStorage.getItem('matrix_config');
             let config = stored ? JSON.parse(stored) : {};
-            config.disabledModules = ['ct-quiz', 'ct-tik', 'ct-soc'];
+            config.disabledModules = [];
             localStorage.setItem('matrix_config', JSON.stringify(config));
-            localStorage.setItem('matrix_migration_20260717_8am', 'done');
+            localStorage.setItem('matrix_migration_20260804_enable_all_modules', 'done');
         } catch(e) {}
     }
 
@@ -263,14 +263,14 @@
     }
 
     function initUI() {
-      let config = { disabledModules: ['ct-quiz', 'ct-tik', 'ct-soc'], moduleDurations: {} };
+      let config = { disabledModules: [], moduleDurations: {} };
       try {
         const stored = localStorage.getItem('matrix_config');
         if (stored) {
             const parsed = JSON.parse(stored);
             config = { ...config, ...parsed };
             if (!parsed.hasOwnProperty('disabledModules')) {
-                config.disabledModules = ['ct-quiz', 'ct-tik', 'ct-soc'];
+                config.disabledModules = [];
             }
         }
       } catch(e) {}
@@ -396,7 +396,7 @@
         const stored = localStorage.getItem('matrix_config');
         if (stored) config = { ...config, ...JSON.parse(stored) };
       } catch(e) {}
-      const fullId = 'ct-' + rawId.toLowerCase();
+      const fullId = rawId.toLowerCase().startsWith('ct-') ? rawId.toLowerCase() : 'ct-' + rawId.toLowerCase();
       if (state) {
           config.disabledModules = config.disabledModules.filter(m => m !== fullId);
       } else {

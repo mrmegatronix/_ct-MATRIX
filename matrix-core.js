@@ -14,7 +14,7 @@ window.MATRIX = {
     SHOW_BANNER: true,
     ADMIN_PIN: '1234',
     GSHEETS_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjplY4qgdlDPmFO4sKUoWHnBPoeqf-rY3Tc0Y50wgDbDutbTn4j_hXhW3aXhYVjvfbIlwcIOF07250/pub?gid=1948723750&single=true&output=csv',
-    disabledModules: ['ct-quiz', 'ct-soc']
+    disabledModules: []
   },
   STATE: {
     slides: [],
@@ -170,12 +170,12 @@ async function initMatrix() {
           // Clear the current slide timer to prevent stuck loops
           clearTimeout(window.MATRIX.STATE.timer);
           window.MATRIX.STATE.timer = null;
-          // Reset to default disabled modules (ct-tik enabled)
-          window.MATRIX.CONFIG.disabledModules = ['ct-quiz', 'ct-soc'];
+          // Reset to default disabled modules (all enabled)
+          window.MATRIX.CONFIG.disabledModules = [];
           localStorage.setItem('matrix_config', JSON.stringify(window.MATRIX.CONFIG));
           if (bc) {
             bc.postMessage({ type: 'LIVE_SLIDE', payload: { active: false } });
-            bc.postMessage({ type: 'SETTINGS_UPDATE', payload: { disabledModules: ['ct-quiz', 'ct-soc'] } });
+            bc.postMessage({ type: 'SETTINGS_UPDATE', payload: { disabledModules: [] } });
             bc.postMessage({ type: 'SYNC_DATA' });
           }
           // Reset slide index to start from beginning
@@ -270,12 +270,12 @@ async function initMatrix() {
  */
 function loadPersistedState() {
   try {
-    if (localStorage.getItem('matrix_migration_20260717_8am') !== 'done') {
+    if (localStorage.getItem('matrix_migration_20260804_enable_all_modules') !== 'done') {
       const stored = localStorage.getItem('matrix_config');
       let config = stored ? JSON.parse(stored) : {};
-      config.disabledModules = ['ct-quiz', 'ct-soc'];
+      config.disabledModules = [];
       localStorage.setItem('matrix_config', JSON.stringify(config));
-      localStorage.setItem('matrix_migration_20260717_8am', 'done');
+      localStorage.setItem('matrix_migration_20260804_enable_all_modules', 'done');
     }
   } catch(e) {
     console.warn('[MATRIX] Migration failed or storage access denied:', e);
@@ -285,7 +285,7 @@ function loadPersistedState() {
     const config = localStorage.getItem('matrix_config');
     if (config) window.MATRIX.CONFIG = { ...window.MATRIX.CONFIG, ...JSON.parse(config) };
     if (!window.MATRIX.CONFIG.disabledModules) {
-      window.MATRIX.CONFIG.disabledModules = ['ct-quiz', 'ct-soc'];
+      window.MATRIX.CONFIG.disabledModules = [];
     }
 
     const manual = localStorage.getItem('matrix_manual_slides');
@@ -307,8 +307,8 @@ function updateConfig(newConfig) {
 function handleModuleFilter(id, active) {
     if (!window.MATRIX.CONFIG.disabledModules) window.MATRIX.CONFIG.disabledModules = [];
     
-    // Normalize ID to match queue IDs (e.g., 'ACE' -> 'ct-ace')
-    const fullId = 'ct-' + id.toLowerCase();
+    // Normalize ID to match queue IDs (e.g., 'ACE' -> 'ct-ace' or 'ct-ace' -> 'ct-ace')
+    const fullId = id.toLowerCase().startsWith('ct-') ? id.toLowerCase() : 'ct-' + id.toLowerCase();
     
     if (active) {
         window.MATRIX.CONFIG.disabledModules = window.MATRIX.CONFIG.disabledModules.filter(m => m !== fullId);
@@ -706,14 +706,8 @@ function buildSlideQueue(data) {
   });
 
   // 5. Filter & Sort
-  // Group EVENT slides first, then MODULE slides. 
-  // Within groups, sort by Priority (Ascending) then Pinned (Descending).
+  // Sort by Priority (Ascending) then Pinned (Descending).
   filteredQueue.sort((a, b) => {
-    // Grouping: EVENT (0) comes before MODULE (1)
-    const groupA = (a.type === 'MODULE' ? 1 : 0);
-    const groupB = (b.type === 'MODULE' ? 1 : 0);
-    if (groupA !== groupB) return groupA - groupB;
-
     const priA = a.priority || 50;
     const priB = b.priority || 50;
     if (priA !== priB) return priA - priB;
@@ -1023,13 +1017,6 @@ function isSlideActive(slide) {
 
   
 
-  // Pub Quiz Module: Wed 6:00 PM - 7:00 PM
-  if (slide.id === 'ct-quiz') {
-    return day === 3 && time >= 18 && time < 19;
-  }
-  
-  
-
   // Generic custom scheduling if properties exist
   if (slide.startTime !== undefined && slide.endTime !== undefined) {
      if (time < slide.startTime || time >= slide.endTime) return false;
@@ -1321,7 +1308,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
       
       document.documentElement.style.setProperty('--theme-color', moduleColor);
       document.documentElement.style.setProperty('--theme-glow', `${moduleColor}60`);
-      slideEl.innerHTML = `<iframe src="${slide.url}" class="module-frame" id="module-${slide.id}" style="opacity: 0; transition: opacity 0.5s;" onload="this.style.opacity=1; try { this.contentDocument.head.insertAdjacentHTML('beforeend', '<style>body { background: #000 !important; } #progress-bar, #progress-container, .timer-bar { display: none !important; }</style>'); } catch(e) {}"></iframe>`;
+      slideEl.innerHTML = `<iframe src="${slide.url}" class="module-frame" id="module-${slide.id}" onload="try { if (this.contentDocument && this.contentDocument.head) { this.contentDocument.head.insertAdjacentHTML('beforeend', '<style>body { background: #000 !important; } #progress-bar, #progress-container, .timer-bar { display: none !important; }</style>'); } } catch(e) {}"></iframe>`;
     } else {
       const isPromo = slide.type === 'PROMO';
       const isLogo = slide.isLogo || (!slide.title && !slide.subtitle && slide.bgImage && slide.bgImage.includes('LOGO'));
