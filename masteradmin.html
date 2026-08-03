@@ -486,6 +486,7 @@
             <div class="nav-section-title">GLOBAL DASHBOARD</div>
             <div class="nav-link active" id="nav-home" onclick="loadWorkspaceView('HOME')">Dashboard Home</div>
             <div class="nav-link" id="nav-playlist" onclick="loadWorkspaceView('PLAYLIST')">Playlist Grid</div>
+            <div class="nav-link" id="nav-schedules" onclick="loadWorkspaceView('SCHEDULES')">Module Schedules</div>
             <div class="nav-link" onclick="loadModule('COMMANDER', 'live-commander.html?compact=true&v=' + Date.now())" style="color: var(--accent)">Live Slide Commander</div>
         </div>
 
@@ -614,11 +615,20 @@
         const left = document.getElementById('workspace-left');
         const right = document.getElementById('workspace-right');
         
+        document.querySelectorAll('.nav-side .nav-link').forEach(l => l.classList.remove('active'));
+        const navEl = document.getElementById('nav-' + v.toLowerCase());
+        if (navEl) navEl.classList.add('active');
+
         if(v === 'PLAYLIST') { 
             grid.style.display = 'flex'; 
             left.style.display = 'none'; 
             right.style.display = 'none';
             renderPlaylistGrid();
+        } else if(v === 'SCHEDULES') {
+            grid.style.display = 'none';
+            left.style.display = 'flex';
+            right.style.display = 'grid';
+            renderScheduleManager();
         } else if(v === 'HOME') {
             grid.style.display = 'none'; 
             left.style.display = 'flex'; 
@@ -630,6 +640,175 @@
             right.style.display = 'grid';
         }
     }
+
+    function renderScheduleManager() {
+        const wrap = document.getElementById('operator-wrap');
+        let config = { disabledModules: [], moduleSchedules: {} };
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            if (stored) config = { ...config, ...JSON.parse(stored) };
+        } catch(e) {}
+        const schedules = config.moduleSchedules || {};
+
+        const modules = [
+            { id: 'ct-quiz', name: 'QUIZ', title: 'Weekly Pub Quiz', defaultDays: [3], defaultStart: '18:00', defaultEnd: '19:10', defaultEnabled: true },
+            { id: 'ct-mmr', name: 'MMR', title: 'Meat Raffle', defaultDays: [5], defaultStart: '16:00', defaultEnd: '19:00', defaultEnabled: false },
+            { id: 'ct-ace', name: 'ACE', title: 'Chase Ace', defaultDays: [4], defaultStart: '17:00', defaultEnd: '20:00', defaultEnabled: false },
+            { id: 'ct-soc', name: 'SOC', title: 'Social Club', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '22:00', defaultEnabled: false },
+            { id: 'ct-loyalty', name: 'LOYALTY', title: 'Loyalty App', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
+            { id: 'ct-tik', name: 'TIK', title: 'TikTok Feed', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
+            { id: 'ct-wea1', name: 'WEA1', title: 'Live Weather', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
+            { id: 'ct-fir', name: 'FIR', title: 'Fireplace Loop', defaultDays: [1,2,3,4,5,6,0], defaultStart: '17:00', defaultEnd: '23:00', defaultEnabled: false }
+        ];
+
+        const daysMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+        function decToTime(dec) {
+            if (dec === undefined || dec === null) return '18:00';
+            const h = Math.floor(dec);
+            const m = Math.round((dec - h) * 60);
+            return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+        }
+
+        const rows = modules.map(m => {
+            let sched = schedules[m.id];
+            if (!sched && m.id === 'ct-quiz') {
+                sched = { enabled: true, days: [3], startTime: 18.0, endTime: 19.167 };
+            }
+            const isSchedEnabled = sched ? !!sched.enabled : m.defaultEnabled;
+            const activeDays = sched && sched.days ? sched.days : m.defaultDays;
+            const startTimeStr = sched && sched.startTime !== undefined ? decToTime(sched.startTime) : m.defaultStart;
+            const endTimeStr = sched && sched.endTime !== undefined ? decToTime(sched.endTime) : m.defaultEnd;
+
+            // Status check
+            const now = new Date();
+            const curDec = now.getHours() + now.getMinutes() / 60;
+            const curDay = now.getDay();
+            const startDec = parseInt(startTimeStr.split(':')[0]) + parseInt(startTimeStr.split(':')[1]) / 60;
+            const endDec = parseInt(endTimeStr.split(':')[0]) + parseInt(endTimeStr.split(':')[1]) / 60;
+            const inWindow = activeDays.includes(curDay) && (curDec >= startDec && curDec < endDec);
+
+            let statusBadge = '';
+            if (!isSchedEnabled) {
+                statusBadge = '<span style="background: rgba(255,255,255,0.1); color: #888; padding: 3px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800;">SCHEDULE DISABLED (RUNS CONTINUOUSLY)</span>';
+            } else if (inWindow) {
+                statusBadge = '<span style="background: rgba(16,185,129,0.2); color: #10b981; border: 1px solid rgba(16,185,129,0.4); padding: 3px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800;">ACTIVE IN WINDOW NOW</span>';
+            } else {
+                statusBadge = '<span style="background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); padding: 3px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800;">SCHEDULED (OFF-HOURS)</span>';
+            }
+
+            const dayCheckboxes = daysMap.map((dName, dIdx) => `
+                <label style="display:inline-flex; align-items:center; gap: 3px; font-size: 0.7rem; color: ${activeDays.includes(dIdx) ? '#fff' : '#666'}; cursor: pointer;">
+                    <input type="checkbox" id="sched-day-${m.id}-${dIdx}" ${activeDays.includes(dIdx) ? 'checked' : ''} style="margin:0; width:12px; height:12px;">
+                    <span>${dName}</span>
+                </label>
+            `).join(' ');
+
+            return `
+                <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem;">
+                        <div>
+                            <span style="font-weight: 900; font-size: 1rem; color: var(--accent); letter-spacing: 0.5px;">_${m.id.toUpperCase()}</span>
+                            <span style="font-size: 0.8rem; color: #bbb; margin-left: 8px;">${m.title}</span>
+                        </div>
+                        <div>${statusBadge}</div>
+                    </div>
+                    
+                    <div style="display:grid; grid-template-columns: auto 1fr auto; gap: 1.5rem; align-items:center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px;">
+                        <label style="display:flex; align-items:center; gap: 6px; font-size: 0.75rem; font-weight: 800; cursor: pointer; color: #fff;">
+                            <input type="checkbox" id="sched-enable-${m.id}" ${isSchedEnabled ? 'checked' : ''} style="width:16px; height:16px;">
+                            <span>Enable Schedule Window</span>
+                        </label>
+                        
+                        <div style="display:flex; align-items:center; gap: 10px; flex-wrap: wrap;">
+                            <span style="font-size: 0.65rem; color: #888; font-weight: 700; text-transform: uppercase;">Active Days:</span>
+                            <div style="display:flex; gap: 8px;">${dayCheckboxes}</div>
+                        </div>
+
+                        <div style="display:flex; align-items:center; gap: 8px;">
+                            <span style="font-size: 0.65rem; color: #888; font-weight: 700; text-transform: uppercase;">Window:</span>
+                            <input type="time" id="sched-start-${m.id}" value="${startTimeStr}" style="background:#000; border:1px solid #444; color:#fff; padding:3px 6px; border-radius:4px; font-size:0.75rem;">
+                            <span style="font-size: 0.7rem; color:#888;">to</span>
+                            <input type="time" id="sched-end-${m.id}" value="${endTimeStr}" style="background:#000; border:1px solid #444; color:#fff; padding:3px 6px; border-radius:4px; font-size:0.75rem;">
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        wrap.innerHTML = `
+            <div style="padding: 1.5rem; height: 100%; overflow-y: auto; box-sizing: border-box;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+                    <div>
+                        <div style="font-size: 1.4rem; font-weight: 900; letter-spacing: -0.5px;">MODULE SCHEDULER</div>
+                        <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Configure automatic day & time windows for modules (e.g. Pub Quiz on Wednesdays 18:00 - 19:10).</div>
+                    </div>
+                    <div style="display:flex; gap: 10px;">
+                        <button class="ctrl-btn" onclick="renderScheduleManager()">Reload</button>
+                        <button class="ctrl-btn primary" onclick="saveAllModuleSchedules()">Save & Broadcast Schedules</button>
+                    </div>
+                </div>
+
+                ${rows}
+            </div>
+        `;
+        document.getElementById('ctrl-title').innerText = 'MODULE SCHEDULER';
+        document.getElementById('ctrl-url').innerText = 'SCHEDULES';
+    }
+
+    window.saveAllModuleSchedules = function() {
+        const moduleIds = ['ct-quiz', 'ct-mmr', 'ct-ace', 'ct-soc', 'ct-loyalty', 'ct-tik', 'ct-wea1', 'ct-fir'];
+        const schedules = {};
+
+        function timeToDec(timeStr) {
+            if (!timeStr) return 0;
+            const parts = timeStr.split(':');
+            return parseInt(parts[0], 10) + parseInt(parts[1], 10) / 60;
+        }
+
+        moduleIds.forEach(id => {
+            const enableEl = document.getElementById('sched-enable-' + id);
+            const startEl = document.getElementById('sched-start-' + id);
+            const endEl = document.getElementById('sched-end-' + id);
+            
+            const days = [];
+            for (let i = 0; i < 7; i++) {
+                const dayEl = document.getElementById(`sched-day-${id}-${i}`);
+                if (dayEl && dayEl.checked) days.push(i);
+            }
+
+            schedules[id] = {
+                enabled: enableEl ? enableEl.checked : false,
+                days: days,
+                startTime: startEl ? timeToDec(startEl.value) : 0,
+                endTime: endEl ? timeToDec(endEl.value) : 24
+            };
+        });
+
+        // Save config
+        let config = {};
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            if (stored) config = JSON.parse(stored);
+        } catch(e) {}
+        config.moduleSchedules = schedules;
+        localStorage.setItem('matrix_config', JSON.stringify(config));
+
+        const msg = {
+            type: 'SCHEDULE_UPDATE',
+            moduleSchedules: schedules,
+            commandId: 'cmd_' + Date.now(),
+            timestamp: Date.now(),
+            senderTabId: getTabId(),
+            source: getClientId()
+        };
+        bc.postMessage(msg);
+        if (window.sendToFirebase) window.sendToFirebase(msg);
+
+        showToast('SCHEDULES SAVED & BROADCAST');
+        renderSidebarToggles();
+        renderScheduleManager();
+    };
 
     function renderDashboardHome() {
         const wrap = document.getElementById('operator-wrap');
@@ -774,6 +953,22 @@
             const val = dur[m.id] !== undefined ? dur[m.id] : 'all';
             const isAll = val === 'all';
             
+            const status = window.getModuleStatus ? window.getModuleStatus(m.id) : { mode: isChecked ? 'ON' : 'OFF', label: isChecked ? 'ON' : 'OFF', active: isChecked };
+            let pillClass = '';
+            let pillLabel = status.label;
+            let pillStyle = '';
+            if (status.mode === 'OFF') {
+                pillClass = '';
+                pillLabel = 'OFF';
+            } else if (status.mode === 'SCHEDULED') {
+                pillClass = 'active';
+                pillLabel = status.active ? 'SCHED' : 'SCHED OFF';
+                pillStyle = status.active ? 'background: rgba(16,185,129,0.25); color: #10b981; border-color: rgba(16,185,129,0.6);' : 'background: rgba(245,158,11,0.2); color: #f59e0b; border-color: rgba(245,158,11,0.5);';
+            } else {
+                pillClass = 'active';
+                pillLabel = 'ON';
+            }
+
             // Generate the tree children dynamically based on hasAdmin
             const folderName = m.id === 'ct-wea1' ? '_ct-wea1' : '_ct-' + m.name;
             const slideUrl = m.customUrl || `../${folderName}/index.html`;
@@ -786,8 +981,8 @@
                 <div class="tree-node">
                     <div class="tree-header" style="display:flex; justify-content:space-between; align-items:center; padding: 6px 10px;">
                         <span onclick="toggleNode(this.parentElement)" style="flex:1;">_${m.id.toUpperCase()} (${m.title})</span>
-                        <div class="toggle-pill ${isChecked ? 'active' : ''}" style="margin: 0; padding: 2px 8px; font-size: 0.55rem; min-width: 40px; justify-content: center;" onclick="event.stopPropagation(); toggleModule('${m.name}', ${!isChecked}); renderSidebarToggles();">
-                            <span>${isChecked ? 'ON' : 'OFF'}</span>
+                        <div class="toggle-pill ${pillClass}" style="margin: 0; padding: 2px 8px; font-size: 0.55rem; min-width: 48px; justify-content: center; ${pillStyle}" onclick="event.stopPropagation(); toggleModule('${m.name}', ${!isChecked}); renderSidebarToggles();">
+                            <span>${pillLabel}</span>
                         </div>
                     </div>
                     <div class="tree-children" style="display:none">

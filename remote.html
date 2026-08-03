@@ -234,6 +234,7 @@
       <a href="remote.html" class="nav-link active">📱 Remote</a>
   </nav>
 
+  <script src="matrix-core.js"></script>
   <script>
     if (localStorage.getItem('matrix_migration_20260804_enable_all_modules') !== 'done') {
         try {
@@ -299,14 +300,24 @@
 
         // Setup Toggles
         const isOff = config.disabledModules && config.disabledModules.includes(id);
+        const status = window.getModuleStatus ? window.getModuleStatus(id) : { mode: isOff ? 'OFF' : 'ON', label: isOff ? 'OFF' : 'ON', active: !isOff };
         const btnOn = row.querySelector('.btn-on');
         const btnOff = row.querySelector('.btn-off');
-        if (isOff) {
+        if (status.mode === 'OFF') {
           btnOn.classList.remove('active-on');
+          btnOn.innerText = 'ON';
           btnOff.classList.add('active-off');
+          btnOff.innerText = 'OFF';
+        } else if (status.mode === 'SCHEDULED') {
+          btnOn.classList.add('active-on');
+          btnOn.innerText = status.active ? 'SCHED' : 'OFF-HRS';
+          btnOff.classList.remove('active-off');
+          btnOff.innerText = 'OFF';
         } else {
           btnOn.classList.add('active-on');
+          btnOn.innerText = 'ON';
           btnOff.classList.remove('active-off');
+          btnOff.innerText = 'OFF';
         }
       });
       
@@ -316,7 +327,7 @@
 
     // Listen to local BroadcastChannel to stay synced if someone edits from masteradmin
     bc.onmessage = (e) => {
-        if (e.data.type === 'MODULE_FILTER' || e.data.type === 'SETTINGS_UPDATE') {
+        if (e.data.type === 'MODULE_FILTER' || e.data.type === 'SETTINGS_UPDATE' || e.data.type === 'SCHEDULE_UPDATE') {
             // Give localStorage a tiny moment to be written by matrix-core.js before reading
             setTimeout(initUI, 100);
         }

@@ -59,11 +59,11 @@
       transform: translateX(-50%);
       width: 85vw;
       height: 65vh;
-      background: radial-gradient(ellipse, rgba(137, 207, 240, 0.3) 0%, rgba(56, 189, 248, 0.12) 50%, transparent 70%);
+      background: radial-gradient(ellipse, rgba(137, 207, 240, 0.22) 0%, rgba(56, 189, 248, 0.08) 50%, transparent 70%);
       filter: blur(80px);
       pointer-events: none;
       z-index: 1;
-      animation: ambient-enter 1.2s ease-out both, pulse-ambient 6s ease-in-out infinite alternate 1.2s;
+      animation: ambient-enter 1.2s cubic-bezier(0.16, 1, 0.3, 1) both, pulse-ambient 6s ease-in-out infinite alternate 1.2s;
     }
 
     .ambient-glow-center {
@@ -73,11 +73,11 @@
       transform: translate(-50%, -50%);
       width: 50vw;
       height: 60vh;
-      background: radial-gradient(circle, rgba(137, 207, 240, 0.2) 0%, rgba(29, 78, 216, 0.12) 50%, transparent 70%);
+      background: radial-gradient(circle, rgba(137, 207, 240, 0.15) 0%, rgba(29, 78, 216, 0.08) 50%, transparent 70%);
       filter: blur(80px);
       pointer-events: none;
       z-index: 1;
-      animation: ambient-enter 1.2s ease-out both, pulse-ambient 6s ease-in-out infinite alternate 1.2s;
+      animation: ambient-enter 1.2s cubic-bezier(0.16, 1, 0.3, 1) both, pulse-ambient 6s ease-in-out infinite alternate 1.2s;
     }
 
     /* Subtle Grid Overlay */
@@ -85,8 +85,8 @@
       position: absolute;
       inset: 0;
       background-image: 
-        linear-gradient(rgba(137, 207, 240, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(137, 207, 240, 0.035) 1px, transparent 1px);
+        linear-gradient(rgba(137, 207, 240, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(137, 207, 240, 0.03) 1px, transparent 1px);
       background-size: 40px 40px;
       pointer-events: none;
       z-index: 1;
@@ -116,7 +116,7 @@
       text-transform: uppercase;
       letter-spacing: 0.16em;
       border: 2px solid var(--baby-blue);
-      background: rgba(137, 207, 240, 0.18);
+      background: rgba(137, 207, 240, 0.15);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       color: var(--baby-blue-light);
@@ -138,10 +138,10 @@
       white-space: nowrap;
     }
 
-    /* Main Title - White with Dark Blue Accent Glow matching CT-Matrix Core */
+    /* Main Title */
     .main-title {
       font-family: 'Playfair Display', serif;
-      font-size: clamp(3.6rem, 5.0vw, 6.4rem);
+      font-size: clamp(3.4rem, 4.8vw, 6.2rem);
       font-weight: 900;
       line-height: 1.05;
       text-transform: uppercase;
@@ -165,14 +165,15 @@
     }
 
     .tagline {
-      font-size: clamp(1.15rem, 1.42vw, 1.95rem);
+      font-size: clamp(1.15rem, 1.4vw, 1.85rem);
       font-weight: 700;
       color: rgba(243, 244, 246, 0.95);
       letter-spacing: 0.015em;
       text-shadow: 0 3px 12px rgba(0,0,0,0.9);
-      white-space: nowrap;
       text-align: center;
-      max-width: 96vw;
+      max-width: 92vw;
+      text-wrap: balance;
+      line-height: 1.35;
       animation: tagline-enter 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
     }
 

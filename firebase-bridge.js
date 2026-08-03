@@ -138,8 +138,7 @@ if (window.self === window.top) {
         const BRIDGED_COMMANDS = [
             'NEXT', 'PREV', 'JUMP', 'PROJECT', 'TOGGLE',
             'MODULE_FILTER', 'LIVE_SLIDE', 'SETTINGS_UPDATE',
-            'CONFETTI', 'REFRESH', 'CURRENT_SLIDE_BROADCAST', 
-            'GET_SLIDES_DUMP', 'SLIDES_DUMP', 'SYNC_JUMP'
+            'CONFETTI', 'REFRESH', 'SYNC_JUMP', 'SCHEDULE_UPDATE'
         ];
 
         if (BRIDGED_COMMANDS.includes(type)) {

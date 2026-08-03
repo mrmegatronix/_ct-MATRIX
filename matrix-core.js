@@ -93,26 +93,17 @@ async function initMatrix() {
       case 'JUMP': window.jumpToProject(e.data.id); break;
       case 'PROJECT': window.jumpToProject(e.data.id); break;
       case 'SETTINGS_UPDATE': updateConfig(e.data.payload); break;
+      case 'SCHEDULE_UPDATE': 
+        if (e.data.moduleSchedules) {
+          window.MATRIX.CONFIG.moduleSchedules = e.data.moduleSchedules;
+          saveConfig();
+          window.initMatrix();
+        }
+        break;
       case 'CURRENT_SLIDE_BROADCAST':
-        // Ignore our own broadcasts
+        // Telemetry tracking only - do not interrupt autonomous playback loop
         if (e.data.senderTabId === (window.matrixTabId || 'iframe')) return;
-        // Master ignores incoming syncs to prevent being overridden by lagging TVs
-        if (window.parent && window.parent.IS_MASTER_DASHBOARD) return;
-
-        if (e.data.isMaster) {
-            window.MATRIX.STATE.lastMasterBroadcast = Date.now();
-        }
-
-        if (e.data.index !== undefined) {
-           window.MATRIX.STATE.currentIndex = e.data.index;
-           
-           // Sync our timer to their timer!
-           clearTimeout(window.MATRIX.STATE.timer);
-           const elapsed = Date.now() - e.data.startTime;
-           const remaining = e.data.delay - elapsed;
-           const finalRemaining = remaining > 0 ? remaining : window.MATRIX.CONFIG.SWAP_DELAY;
-           renderActiveSlide(true, finalRemaining);
-        }
+        window.MATRIX.STATE.remoteSlideTelemetry = e.data;
         break;
       case 'SYNC_DATA': window.initMatrix(); break; 
       case 'SYNC_JUMP': 
@@ -1017,6 +1008,26 @@ function isSlideActive(slide) {
 
   
 
+  // Module-Specific Scheduling Logic
+  if (slide.type === 'MODULE') {
+    const schedules = (window.MATRIX.CONFIG && window.MATRIX.CONFIG.moduleSchedules) || {};
+    const modSched = schedules[slide.id];
+    if (modSched && modSched.enabled) {
+      if (modSched.days && modSched.days.length > 0 && !modSched.days.includes(day)) {
+        return false;
+      }
+      if (modSched.startTime !== undefined && modSched.endTime !== undefined) {
+        if (time < modSched.startTime || time >= modSched.endTime) {
+          return false;
+        }
+      }
+    } else if (slide.id === 'ct-quiz') {
+      // Default hardcoded time window restriction for ct-quiz: Wednesdays 18:00 to 19:10
+      if (day !== 3) return false; // 3 = Wednesday
+      if (time < 18.0 || time > 19.167) return false; // 18:00 to 19:10
+    }
+  }
+
   // Generic custom scheduling if properties exist
   if (slide.startTime !== undefined && slide.endTime !== undefined) {
      if (time < slide.startTime || time >= slide.endTime) return false;
@@ -1027,6 +1038,38 @@ function isSlideActive(slide) {
 
   return true;
 }
+
+/**
+ * Get Module Schedule Status Helper
+ */
+function getModuleStatus(id) {
+  const config = window.MATRIX.CONFIG || {};
+  const disabled = config.disabledModules || [];
+  if (disabled.includes(id)) {
+    return { mode: 'OFF', label: 'OFF', active: false };
+  }
+  const schedules = config.moduleSchedules || {};
+  let sched = schedules[id];
+  if (!sched && id === 'ct-quiz') {
+    sched = { enabled: true, days: [3], startTime: 18.0, endTime: 19.167 };
+  }
+  if (sched && sched.enabled) {
+    const now = new Date();
+    const time = now.getHours() + now.getMinutes() / 60;
+    const day = now.getDay();
+    const dayMatch = !sched.days || sched.days.length === 0 || sched.days.includes(day);
+    const timeMatch = (sched.startTime === undefined || sched.endTime === undefined) || (time >= sched.startTime && time < sched.endTime);
+    const isActiveNow = dayMatch && timeMatch;
+    return {
+      mode: 'SCHEDULED',
+      label: isActiveNow ? 'SCHEDULED' : 'SCHEDULED (OFF-HOURS)',
+      active: isActiveNow,
+      schedule: sched
+    };
+  }
+  return { mode: 'ON', label: 'ON', active: true };
+}
+window.getModuleStatus = getModuleStatus;
 
 /**
  * Controller & Engine
