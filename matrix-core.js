@@ -681,7 +681,7 @@ function buildSlideQueue(data) {
     return val || defaultDur;
   };
   queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5, duration: getModDur('ct-mmr', 600) }); // Play all slides (10min default)
-  queue.push({ type: 'MODULE', id: 'ct-wea1', url: '../_ct-wea1/index.html', title: "Christchurch Weather", priority: 80, duration: getModDur('ct-wea1', 60) });
+  queue.push({ type: 'MODULE', id: 'ct-wea1', url: '../_ct-wea1/dist/index.html', title: "Christchurch Weather", priority: 80, duration: getModDur('ct-wea1', 90) });
   queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5, duration: getModDur('ct-ace', 180) }); // 6 slides * 30s
   queue.push({ type: 'MODULE', id: 'ct-quiz', url: '../_ct-QUIZ/index.html', title: "Weekly Pub Quiz", priority: 10, duration: getModDur('ct-quiz', 60) });
   queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, duration: getModDur('ct-fir', 180) }); // 3min default
