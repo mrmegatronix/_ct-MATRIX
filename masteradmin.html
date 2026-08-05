@@ -9,17 +9,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #020617;
-      --surface: #0f172a;
-      --surface-bright: #1e293b;
-      --accent: #06b6d4;
-      --accent-glow: rgba(6, 182, 212, 0.5);
+      --bg: #09090b;
+      --surface: #18181b;
+      --surface-bright: #27272a;
+      --surface-hover: #27272a;
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.5);
       --success: #10b981;
       --success-glow: rgba(16, 185, 129, 0.5);
       --text: #f8fafc;
       --text-dim: #94a3b8;
-      --border: rgba(255, 255, 255, 0.08);
-      --glass: rgba(15, 23, 42, 0.98);
+      --border: #27272a;
+      --glass: rgba(24, 24, 27, 0.98);
       --nav-w: 240px;
       --header-h: 80px;
       --bottom-h: 220px;
@@ -89,7 +90,7 @@
         position: relative;
     }
     .toggle-pill:hover { background: rgba(255,255,255,0.05); }
-    .toggle-pill.active { border-color: var(--accent); background: rgba(6, 182, 212, 0.08); }
+    .toggle-pill.active { border-color: var(--accent); background: rgba(16, 185, 129, 0.08); }
     .toggle-pill span { font-size: 0.65rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
     .toggle-pill.active span { color: #fff; }
     .toggle-pill::before {
@@ -134,7 +135,7 @@
     /* SIDEBAR - COMPACTED */
     .nav-side {
         grid-row: 2 / 3;
-        background: #020617; border-right: 1px solid var(--border);
+        background: var(--surface); border-right: 1px solid var(--border);
         padding: 0.4rem; 
         overflow-y: auto; 
         scrollbar-width: none; /* Hide scrollbar for Firefox */
@@ -158,7 +159,7 @@
         transition: 0.2s; cursor: pointer; margin-bottom: 1px;
     }
     .nav-link:hover { color: #fff; background: rgba(255,255,255,0.08); }
-    .nav-link.active { color: var(--accent); background: rgba(6, 182, 212, 0.1); font-weight: 800; }
+    .nav-link.active { color: var(--accent); background: rgba(16, 185, 129, 0.1); font-weight: 800; }
 
     /* TREE STYLES - COMPACTED */
     .tree-node { margin-bottom: 0.15rem; }
@@ -173,7 +174,7 @@
         text-decoration: none; border-left: 2px solid var(--border);
         transition: 0.2s; margin-bottom: 1px;
     }
-    .tree-item:hover { color: var(--accent); border-left-color: var(--accent); background: rgba(6, 182, 212, 0.05); }
+    .tree-item:hover { color: var(--accent); border-left-color: var(--accent); background: rgba(16, 185, 129, 0.05); }
 
     .workspace-left {
         grid-row: 2 / 3;
@@ -259,7 +260,7 @@
     .footer-tray {
         grid-column: 1 / -1;
         grid-row: 3 / 4;
-        background: #010409; border-top: 1px solid var(--border);
+        background: var(--bg); border-top: 1px solid var(--border);
         padding: 0.5rem 1rem; display: flex; gap: 1rem; overflow-x: auto; overflow-y: hidden;
         z-index: 100;
         scrollbar-width: thin;
@@ -337,23 +338,23 @@
     /* AUTH & TOAST */
     .auth-overlay { 
         position: fixed; inset: 0; 
-        background: #020617 url('matrix_login_bg_1778957890247.png') center/cover;
+        background: var(--bg) url('matrix_login_bg_1778957890247.png') center/cover;
         z-index: 10000; display: flex; align-items: center; justify-content: center; 
     }
     .auth-overlay::before {
         content: ''; position: absolute; inset: 0;
-        background: radial-gradient(circle at center, transparent, rgba(2, 6, 23, 0.9));
+        background: radial-gradient(circle at center, transparent, rgba(9, 9, 11, 0.9));
         backdrop-filter: blur(8px);
     }
 
     .pin-box { 
-        background: rgba(15, 23, 42, 0.8); 
+        background: rgba(24, 24, 27, 0.85); 
         padding: 4rem 3rem; 
         border-radius: 40px; 
-        border: 1px solid rgba(255, 255, 255, 0.1); 
+        border: 1px solid var(--border); 
         text-align: center;
         backdrop-filter: blur(40px);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(6, 182, 212, 0.1);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(16, 185, 129, 0.1);
         width: 100%;
         max-width: 450px;
         position: relative;
@@ -403,7 +404,7 @@
     .pin-btn:active { transform: scale(0.95); background: var(--accent); color: #000; }
     .pin-btn.special { color: var(--accent); font-weight: 800; font-size: 1.1rem; }
     .pin-btn.primary { background: var(--accent); color: #000; border: none; font-weight: 900; }
-    .pin-btn.primary:hover { background: #08e1ff; box-shadow: 0 0 20px var(--accent-glow); }
+    .pin-btn.primary:hover { background: #34d399; box-shadow: 0 0 20px var(--accent-glow); }
 
     .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
     @keyframes shake {
@@ -415,6 +416,12 @@
 
     #toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--accent); color: #000; padding: 12px 30px; border-radius: 10px; font-weight: 900; opacity: 0; transition: 0.3s; z-index: 11000; }
     #toast.show { opacity: 1; transform: translateY(-10px); }
+
+    /* Scrollbars matching navi.html */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #555; }
 
   </style>
     <script>
@@ -541,7 +548,7 @@
 
         <!-- BOTTOM RIGHT PANEL (BILLBOARD FEED) -->
         <div class="panel">
-            <div class="panel-header" style="background: #020617; color: var(--accent)">
+            <div class="panel-header" style="background: var(--surface); color: var(--accent)">
                 <span>B-FRAME (BILLBOARD FEED)</span>
             </div>
             <div class="scaled-frame">
@@ -1361,7 +1368,7 @@
                     <div class="monitor-card" style="flex:none; ${e.data.currentIndex === idx ? 'border-color:var(--accent); box-shadow: 0 0 20px var(--accent)' : ''}" onclick="sendMaster('JUMP', '${s.id}')">
                         <div class="monitor-thumb" style="height:180px">
                             ${s.type === 'MODULE' 
-                                ? `<div style="background:#1e293b; height:100%; display:flex; align-items:center; justify-content:center; font-size:1.15rem; color:var(--accent); font-weight:900">MODULE: ${s.id}</div>`
+                                ? `<div style="background:var(--surface-bright); height:100%; display:flex; align-items:center; justify-content:center; font-size:1.15rem; color:var(--accent); font-weight:900">MODULE: ${s.id}</div>`
                                 : (() => {
                                     const isHex = /^#([A-Fa-f0-9]{3,8})$/.test((s.bgImage || '').trim());
                                     const bgStyle = isHex 
@@ -1507,11 +1514,11 @@
                 // Pulse the cloud dot
                 const dot = document.getElementById('cloud-dot');
                 if (dot) {
-                    dot.style.background = '#06b6d4';
+                    dot.style.background = 'var(--accent)';
                     dot.classList.remove('pulse');
                     void dot.offsetWidth;
                     dot.classList.add('pulse');
-                    setTimeout(() => { dot.style.background = '#10b981'; }, 500);
+                    setTimeout(() => { dot.style.background = 'var(--success)'; }, 500);
                 }
             })
             .catch((err) => {

@@ -1238,7 +1238,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
   if (currentDOM && currentDOM.dataset.slideId === String(slide.id)) {
       const bar = document.getElementById('progress-bar');
       if (bar) {
-          if (slide.id === 'ct-fir') {
+          if (slide.type === 'MODULE' || slide.id === 'ct-fir') {
               bar.style.display = 'none';
           } else {
               bar.style.display = '';
@@ -1351,7 +1351,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
       
       document.documentElement.style.setProperty('--theme-color', moduleColor);
       document.documentElement.style.setProperty('--theme-glow', `${moduleColor}60`);
-      slideEl.innerHTML = `<iframe src="${slide.url}" class="module-frame" id="module-${slide.id}" onload="try { if (this.contentDocument && this.contentDocument.head) { this.contentDocument.head.insertAdjacentHTML('beforeend', '<style>body { background: #000 !important; } #progress-bar, #progress-container, .timer-bar { display: none !important; }</style>'); } } catch(e) {}"></iframe>`;
+      slideEl.innerHTML = `<iframe src="${slide.url}" class="module-frame" id="module-${slide.id}"></iframe>`;
     } else {
       const isPromo = slide.type === 'PROMO';
       const isLogo = slide.isLogo || (!slide.title && !slide.subtitle && slide.bgImage && slide.bgImage.includes('LOGO'));
@@ -1565,7 +1565,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
 
     const bar = document.getElementById('progress-bar');
     if (bar) {
-      if (slide.id === 'ct-fir') {
+      if (slide.type === 'MODULE' || slide.id === 'ct-fir') {
         bar.style.display = 'none';
       } else {
         bar.style.display = '';
@@ -1577,7 +1577,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
       const finalDelay = overrideDelay !== null ? overrideDelay : defaultDelay;
       window.MATRIX.STATE.timer = setTimeout(nextSlide, finalDelay);
       
-      if (bar && slide.id !== 'ct-fir') {
+      if (bar && slide.type !== 'MODULE' && slide.id !== 'ct-fir') {
         bar.style.transition = 'none';
         bar.style.width = '0%';
         requestAnimationFrame(() => {

@@ -685,7 +685,7 @@ body {
   position: fixed;
   bottom: 0;
   left: 0;
-  height: 14px;
+  height: 15px;
   /* Significantly thicker for TV visibility */
   background: linear-gradient(90deg, var(--theme-color), #fff);
   box-shadow: 0 0 25px var(--theme-glow);

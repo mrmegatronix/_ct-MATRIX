@@ -9,35 +9,40 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #030712;
-      --accent: #06b6d4;
+      --bg: #09090b;
+      --surface: #18181b;
+      --surface-bright: #27272a;
+      --accent: #10b981;
       --red: #ef4444;
       --purple: #8b5cf6;
-      --text: #ffffff;
-      --btn-bg: #111827;
-      --border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --btn-bg: #18181b;
+      --border: #27272a;
     }
     body { 
       background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; 
-      margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center;
-      height: 100vh; overflow: hidden; touch-action: none;
+      margin: 0; padding: 12px 10px 80px 10px; display: flex; flex-direction: column; align-items: center;
+      min-height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+      box-sizing: border-box;
     }
     header { text-align: center; margin-bottom: 10px; }
     h1 { font-weight: 900; color: var(--accent); margin: 0; font-size: 1.2rem; }
     
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; width: 100%; max-width: 600px; margin-bottom: 10px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; max-width: 600px; margin-bottom: 10px; }
     
     .btn {
       background: var(--btn-bg); border: 1px solid var(--border); border-radius: 12px;
-      color: var(--text); padding: 10px 5px; font-size: 0.65rem; font-weight: 700;
+      color: var(--text); padding: 10px 4px; font-size: 0.65rem; font-weight: 700;
       text-transform: uppercase; display: flex; flex-direction: column; align-items: center;
       gap: 5px; cursor: pointer; -webkit-tap-highlight-color: transparent;
     }
     .btn:active { transform: scale(0.95); background: var(--accent); color: #000; }
-    .btn-icon { font-size: 1.4rem; }
+    .btn-icon { font-size: 1.3rem; }
     .btn-primary { border-color: var(--accent); color: var(--accent); }
     
-    .section-title { width: 100%; max-width: 600px; font-size: 0.65rem; font-weight: 800; color: #666; text-transform: uppercase; margin-bottom: 5px; }
+    .section-title { width: 100%; max-width: 600px; font-size: 0.65rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; margin-bottom: 5px; }
     
     .modules { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 600px; flex-grow: 1; }
     .mod-row { display: grid; grid-template-columns: 85px 1fr auto 50px; gap: 8px; background: var(--btn-bg); padding: 6px 10px; border-radius: 12px; align-items: center; border: 1px solid var(--border); }
@@ -60,14 +65,15 @@
     .upcoming-item:last-child { border-bottom: none; }
     .upcoming-title { font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
     .upcoming-type { font-weight: 900; color: var(--accent); font-size: 0.6rem; }
-    .upcoming-active { background: rgba(6, 182, 212, 0.1); border-radius: 4px; border: 1px solid var(--accent); }
+    .upcoming-active { background: rgba(16, 185, 129, 0.1); border-radius: 4px; border: 1px solid var(--accent); }
 
-    .status-bar { background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 50px; font-size: 0.65rem; opacity: 0.5; margin-bottom: 60px; }
+    .status-bar { background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 50px; font-size: 0.65rem; opacity: 0.5; margin-bottom: 20px; }
     
     /* Navigation Hub */
-    .nav-hub { position: fixed; bottom: 0; left: 0; right: 0; background: #000; border-top: 1px solid var(--border); padding: 10px; display: flex; justify-content: center; gap: 15px; z-index: 1000; }
-    .nav-link { color: #888; text-decoration: none; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; opacity: 0.5; }
-    .nav-link.active { opacity: 1; color: var(--accent); }
+    .nav-hub { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(9, 9, 11, 0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--border); padding: 10px 5px; display: flex; justify-content: center; gap: 12px; z-index: 1000; }
+    .nav-link { color: var(--text-dim); text-decoration: none; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; transition: color 0.2s; }
+    .nav-link:hover { color: var(--text); }
+    .nav-link.active { color: var(--accent); }
   </style>
 </head>
 <body>
@@ -89,12 +95,16 @@
     <button class="btn" onclick="jump('ct-wea1')"><span class="btn-icon">🌦</span><span>WEA1</span></button>
     <button class="btn" onclick="jump('ct-fir')"><span class="btn-icon">🔥</span><span>FIR</span></button>
     <button class="btn" onclick="jump('ct-soc')"><span class="btn-icon">🤝</span><span>SOC</span></button>
+    <button class="btn" onclick="jump('ct-tik')"><span class="btn-icon">🎵</span><span>TIK</span></button>
+    <button class="btn" onclick="jump('ct-loyalty')"><span class="btn-icon">💳</span><span>LOYALTY</span></button>
+    <button class="btn" onclick="send('NEXT')"><span class="btn-icon">📺</span><span>ADS</span></button>
   </div>
 
   <div class="section-title">Live Overrides</div>
-  <div class="grid-3">
-    <button class="btn" onclick="lastDrinks()" style="border-color: orange; color: orange;"><span class="btn-icon">🍻</span><span>Last Drinks</span></button>
-    <button class="btn" onclick="clearLive()" style="border-color: var(--red); color: var(--red);"><span class="btn-icon">⏹</span><span>Clear Live</span></button>
+  <div class="grid-4">
+    <button class="btn" onclick="lastDrinks()" style="border-color: #f59e0b; color: #f59e0b;"><span class="btn-icon">🍻</span><span>Last Drinks</span></button>
+    <button class="btn" onclick="barClosed()" style="border-color: var(--red); color: var(--red);"><span class="btn-icon">🚫</span><span>Bar Closed</span></button>
+    <button class="btn" onclick="clearLive()" style="border-color: #64748b; color: #94a3b8;"><span class="btn-icon">⏹</span><span>Clear Live</span></button>
     <button class="btn" onclick="celebrate()" style="border-color: var(--purple); color: #a78bfa;"><span class="btn-icon">✨</span><span>Confetti</span></button>
   </div>
 
@@ -231,6 +241,8 @@
   <nav class="nav-hub">
       <a href="index.html" class="nav-link">📺 Display</a>
       <a href="masteradmin.html" class="nav-link">🛠 Admin</a>
+      <a href="live-commander.html" class="nav-link">⚡ Commander</a>
+      <a href="navi.html" class="nav-link">🧭 Nav</a>
       <a href="remote.html" class="nav-link active">📱 Remote</a>
   </nav>
 
@@ -258,9 +270,9 @@
       return id;
     }
     function getTabId() {
-      if (window.getMatrixTabId) return window.getMatrixTabId();
-      if (!window.matrixTabId) { window.matrixTabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); }
-      return window.matrixTabId;
+      let id = sessionStorage.getItem('matrix_tab_id');
+      if (!id) { id = 'tab_' + Math.random().toString(36).substr(2, 9); sessionStorage.setItem('matrix_tab_id', id); }
+      return id;
     }
 
     function initUI() {
@@ -372,12 +384,28 @@
         detail: "The bar will be closing in 10 minutes. Please make your final purchases now.",
         accent: "#f59e0b",
         mode: "OVERRIDE",
-        countdownFinish: finishTime
+        countdownFinish: finishTime,
+        autoBarClosed: true
       };
       const msg = { type: 'LIVE_SLIDE', payload: livePayload, commandId: 'cmd_' + Date.now(), timestamp: Date.now(), source: getClientId(), senderTabId: getTabId() };
       bc.postMessage(msg);
       if (window.sendToFirebase) window.sendToFirebase(msg);
       vibrate([100, 50, 100]); showStatus('LIVE: LAST DRINKS');
+    }
+
+    function barClosed() {
+      const livePayload = {
+        active: true,
+        title: "BAR IS NOW CLOSED",
+        detail: "Last drinks has finished. Thank you for visiting, please travel home safely.",
+        accent: "#ef4444",
+        mode: "OVERRIDE",
+        autoClearAfter: 2 * 60 * 60 * 1000
+      };
+      const msg = { type: 'LIVE_SLIDE', payload: livePayload, commandId: 'cmd_' + Date.now(), timestamp: Date.now(), source: getClientId(), senderTabId: getTabId() };
+      bc.postMessage(msg);
+      if (window.sendToFirebase) window.sendToFirebase(msg);
+      vibrate([100, 50, 100]); showStatus('LIVE: BAR CLOSED');
     }
 
     function clearLive() {
