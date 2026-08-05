@@ -861,16 +861,33 @@
         }).join('');
         
         wrap.innerHTML = `
+            <div style="padding: 1.5rem; height: 100%; overflow-y: auto; box-sizing: border-box;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+                    <div>
+                        <div style="font-size: 1.4rem; font-weight: 900; letter-spacing: -0.5px;">DASHBOARD HOME</div>
+                        <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Manage rotation durations and access quick operator actions.</div>
                     </div>
-                    <div class="panel" style="padding: 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px;">
-                        <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.5; margin-bottom: 1rem;">QUICK ACTIONS</div>
-                        <button class="ctrl-btn primary" style="width: 100%; margin-bottom: 10px;" onclick="requestTelemetry()">Refresh Telemetry</button>
-                        <button class="ctrl-btn" style="width: 100%;" onclick="loadModule('COMMANDER', 'live-commander.html?compact=true&v=' + Date.now())">Open Live Commander</button>
+                    <div style="display:flex; gap: 10px;">
+                        <button class="ctrl-btn primary" onclick="requestTelemetry()">Refresh Telemetry</button>
+                        <button class="ctrl-btn" onclick="loadModule('COMMANDER', 'live-commander.html?compact=true&v=' + Date.now())">Live Commander</button>
                     </div>
                 </div>
 
-                <!-- MODULE DURATIONS MOVED TO SIDEBAR -->
-                
+                <div style="display: grid; grid-template-columns: 1fr 280px; gap: 1.5rem; align-items: start;">
+                    <div class="panel" style="padding: 1.25rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px;">
+                        <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.6; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">Module Play Durations</div>
+                        ${durationRows}
+                    </div>
+
+                    <div class="panel" style="padding: 1.25rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px;">
+                        <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.6; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">Quick Actions</div>
+                        <button class="ctrl-btn primary" style="width: 100%; margin-bottom: 10px; justify-content: center;" onclick="requestTelemetry()">Refresh Telemetry</button>
+                        <button class="ctrl-btn" style="width: 100%; margin-bottom: 10px; justify-content: center;" onclick="loadModule('COMMANDER', 'live-commander.html?compact=true&v=' + Date.now())">Open Live Commander</button>
+                        <button class="ctrl-btn" style="width: 100%; margin-bottom: 10px; justify-content: center;" onclick="loadWorkspaceView('SCHEDULES')">Module Schedules</button>
+                        <button class="ctrl-btn" style="width: 100%; justify-content: center;" onclick="loadWorkspaceView('PLAYLIST')">Playlist Grid View</button>
+                    </div>
+                </div>
+
                 <div style="margin-top: 2rem; opacity: 0.3; font-size: 0.7rem; text-align: center; font-weight: 800; letter-spacing: 2px;">
                     SELECT A MODULE FROM THE NAVIGATION TO BEGIN OPERATING
                 </div>
@@ -916,9 +933,14 @@
             const isDisabled = disabled.includes(fullId);
             if(isDisabled) return ''; // Skip disabled modules to save resources
 
+            const slideUrl = m.customUrl || `../${m.path}/index.html`;
+            const adminUrl = m.customUrl 
+                ? m.customUrl 
+                : (m.id === 'MATRIX' ? 'index.html' : (m.id === 'WEA1' || m.id === 'FIR' || m.id === 'TIK' ? `../${m.path}/index.html` : `../${m.path}/admin.html`));
+
             return `
-                <div class="monitor-card" onclick="loadModule('${m.id}', '${m.id === 'MATRIX' ? 'index.html' : `../${m.path}/${m.id === 'KING' || m.id === 'WEA1' || m.id === 'FIR' ? 'index.html' : 'admin.html'}`}')">
-                    <div class="monitor-thumb"><iframe src="../${m.path}/index.html" scrolling="no"></iframe></div>
+                <div class="monitor-card" onclick="loadModule('${m.id}', '${adminUrl}')">
+                    <div class="monitor-thumb"><iframe src="${slideUrl}" scrolling="no"></iframe></div>
                     <div class="monitor-label"><span>${m.name}</span> <span style="opacity:0.5">LIVE</span></div>
                 </div>
             `;
@@ -1023,7 +1045,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir', 'ct-mid', 'ct-soc', 'ct-tik', 'ct-loyalty'];
+        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {
@@ -1076,7 +1098,7 @@
     }
 
     function saveHomeModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-mmr', 'ct-wea1', 'ct-ace', 'ct-quiz', 'ct-fir', 'ct-mid', 'ct-soc', 'ct-tik', 'ct-loyalty'];
+        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {
@@ -1149,10 +1171,12 @@
         'MATRIX': { main: 'index.html', admin: 'masteradmin.html' },
         'ACE': { main: 'index.html', admin: 'admin.html' },
         'MMR': { main: 'index.html', admin: 'admin.html' },
-        'KING': { main: 'index.html', admin: 'admin.html' },
         'QUIZ': { main: 'index.html', admin: 'admin.html' },
+        'SOC': { main: 'index.html', admin: 'admin.html' },
         'WEA1': { main: 'index.html' },
         'FIR': { main: 'index.html' },
+        'TIK': { main: 'index.html' },
+        'LOYALTY': { main: 'loyalty-slide.html' },
         'COMMANDER': { main: 'live-commander.html' }
     };
 
@@ -1207,12 +1231,16 @@
     }
 
     function pushLiveSlide() {
+        const titleEl = document.getElementById('live-title');
+        const detailEl = document.getElementById('live-detail');
+        const accentEl = document.getElementById('live-accent');
+        const modeEl = document.getElementById('live-mode');
         const payload = {
             active: true,
-            title: document.getElementById('live-title').value,
-            detail: document.getElementById('live-detail').value,
-            accent: document.getElementById('live-accent').value,
-            mode: document.getElementById('live-mode').value
+            title: titleEl ? titleEl.value : '',
+            detail: detailEl ? detailEl.value : '',
+            accent: accentEl ? accentEl.value : '#ef4444',
+            mode: modeEl ? modeEl.value : 'INTERRUPT'
         };
         const msg = { type: 'LIVE_SLIDE', payload, senderTabId: getTabId(), commandId: 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9), timestamp: Date.now() };
         bc.postMessage(msg);
@@ -1224,8 +1252,10 @@
         const msg = { type: 'LIVE_SLIDE', payload: { active: false }, senderTabId: getTabId(), commandId: 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9), timestamp: Date.now() };
         bc.postMessage(msg);
         if (window.sendToFirebase) window.sendToFirebase(msg);
-        document.getElementById('live-title').value = '';
-        document.getElementById('live-detail').value = '';
+        const titleEl = document.getElementById('live-title');
+        const detailEl = document.getElementById('live-detail');
+        if (titleEl) titleEl.value = '';
+        if (detailEl) detailEl.value = '';
         showToast('LIVE SLIDE CLEARED');
     }
 
@@ -1323,7 +1353,6 @@
         if (e.data.type === 'SLIDES_DUMP') {
 
             const grid = document.getElementById('playlist-grid');
-            const metrics = document.getElementById('metrics-grid');
             const slides = e.data.slides || [];
             
             // Render Metrics persistently in header
