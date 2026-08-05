@@ -53,7 +53,7 @@
     /* GRID SKELETON */
     .app-shell {
         display: grid;
-        grid-template-columns: var(--nav-w) 0.8fr 1.2fr; /* REDUCED LEFT FRAME, EXPANDED RIGHT FRAME */
+        grid-template-columns: var(--nav-w) 1.25fr 0.75fr; /* EXPANDED LEFT FRAME FOR INPUTS, FITTED RIGHT FRAME */
         grid-template-rows: var(--header-h) 1fr var(--bottom-h);
         height: 100vh;
     }
@@ -1454,7 +1454,7 @@
             const w = wrap.clientWidth || wrap.offsetWidth;
             const h = wrap.clientHeight || wrap.offsetHeight;
             if (w > 0 && h > 0) {
-                const scale = Math.min(w / 1920, h / 1080);
+                const scale = Math.min(w / 400, h / 200);
                 billboardFrame.style.transform = `translate(-50%, -50%) scale(${scale})`;
             }
         }
