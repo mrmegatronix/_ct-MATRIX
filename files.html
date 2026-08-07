@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CT-Matrix // Online File Browser</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg: #0b0f19;
+            --card-bg: rgba(18, 24, 38, 0.75);
+            --card-hover: rgba(30, 41, 59, 0.9);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(99, 102, 241, 0.4);
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.25);
+            --cyan: #06b6d4;
+            --amber: #f59e0b;
+            --emerald: #10b981;
+            --text-main: #f1f5f9;
+            --text-dim: #94a3b8;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15), transparent 70%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.08), transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* Top Header */
+        header {
+            background: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .logo-badge {
+            background: linear-gradient(135deg, #6366f1, #3b82f6);
+            color: #fff;
+            padding: 0.55rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px var(--accent-glow);
+        }
+
+        .header-titles h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to right, #ffffff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-titles p {
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--cyan);
+            letter-spacing: 0.05em;
+        }
+
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.5rem 0.9rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .nav-btn.primary {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .nav-btn.primary:hover {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Filter & Search Bar */
+        .controls-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            padding: 1rem 1.25rem;
+            border-radius: 16px;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border);
+            padding: 0.55rem 1rem;
+            border-radius: 10px;
+            flex: 1;
+            min-width: 260px;
+            max-width: 450px;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-size: 0.85rem;
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .category-pills {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .pill-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .pill-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .pill-btn.active {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--accent);
+            color: #818cf8;
+        }
+
+        /* Stats Bar & Breadcrumbs */
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            padding: 0 0.5rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--emerald);
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 0.25rem 0.65rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+        }
+
+        .status-badge.loading {
+            color: var(--amber);
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.25);
+        }
+
+        /* File Grid */
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .file-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.15rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-card:hover {
+            background: var(--card-hover);
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .file-card-top {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.85rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .file-icon-wrap {
+            padding: 0.65rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .icon-html { background: rgba(239, 68, 68, 0.12); color: #f87171; }
+        .icon-image { background: rgba(168, 85, 247, 0.12); color: #c084fc; }
+        .icon-data { background: rgba(16, 185, 129, 0.12); color: #34d399; }
+        .icon-code { background: rgba(59, 130, 246, 0.12); color: #60a5fa; }
+        .icon-dir { background: rgba(245, 158, 11, 0.12); color: #fbbf24; }
+        .icon-other { background: rgba(148, 163, 184, 0.12); color: #94a3b8; }
+
+        .file-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .file-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            word-break: break-all;
+            margin-bottom: 0.25rem;
+            line-height: 1.3;
+        }
+
+        .file-meta {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 0.4rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            padding-top: 0.75rem;
+            margin-top: auto;
+        }
+
+        .action-btn-sm {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 0.4rem 0.6rem;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+
+        .action-btn-sm:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .action-btn-sm.primary-act {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.3);
+            color: #a5b4fc;
+        }
+
+        .action-btn-sm.primary-act:hover {
+            background: rgba(99, 102, 241, 0.3);
+            color: #fff;
+        }
+
+        /* Modal Preview */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-card {
+            background: #111827;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .modal-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 0.3rem;
+            border-radius: 6px;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            overflow: auto;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-body img {
+            max-width: 100%;
+            max-height: 60vh;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        .modal-body pre {
+            width: 100%;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: #e2e8f0;
+            background: #0b0f19;
+            padding: 1rem;
+            border-radius: 10px;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+
+        footer {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-title-wrap">
+            <div class="logo-badge">
+                <i data-lucide="folder-tree"></i>
+            </div>
+            <div class="header-titles">
+                <h1>CT-MATRIX FILE EXPLORER</h1>
+                <p>mrmegatronix/_ct-MATRIX // Live Online Browser</p>
+            </div>
+        </div>
+
+        <nav class="header-nav">
+            <a href="masteradmin.html" class="nav-btn" title="Master TV Advertising Admin">
+                <i data-lucide="crown"></i> Master Admin
+            </a>
+            <a href="index.html" class="nav-btn" title="Live Display Feed">
+                <i data-lucide="tv"></i> Live Feed
+            </a>
+            <a href="../_ct-LAND/index.html" class="nav-btn" title="Return to CT-LAND Hub">
+                <i data-lucide="compass"></i> CT-LAND Hub
+            </a>
+            <a href="https://github.com/mrmegatronix/_ct-MATRIX" target="_blank" class="nav-btn primary" title="Open GitHub Repository">
+                <i data-lucide="github"></i> GitHub Repo
+            </a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Controls & Filters -->
+        <div class="controls-bar">
+            <div class="search-box">
+                <i data-lucide="search" style="color: var(--text-muted); width: 16px; height: 16px;"></i>
+                <input type="text" id="searchInput" placeholder="Search files, slides, images, scripts..." oninput="filterFiles()">
+            </div>
+
+            <div class="category-pills">
+                <button class="pill-btn active" onclick="setCategory('all', this)">All Files</button>
+                <button class="pill-btn" onclick="setCategory('html', this)">HTML Pages</button>
+                <button class="pill-btn" onclick="setCategory('image', this)">Images & Slides</button>
+                <button class="pill-btn" onclick="setCategory('data', this)">Data & CSVs</button>
+                <button class="pill-btn" onclick="setCategory('code', this)">Scripts (JS/CSS)</button>
+            </div>
+        </div>
+
+        <!-- Status & Breadcrumbs -->
+        <div class="status-row">
+            <div id="statusBadge" class="status-badge loading">
+                <i data-lucide="loader-2" class="spin"></i>
+                <span id="statusText">Connecting to GitHub Tree...</span>
+            </div>
+            <div id="fileCountText">Showing 0 files</div>
+        </div>
+
+        <!-- File Cards Grid -->
+        <div class="file-grid" id="fileGrid"></div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="modal-overlay" id="previewModal" onclick="closeModal(event)">
+        <div class="modal-card" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="modal-title" id="modalFileName">Preview</span>
+                <button class="modal-close" onclick="closeModalDirect()"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <footer>
+        <div>CT-Matrix Digital Signage Ecosystem &copy; 2026 // MrMegatronix</div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;">
+            Online Tree Browser &bull; GitHub REST API v3
+        </div>
+    </footer>
+
+    <script>
+        const REPO_OWNER = 'mrmegatronix';
+        const REPO_NAME = '_ct-MATRIX';
+        let allFiles = [];
+        let currentFilter = 'all';
+
+        // Known default local file list as instant fallback
+        const FALLBACK_FILES = [
+            { path: 'masteradmin.html', type: 'file', size: 74932 },
+            { path: 'index.html', type: 'file', size: 3456 },
+            { path: 'billboard.html', type: 'file', size: 46317 },
+            { path: 'remote.html', type: 'file', size: 27998 },
+            { path: 'live-commander.html', type: 'file', size: 10194 },
+            { path: 'loyalty-slide.html', type: 'file', size: 22339 },
+            { path: 'navi.html', type: 'file', size: 12075 },
+            { path: 'book.html', type: 'file', size: 264 },
+            { path: 'example.html', type: 'file', size: 36513 },
+            { path: 'matrix-core.js', type: 'file', size: 84670 },
+            { path: 'matrix-styles.css', type: 'file', size: 29737 },
+            { path: 'firebase-bridge.js', type: 'file', size: 11450 },
+            { path: 'firebase-config.js', type: 'file', size: 1999 },
+            { path: 'CSV_TEMPLATE.csv', type: 'file', size: 506 },
+            { path: 'CSV_GUIDE.md', type: 'file', size: 6996 },
+            { path: 'TASK_LOG.md', type: 'file', size: 1997 },
+            { path: 'BANDS', type: 'dir' },
+            { path: 'images', type: 'dir' },
+            { path: '_backgrounds', type: 'dir' },
+            { path: '_menus', type: 'dir' },
+            { path: 'snaps', type: 'dir' },
+            { path: 'product-slides', type: 'dir' },
+            { path: 'extra-slides', type: 'dir' }
+        ];
+
+        async function fetchRepoTree() {
+            const statusBadge = document.getElementById('statusBadge');
+            const statusText = document.getElementById('statusText');
+
+            try {
+                // Fetch branch head first
+                const branchRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/branches/main`);
+                let treeSha = 'main';
+                if (branchRes.ok) {
+                    const branchData = await branchRes.json();
+                    treeSha = branchData.commit.sha;
+                } else {
+                    // Try master
+                    const masterRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/branches/master`);
+                    if (masterRes.ok) {
+                        const masterData = await masterRes.json();
+                        treeSha = masterData.commit.sha;
+                    }
+                }
+
+                const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/git/trees/${treeSha}?recursive=1`);
+                if (!res.ok) throw new Error('GitHub API rate limited or offline');
+                const data = await res.json();
+
+                allFiles = data.tree.map(item => ({
+                    path: item.path,
+                    type: item.type === 'tree' ? 'dir' : 'file',
+                    size: item.size || 0,
+                    sha: item.sha,
+                    url: item.url
+                }));
+
+                statusBadge.className = 'status-badge';
+                statusText.innerText = `Connected (${allFiles.length} repository items)`;
+            } catch (err) {
+                console.warn('Using local fallback index:', err.message);
+                allFiles = FALLBACK_FILES;
+                statusBadge.className = 'status-badge';
+                statusText.innerText = `Local Cache Mode (${allFiles.length} items)`;
+            }
+
+            renderFiles();
+        }
+
+        function getFileCategory(path, type) {
+            if (type === 'dir') return 'dir';
+            const ext = path.split('.').pop().toLowerCase();
+            if (['html', 'htm'].includes(ext)) return 'html';
+            if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg', 'mp4'].includes(ext)) return 'image';
+            if (['csv', 'json', 'xml', 'txt', 'md', 'pdf'].includes(ext)) return 'data';
+            if (['js', 'cjs', 'ts', 'css', 'ps1', 'sh', 'bat'].includes(ext)) return 'code';
+            return 'other';
+        }
+
+        function getCategoryIcon(cat) {
+            switch (cat) {
+                case 'html': return { icon: 'layout', cls: 'icon-html' };
+                case 'image': return { icon: 'image', cls: 'icon-image' };
+                case 'data': return { icon: 'database', cls: 'icon-data' };
+                case 'code': return { icon: 'code', cls: 'icon-code' };
+                case 'dir': return { icon: 'folder', cls: 'icon-dir' };
+                default: return { icon: 'file', cls: 'icon-other' };
+            }
+        }
+
+        function formatSize(bytes) {
+            if (!bytes || bytes === 0) return '';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+
+        function setCategory(cat, btn) {
+            currentFilter = cat;
+            document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderFiles();
+        }
+
+        function filterFiles() {
+            renderFiles();
+        }
+
+        function renderFiles() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const grid = document.getElementById('fileGrid');
+            grid.innerHTML = '';
+
+            const filtered = allFiles.filter(item => {
+                // Ignore git internals
+                if (item.path.startsWith('.git/')) return false;
+
+                const cat = getFileCategory(item.path, item.type);
+                if (currentFilter !== 'all' && cat !== currentFilter) return false;
+                if (query && !item.path.toLowerCase().includes(query)) return false;
+                return true;
+            });
+
+            document.getElementById('fileCountText').innerText = `Showing ${filtered.length} files`;
+
+            filtered.forEach(file => {
+                const cat = getFileCategory(file.path, file.type);
+                const { icon, cls } = getCategoryIcon(cat);
+                const isHtml = cat === 'html';
+                const isImg = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(file.path.split('.').pop().toLowerCase());
+
+                const card = document.createElement('div');
+                card.className = 'file-card';
+
+                const targetLocalUrl = `${file.path}`;
+                const rawGithubUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${file.path}`;
+                const ghUrl = `https://github.com/${REPO_OWNER}/${REPO_NAME}/blob/main/${file.path}`;
+
+                card.innerHTML = `
+                    <div class="file-card-top">
+                        <div class="file-icon-wrap ${cls}">
+                            <i data-lucide="${icon}"></i>
+                        </div>
+                        <div class="file-info">
+                            <div class="file-name" title="${file.path}">${file.path}</div>
+                            <div class="file-meta">
+                                <span>${cat.toUpperCase()}</span>
+                                ${file.size ? `<span>&bull; ${formatSize(file.size)}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        ${isHtml ? `
+                            <a href="${targetLocalUrl}" target="_blank" class="action-btn-sm primary-act">
+                                <i data-lucide="external-link"></i> Launch
+                            </a>
+                        ` : isImg ? `
+                            <button onclick="previewImage('${targetLocalUrl}', '${file.path}')" class="action-btn-sm primary-act">
+                                <i data-lucide="eye"></i> Preview
+                            </button>
+                        ` : `
+                            <a href="${ghUrl}" target="_blank" class="action-btn-sm">
+                                <i data-lucide="file-text"></i> View
+                            </a>
+                        `}
+                        <a href="${ghUrl}" target="_blank" class="action-btn-sm" title="View on GitHub">
+                            <i data-lucide="github"></i> Git
+                        </a>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+
+            lucide.createIcons();
+        }
+
+        function previewImage(url, name) {
+            document.getElementById('modalFileName').innerText = name;
+            document.getElementById('modalBody').innerHTML = `<img src="${url}" alt="${name}" onerror="this.src='https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${name}'">`;
+            document.getElementById('previewModal').classList.add('open');
+            lucide.createIcons();
+        }
+
+        function closeModal(e) {
+            if (e.target.id === 'previewModal') {
+                closeModalDirect();
+            }
+        }
+
+        function closeModalDirect() {
+            document.getElementById('previewModal').classList.remove('open');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModalDirect();
+        });
+
+        // Initialize on load
+        fetchRepoTree();
+    </script>
+</body>
+</html>
