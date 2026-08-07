@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CT-Matrix // A4 Poster Maker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&family=Outfit:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #090d16;
+            --sidebar-bg: #111827;
+            --card-bg: #1e293b;
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #f59e0b; /* Gold */
+            --accent-blue: #3b82f6;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --gold-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 0.85rem 1.75rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .logo-box {
+            background: var(--gold-gradient);
+            color: #000;
+            padding: 0.6rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+        }
+
+        .header-titles h1 {
+            font-size: 1.25rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            background: linear-gradient(to right, #ffffff, #e2e8f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-titles p {
+            font-size: 0.72rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            letter-spacing: 0.05em;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.55rem 1.1rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            text-decoration: none;
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .btn-gold {
+            background: var(--gold-gradient);
+            color: #000;
+            border: none;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+        }
+
+        .btn-gold:hover {
+            filter: brightness(1.1);
+            color: #000;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.1);
+        }
+
+        /* Main Workspace Layout */
+        .app-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            height: calc(100vh - 65px);
+        }
+
+        /* Left Controls Sidebar */
+        .sidebar {
+            width: 440px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar-section {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+            margin-bottom: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .form-group {
+            margin-bottom: 0.9rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            margin-bottom: 0.35rem;
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.55rem 0.85rem;
+            color: #fff;
+            font-size: 0.85rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, textarea:focus, select:focus {
+            border-color: var(--accent);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        /* Toggle Switches */
+        .toggle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
+        }
+
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.15s;
+        }
+
+        .toggle-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .toggle-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 34px;
+            height: 18px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background-color: #334155;
+            transition: .2s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .2s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(16px);
+            background-color: #000;
+        }
+
+        /* Middle/Right: Preview Stage */
+        .preview-stage {
+            flex: 1;
+            background: #06090e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            padding: 2rem 1.5rem;
+            position: relative;
+        }
+
+        .stage-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 0.5rem 1.25rem;
+            border-radius: 30px;
+            border: 1px solid var(--border);
+        }
+
+        .view-tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .view-tab-btn.active {
+            background: var(--gold-gradient);
+            color: #000;
+        }
+
+        /* A4 Poster Canvas Dimensions */
+        /* Exact A4 Ratio: 210mm x 297mm = 1 : 1.4142. Displayed at 595px x 842px on screen (72/96 DPI scaling) */
+        .poster-container {
+            width: 595px;
+            height: 842px;
+            min-width: 595px;
+            min-height: 842px;
+            position: relative;
+            background: #0a0e17;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-radius: 4px;
+            transition: transform 0.2s ease;
+        }
+
+        /* Background Layer */
+        .poster-bg {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+            filter: brightness(0.65) contrast(1.1);
+        }
+
+        .poster-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, 
+                rgba(10, 14, 23, 0.9) 0%, 
+                rgba(10, 14, 23, 0.4) 35%, 
+                rgba(10, 14, 23, 0.6) 65%, 
+                rgba(10, 14, 23, 0.96) 100%);
+            z-index: 2;
+        }
+
+        /* Poster Content Wrapper */
+        .poster-content {
+            position: relative;
+            z-index: 3;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 38px 42px;
+            text-align: center;
+        }
+
+        /* Header & Logo */
+        .poster-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .poster-logo-wrap {
+            max-height: 70px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .poster-logo-wrap img {
+            max-height: 65px;
+            max-width: 220px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.8));
+        }
+
+        .poster-badge {
+            display: inline-block;
+            background: var(--gold-gradient);
+            color: #000;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 4px 18px;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .poster-tagline {
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #cbd5e1;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        /* Main Event Body */
+        .poster-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin: auto 0;
+            padding: 10px 0;
+        }
+
+        .poster-title {
+            font-family: 'Bebas Neue', 'Montserrat', sans-serif;
+            font-size: 56px;
+            line-height: 0.95;
+            letter-spacing: 1px;
+            color: #ffffff;
+            text-transform: uppercase;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.9), 0 0 30px rgba(245, 158, 11, 0.3);
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+
+        .poster-media-box {
+            width: 100%;
+            max-height: 220px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid rgba(245, 158, 11, 0.4);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .poster-media-box img {
+            width: 100%;
+            height: 100%;
+            max-height: 220px;
+            object-fit: cover;
+        }
+
+        .poster-datetime-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            padding: 10px 24px;
+            border-radius: 30px;
+            backdrop-filter: blur(8px);
+            width: 100%;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+        }
+
+        .datetime-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 16px;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .datetime-item i {
+            color: var(--accent);
+            width: 18px;
+            height: 18px;
+        }
+
+        .poster-details {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #e2e8f0;
+            max-width: 90%;
+            margin: 0 auto;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            font-weight: 500;
+        }
+
+        .poster-price-badge {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 22px;
+            font-weight: 900;
+            color: #fef08a;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid rgba(245, 158, 11, 0.5);
+            padding: 6px 20px;
+            border-radius: 8px;
+            letter-spacing: 1px;
+        }
+
+        /* Footer & QR */
+        .poster-footer {
+            border-top: 2px solid rgba(245, 158, 11, 0.4);
+            padding-top: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            text-align: left;
+        }
+
+        .footer-info {
+            flex: 1;
+        }
+
+        .footer-venue-name {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .footer-subtext {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 2px;
+            line-height: 1.3;
+        }
+
+        .footer-qr-wrap {
+            background: #fff;
+            padding: 6px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            flex-shrink: 0;
+        }
+
+        .footer-qr-wrap #qrcode {
+            width: 60px;
+            height: 60px;
+        }
+
+        .footer-qr-label {
+            font-size: 8px;
+            font-weight: 800;
+            color: #000;
+            text-transform: uppercase;
+            margin-top: 2px;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* Grid View Section */
+        .grid-section {
+            display: none;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .grid-section.active {
+            display: block;
+        }
+
+        .slides-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .slide-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            cursor: pointer;
+        }
+
+        .slide-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.5);
+        }
+
+        .slide-card-thumb {
+            height: 140px;
+            background: #0f172a;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: flex-end;
+            padding: 0.75rem;
+        }
+
+        .slide-card-badge {
+            background: var(--gold-gradient);
+            color: #000;
+            font-size: 0.65rem;
+            font-weight: 900;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .slide-card-body {
+            padding: 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .slide-card-title {
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: #fff;
+            margin-bottom: 0.35rem;
+            line-height: 1.3;
+        }
+
+        .slide-card-meta {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 0.85rem;
+        }
+
+        .slide-card-actions {
+            display: flex;
+            gap: 0.4rem;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding-top: 0.65rem;
+        }
+
+        /* PRINT STYLES FOR EXACT A4 PORTRAIT */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+
+            body {
+                background: none !important;
+                color: #000 !important;
+                overflow: visible !important;
+            }
+
+            header, .sidebar, .stage-bar, .grid-section {
+                display: none !important;
+            }
+
+            .app-layout {
+                height: auto !important;
+                overflow: visible !important;
+            }
+
+            .preview-stage {
+                padding: 0 !important;
+                background: none !important;
+                overflow: visible !important;
+            }
+
+            .poster-container {
+                width: 100vw !important;
+                height: 100vh !important;
+                min-width: 100% !important;
+                min-height: 100% !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                page-break-after: always;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-brand">
+            <div class="logo-box">
+                <i data-lucide="printer"></i>
+            </div>
+            <div class="header-titles">
+                <h1>CT-MATRIX A4 POSTER MAKER</h1>
+                <p>Digital Signage to High-Res Print Engine</p>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <button class="btn" onclick="switchView('editor')">
+                <i data-lucide="edit-3"></i> Poster Studio
+            </button>
+            <button class="btn" onclick="switchView('grid')">
+                <i data-lucide="layout-grid"></i> All Slides Grid
+            </button>
+            <button class="btn btn-primary" onclick="downloadPosterPDF()">
+                <i data-lucide="file-down"></i> Save as PDF
+            </button>
+            <button class="btn btn-gold" onclick="window.print()">
+                <i data-lucide="printer"></i> Print A4 Poster
+            </button>
+            <a href="masteradmin.html" class="btn" title="Master TV Control">
+                <i data-lucide="crown"></i> Master Admin
+            </a>
+            <a href="files.html" class="btn" title="Online File Browser">
+                <i data-lucide="folder-tree"></i> Files
+            </a>
+            <a href="../_ct-LAND/index.html" class="btn" title="CT-LAND Hub">
+                <i data-lucide="compass"></i> CT-LAND
+            </a>
+        </div>
+    </header>
+
+    <div class="app-layout">
+        <!-- Sidebar Controls (Editor View) -->
+        <aside class="sidebar" id="sidebarControls">
+            <!-- Slide Selector -->
+            <div class="sidebar-section">
+                <div class="section-title">
+                    <span>1. Select Matrix Slide</span>
+                    <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.7rem;" onclick="fetchGSheetsData()">
+                        <i data-lucide="refresh-cw" style="width: 12px; height: 12px;"></i> Sync
+                    </button>
+                </div>
+                <div class="form-group">
+                    <select id="slideSelect" onchange="onSlideSelectChange(this.value)">
+                        <option value="">-- Loading live slides... --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Coasters Branding & Theme -->
+            <div class="sidebar-section">
+                <div class="section-title">2. Venue Logo & Theme</div>
+                <div class="form-group">
+                    <label>Logo Selection</label>
+                    <select id="logoSelect" onchange="updatePoster()">
+                        <option value="images/coasters-logo-original.png">Coasters Tavern (Original Logo)</option>
+                        <option value="images/GOLD-FLAME-LOGO.png">Coasters Gold Flame Logo</option>
+                        <option value="images/GOLD-FLAME-LOGO-BLACK-CLEAN.png">Gold Flame Clean (High Contrast)</option>
+                        <option value="images/logo.png">Default Badge Logo</option>
+                        <option value="none">No Logo</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Background Wallpaper</label>
+                    <select id="bgSelect" onchange="updatePoster()">
+                        <option value="images/bg1.jpg">Wallpaper 1 (Coasters Ambient)</option>
+                        <option value="images/bg2.jpg">Wallpaper 2 (Golden Lounge)</option>
+                        <option value="images/bg3.jpg">Wallpaper 3 (Stage & Lights)</option>
+                        <option value="images/bg4.jpg">Wallpaper 4 (Dark Texture)</option>
+                        <option value="custom">Custom Image URL</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="customBgGroup" style="display: none;">
+                    <label>Custom Background URL</label>
+                    <input type="text" id="customBgUrl" placeholder="images/bg1.jpg" oninput="updatePoster()">
+                </div>
+            </div>
+
+            <!-- Details & Data Shown -->
+            <div class="sidebar-section">
+                <div class="section-title">3. Details & Visibility Toggles</div>
+                <div class="toggle-grid">
+                    <label class="toggle-item">
+                        <span class="toggle-label">Logo</span>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="showLogo" checked onchange="updatePoster()">
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+                    <label class="toggle-item">
+                        <span class="toggle-label">Category Ribbon</span>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="showRibbon" checked onchange="updatePoster()">
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+                    <label class="toggle-item">
+                        <span class="toggle-label">Tagline</span>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="showTagline" checked onchange="updatePoster()">
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+                    <label class="toggle-item">
+                        <span class="toggle-label">Poster Graphic</span>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="showGraphic" checked onchange="updatePoster()">
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+                    <label class="toggle-item">
+                        <span class="toggle-label">Date & Time Box</span>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="showDateTime" checked onchange="updatePoster()">
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+                    <label class="toggle-item">
+                        <span class="toggle-label">Price / Door</span>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="showPrice" checked onchange="updatePoster()">
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+                    <label class="toggle-item">
+                        <span class="toggle-label">Event Description</span>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="showDetails" checked onchange="updatePoster()">
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+                    <label class="toggle-item">
+                        <span class="toggle-label">Promotional QR</span>
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="showQR" checked onchange="updatePoster()">
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Custom Content Overrides -->
+            <div class="sidebar-section">
+                <div class="section-title">4. Customize Content & Typography</div>
+                <div class="form-group">
+                    <label>Category Ribbon</label>
+                    <input type="text" id="inputRibbon" value="LIVE ENTERTAINMENT" oninput="updatePoster()">
+                </div>
+                <div class="form-group">
+                    <label>Top Tagline</label>
+                    <input type="text" id="inputTagline" value="COASTERS TAVERN PRESENTS" oninput="updatePoster()">
+                </div>
+                <div class="form-group">
+                    <label>Main Event Title</label>
+                    <input type="text" id="inputTitle" value="THE LIVE SESSIONS" oninput="updatePoster()">
+                </div>
+                <div class="form-group">
+                    <label>Featured Graphic URL / Path</label>
+                    <input type="text" id="inputGraphic" placeholder="images/bg1.jpg or BANDS/band.jpg" oninput="updatePoster()">
+                </div>
+                <div class="form-group">
+                    <label>Date & Day</label>
+                    <input type="text" id="inputDate" value="THIS FRIDAY 8PM" oninput="updatePoster()">
+                </div>
+                <div class="form-group">
+                    <label>Location / Stage</label>
+                    <input type="text" id="inputLocation" value="MAIN LOUNGE STAGE" oninput="updatePoster()">
+                </div>
+                <div class="form-group">
+                    <label>Price / Door Charge</label>
+                    <input type="text" id="inputPrice" value="FREE ENTRY" oninput="updatePoster()">
+                </div>
+                <div class="form-group">
+                    <label>Event Description / Set Times</label>
+                    <textarea id="inputDetails" oninput="updatePoster()">Join us for an electrifying night of live music, ice-cold brews, and premium gastro dining at Redwood's favourite local tavern.</textarea>
+                </div>
+                <div class="form-group">
+                    <label>QR Code Target URL</label>
+                    <input type="text" id="inputQR" value="https://ctsc-app.web.app/" oninput="updatePoster()">
+                </div>
+                <div class="form-group">
+                    <label>Footer Venue Text</label>
+                    <input type="text" id="inputFooter" value="COASTERS TAVERN • 156 MAIN NORTH RD, REDWOOD, CHRISTCHURCH • PHONE 03 352 9390" oninput="updatePoster()">
+                </div>
+            </div>
+        </aside>
+
+        <!-- Preview Stage (Editor View) -->
+        <main class="preview-stage" id="previewStage">
+            <!-- View Mode Tabs -->
+            <div class="stage-bar">
+                <button class="view-tab-btn active" id="tabEditorBtn" onclick="switchView('editor')">
+                    <i data-lucide="eye"></i> A4 Studio Preview (210 x 297mm)
+                </button>
+                <button class="view-tab-btn" id="tabGridBtn" onclick="switchView('grid')">
+                    <i data-lucide="grid"></i> All Slides Grid (<span id="slideCountBadge">0</span>)
+                </button>
+            </div>
+
+            <!-- The A4 Canvas Element -->
+            <div class="poster-container" id="posterCanvas">
+                <!-- Background Layer -->
+                <div class="poster-bg" id="posterBgLayer" style="background-image: url('images/bg1.jpg');"></div>
+                <div class="poster-overlay"></div>
+
+                <!-- Poster Content -->
+                <div class="poster-content">
+                    <!-- Top Branding & Tagline -->
+                    <div class="poster-header">
+                        <div class="poster-logo-wrap" id="posterLogoBox">
+                            <img src="images/coasters-logo-original.png" id="posterLogoImg" alt="Coasters Logo" onerror="this.src='images/logo.png'">
+                        </div>
+                        <div class="poster-badge" id="posterRibbon">LIVE ENTERTAINMENT</div>
+                        <div class="poster-tagline" id="posterTagline">COASTERS TAVERN PRESENTS</div>
+                    </div>
+
+                    <!-- Main Event Section -->
+                    <div class="poster-body">
+                        <div class="poster-title" id="posterTitle">THE LIVE SESSIONS</div>
+
+                        <div class="poster-media-box" id="posterMediaBox" style="display: none;">
+                            <img src="" id="posterMediaImg" alt="Poster Graphic">
+                        </div>
+
+                        <div class="poster-datetime-box" id="posterDateTimeBox">
+                            <div class="datetime-item">
+                                <i data-lucide="calendar"></i>
+                                <span id="posterDate">THIS FRIDAY 8PM</span>
+                            </div>
+                            <div class="datetime-item">
+                                <i data-lucide="map-pin"></i>
+                                <span id="posterLocation">MAIN LOUNGE STAGE</span>
+                            </div>
+                        </div>
+
+                        <div class="poster-price-badge" id="posterPriceBadge">FREE ENTRY</div>
+
+                        <div class="poster-details" id="posterDetailsText">
+                            Join us for an electrifying night of live music, ice-cold brews, and premium gastro dining at Redwood's favourite local tavern.
+                        </div>
+                    </div>
+
+                    <!-- Footer & QR -->
+                    <div class="poster-footer" id="posterFooterBox">
+                        <div class="footer-info">
+                            <div class="footer-venue-name">COASTERS TAVERN</div>
+                            <div class="footer-subtext" id="posterFooterText">
+                                156 MAIN NORTH RD, REDWOOD, CHRISTCHURCH • PHONE 03 352 9390 • COASTERS.CO.NZ
+                            </div>
+                        </div>
+                        <div class="footer-qr-wrap" id="posterQRWrap">
+                            <div id="qrcode"></div>
+                            <div class="footer-qr-label">SCAN TO VIEW</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid View Section (Switched via Tab) -->
+            <div class="grid-section" id="gridSection">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <div>
+                        <h2 style="font-size: 1.4rem; font-weight: 800;">All Matrix Slides</h2>
+                        <p style="color: var(--text-dim); font-size: 0.8rem;">Click any slide to open in the A4 Poster Studio, or print directly.</p>
+                    </div>
+                    <input type="text" id="gridSearchInput" placeholder="Filter slides..." oninput="filterGrid()" style="max-width: 300px; padding: 0.5rem 1rem;">
+                </div>
+                <div class="slides-grid" id="slidesGrid"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const GSHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjplY4qgdlDPmFO4sKUoWHnBPoeqf-rY3Tc0Y50wgDbDutbTn4j_hXhW3aXhYVjvfbIlwcIOF07250/pub?gid=1948723750&single=true&output=csv';
+        let rawEvents = [];
+        let qrCodeInstance = null;
+
+        async function fetchGSheetsData() {
+            try {
+                const res = await fetch(GSHEETS_URL + (GSHEETS_URL.includes('?') ? '&' : '?') + 't=' + Date.now());
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const csv = await res.text();
+                parseEvents(csv);
+            } catch (err) {
+                console.warn('GSheet fetch error, using local fallback:', err);
+                const cached = localStorage.getItem('matrix_cached_csv');
+                if (cached) parseEvents(cached);
+            }
+        }
+
+        function parseEvents(text) {
+            const rows = [];
+            let row = [];
+            let col = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < text.length; i++) {
+                const c = text[i];
+                const next = text[i+1];
+                if (inQuotes) {
+                    if (c === '"' && next === '"') { col += '"'; i++; }
+                    else if (c === '"') { inQuotes = false; }
+                    else { col += c; }
+                } else {
+                    if (c === '"') { inQuotes = true; }
+                    else if (c === ',') { row.push(col.trim()); col = ''; }
+                    else if (c === '\n' || (c === '\r' && next === '\n')) {
+                        if (c === '\r') i++;
+                        row.push(col.trim());
+                        rows.push(row);
+                        row = [];
+                        col = '';
+                    } else { col += c; }
+                }
+            }
+            if (col || row.length > 0) { row.push(col.trim()); rows.push(row); }
+
+            rawEvents = rows.slice(1).map((r, idx) => ({
+                id: 'slide_' + idx,
+                date: r[0] || '',
+                day: r[1] || '',
+                type: r[2] || 'Event',
+                title: (r[3] || '').replace(/<br>/gi, ' '),
+                details: (r[4] || '').replace(/<br>/gi, '\n'),
+                time: r[6] || '',
+                price: r[7] || '',
+                location: r[8] || 'MAIN LOUNGE',
+                footer: r[9] || '',
+                qr: r[14] || 'https://ctsc-app.web.app/',
+                bgImage: r[18] || 'images/bg1.jpg',
+                fgImage: r[19] || '',
+                bubbleText: r[20] || ''
+            })).filter(e => e.title || e.details || e.date);
+
+            populateSlideDropdown();
+            renderGrid();
+            document.getElementById('slideCountBadge').innerText = rawEvents.length;
+
+            if (rawEvents.length > 0) {
+                loadSlideIntoEditor(rawEvents[0]);
+            }
+        }
+
+        function populateSlideDropdown() {
+            const select = document.getElementById('slideSelect');
+            select.innerHTML = '';
+            rawEvents.forEach((ev, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.innerText = `[${ev.type.toUpperCase()}] ${ev.title || ev.date || 'Slide ' + (idx + 1)}`;
+                select.appendChild(opt);
+            });
+        }
+
+        function onSlideSelectChange(val) {
+            if (val === '') return;
+            const ev = rawEvents[parseInt(val)];
+            if (ev) loadSlideIntoEditor(ev);
+        }
+
+        function loadSlideIntoEditor(ev) {
+            document.getElementById('inputTitle').value = ev.title || 'SPECIAL EVENT';
+            document.getElementById('inputRibbon').value = ev.type.toUpperCase() || 'COASTERS LIVE';
+            document.getElementById('inputTagline').value = ev.bubbleText ? ev.bubbleText.toUpperCase() : 'COASTERS TAVERN PRESENTS';
+            document.getElementById('inputDate').value = `${ev.day ? ev.day.toUpperCase() + ' ' : ''}${ev.date ? ev.date.toUpperCase() : ''}${ev.time ? ' • ' + ev.time.toUpperCase() : ''}`.trim();
+            document.getElementById('inputLocation').value = ev.location ? ev.location.toUpperCase() : 'MAIN LOUNGE';
+            document.getElementById('inputPrice').value = ev.price ? ev.price.toUpperCase() : 'FREE ENTRY';
+            document.getElementById('inputDetails').value = ev.details || '';
+            document.getElementById('inputGraphic').value = ev.fgImage || '';
+            document.getElementById('inputQR').value = ev.qr || 'https://ctsc-app.web.app/';
+
+            if (ev.bgImage && ev.bgImage.startsWith('images/')) {
+                document.getElementById('bgSelect').value = ev.bgImage;
+            }
+
+            updatePoster();
+        }
+
+        function updatePoster() {
+            // Text values
+            const title = document.getElementById('inputTitle').value;
+            const ribbon = document.getElementById('inputRibbon').value;
+            const tagline = document.getElementById('inputTagline').value;
+            const date = document.getElementById('inputDate').value;
+            const location = document.getElementById('inputLocation').value;
+            const price = document.getElementById('inputPrice').value;
+            const details = document.getElementById('inputDetails').value;
+            const graphic = document.getElementById('inputGraphic').value;
+            const qrUrl = document.getElementById('inputQR').value;
+            const footer = document.getElementById('inputFooter').value;
+
+            // Visibility toggles
+            const showLogo = document.getElementById('showLogo').checked;
+            const showRibbon = document.getElementById('showRibbon').checked;
+            const showTagline = document.getElementById('showTagline').checked;
+            const showGraphic = document.getElementById('showGraphic').checked;
+            const showDateTime = document.getElementById('showDateTime').checked;
+            const showPrice = document.getElementById('showPrice').checked;
+            const showDetails = document.getElementById('showDetails').checked;
+            const showQR = document.getElementById('showQR').checked;
+
+            // Logo & Theme
+            const logoSelect = document.getElementById('logoSelect').value;
+            const bgSelect = document.getElementById('bgSelect').value;
+            const customBgUrl = document.getElementById('customBgUrl').value;
+
+            // Update DOM
+            document.getElementById('posterTitle').innerText = title;
+            document.getElementById('posterRibbon').innerText = ribbon;
+            document.getElementById('posterRibbon').style.display = showRibbon && ribbon ? 'inline-block' : 'none';
+
+            document.getElementById('posterTagline').innerText = tagline;
+            document.getElementById('posterTagline').style.display = showTagline && tagline ? 'block' : 'none';
+
+            document.getElementById('posterDate').innerText = date;
+            document.getElementById('posterLocation').innerText = location;
+            document.getElementById('posterDateTimeBox').style.display = showDateTime && (date || location) ? 'flex' : 'none';
+
+            document.getElementById('posterPriceBadge').innerText = price;
+            document.getElementById('posterPriceBadge').style.display = showPrice && price ? 'inline-block' : 'none';
+
+            document.getElementById('posterDetailsText').innerText = details;
+            document.getElementById('posterDetailsText').style.display = showDetails && details ? 'block' : 'none';
+
+            document.getElementById('posterFooterText').innerText = footer;
+
+            // Graphic
+            const mediaBox = document.getElementById('posterMediaBox');
+            const mediaImg = document.getElementById('posterMediaImg');
+            if (showGraphic && graphic) {
+                mediaImg.src = graphic;
+                mediaBox.style.display = 'flex';
+            } else {
+                mediaBox.style.display = 'none';
+            }
+
+            // Logo
+            const logoBox = document.getElementById('posterLogoBox');
+            const logoImg = document.getElementById('posterLogoImg');
+            if (showLogo && logoSelect !== 'none') {
+                logoImg.src = logoSelect;
+                logoBox.style.display = 'flex';
+            } else {
+                logoBox.style.display = 'none';
+            }
+
+            // Background
+            const bgLayer = document.getElementById('posterBgLayer');
+            const bgPath = bgSelect === 'custom' ? customBgUrl : bgSelect;
+            if (bgPath) {
+                bgLayer.style.backgroundImage = `url('${bgPath}')`;
+            }
+
+            // QR Code
+            const qrWrap = document.getElementById('posterQRWrap');
+            if (showQR && qrUrl) {
+                qrWrap.style.display = 'flex';
+                generateQRCode(qrUrl);
+            } else {
+                qrWrap.style.display = 'none';
+            }
+
+            lucide.createIcons();
+        }
+
+        function generateQRCode(text) {
+            const qrEl = document.getElementById('qrcode');
+            qrEl.innerHTML = '';
+            new QRCode(qrEl, {
+                text: text,
+                width: 60,
+                height: 60,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        }
+
+        function switchView(mode) {
+            const sidebar = document.getElementById('sidebarControls');
+            const canvas = document.getElementById('posterCanvas');
+            const grid = document.getElementById('gridSection');
+            const tabEditor = document.getElementById('tabEditorBtn');
+            const tabGrid = document.getElementById('tabGridBtn');
+
+            if (mode === 'editor') {
+                sidebar.style.display = 'flex';
+                canvas.style.display = 'flex';
+                grid.classList.remove('active');
+                tabEditor.classList.add('active');
+                tabGrid.classList.remove('active');
+            } else {
+                sidebar.style.display = 'none';
+                canvas.style.display = 'none';
+                grid.classList.add('active');
+                tabEditor.classList.remove('active');
+                tabGrid.classList.add('active');
+            }
+            lucide.createIcons();
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('slidesGrid');
+            grid.innerHTML = '';
+
+            rawEvents.forEach((ev, idx) => {
+                const card = document.createElement('div');
+                card.className = 'slide-card';
+                card.onclick = () => {
+                    loadSlideIntoEditor(ev);
+                    document.getElementById('slideSelect').value = idx;
+                    switchView('editor');
+                };
+
+                const bg = ev.bgImage || 'images/bg1.jpg';
+                card.innerHTML = `
+                    <div class="slide-card-thumb" style="background-image: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.85)), url('${bg}')">
+                        <span class="slide-card-badge">${ev.type}</span>
+                    </div>
+                    <div class="slide-card-body">
+                        <div>
+                            <div class="slide-card-title">${ev.title || 'Untitled Slide'}</div>
+                            <div class="slide-card-meta">${ev.day || ''} ${ev.date || ''} ${ev.time || ''}</div>
+                        </div>
+                        <div class="slide-card-actions">
+                            <button class="btn btn-gold" style="flex: 1; padding: 0.35rem; font-size: 0.7rem;" onclick="event.stopPropagation(); loadSlideIntoEditor(rawEvents[${idx}]); switchView('editor');">
+                                <i data-lucide="edit-3" style="width: 12px; height: 12px;"></i> Edit Poster
+                            </button>
+                            <button class="btn" style="padding: 0.35rem 0.6rem; font-size: 0.7rem;" onclick="event.stopPropagation(); loadSlideIntoEditor(rawEvents[${idx}]); setTimeout(() => window.print(), 300);">
+                                <i data-lucide="printer" style="width: 12px; height: 12px;"></i> Print
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            lucide.createIcons();
+        }
+
+        function filterGrid() {
+            const query = document.getElementById('gridSearchInput').value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.slide-card');
+            rawEvents.forEach((ev, idx) => {
+                const str = `${ev.title} ${ev.type} ${ev.details} ${ev.date}`.toLowerCase();
+                if (cards[idx]) {
+                    cards[idx].style.display = str.includes(query) ? 'flex' : 'none';
+                }
+            });
+        }
+
+        async function downloadPosterPDF() {
+            const element = document.getElementById('posterCanvas');
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Rendering PDF...';
+
+            try {
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: false
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                const { jsPDF } = window.jspdf;
+                // A4 dimensions: 210 x 297 mm
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+                
+                const filename = (document.getElementById('inputTitle').value || 'poster').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                pdf.save(`${filename}_a4_poster.pdf`);
+            } catch (err) {
+                console.error('PDF generation error:', err);
+                alert('Could not render high-res PDF canvas automatically. Opening native Print dialog as PDF printer.');
+                window.print();
+            } finally {
+                btn.innerHTML = originalText;
+                lucide.createIcons();
+            }
+        }
+
+        // Init on load
+        fetchGSheetsData();
+    </script>
+</body>
+</html>

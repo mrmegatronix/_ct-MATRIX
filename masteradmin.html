@@ -495,9 +495,9 @@
             <div class="nav-link" id="nav-playlist" onclick="loadWorkspaceView('PLAYLIST')">Playlist Grid</div>
             <div class="nav-link" id="nav-schedules" onclick="loadWorkspaceView('SCHEDULES')">Module Schedules</div>
             <div class="nav-link" onclick="loadModule('COMMANDER', 'live-commander.html?compact=true&v=' + Date.now())" style="color: var(--accent)">Live Slide Commander</div>
+            <div class="nav-link" onclick="loadModule('POSTER', 'postermaker.html')" style="color: #f59e0b; font-weight: 700;">🖨 A4 Poster Maker</div>
+            <div class="nav-link" onclick="loadModule('FILES', 'files.html')">📁 Online File Browser</div>
         </div>
-
-
 
         <div id="module-tree">
             <div class="nav-section-title">CORE INFRASTRUCTURE</div>
@@ -505,6 +505,8 @@
                 <div class="tree-header" onclick="toggleNode(this)">_ct-MATRIX (Core)</div>
                 <div class="tree-children">
                     <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MATRIX', 'index.html')">Display Engine</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('POSTER', 'postermaker.html')">A4 Poster Maker</a>
+                    <a href="javascript:void(0)" class="tree-item" onclick="loadModule('FILES', 'files.html')">Online File Browser</a>
                     <a href="javascript:void(0)" class="tree-item active" style="opacity: 0.5; pointer-events: none;">Master Admin Panel (Current)</a>
                 </div>
             </div>
