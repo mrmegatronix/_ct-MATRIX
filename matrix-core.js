@@ -681,12 +681,14 @@ function buildSlideQueue(data) {
     return val || defaultDur;
   };
   queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5, duration: getModDur('ct-mmr', 600) }); // Play all slides (10min default)
-  queue.push({ type: 'MODULE', id: 'ct-wea1', url: '../_ct-wea1/dist/index.html', title: "Christchurch Weather", priority: 80, duration: getModDur('ct-wea1', 90) });
+  queue.push({ type: 'MODULE', id: 'ct-wea1', url: '../_ct-wea1/index.html', title: "Christchurch Weather", priority: 80, duration: getModDur('ct-wea1', 90) });
   queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5, duration: getModDur('ct-ace', 180) }); // 6 slides * 30s
   queue.push({ type: 'MODULE', id: 'ct-quiz', url: '../_ct-QUIZ/index.html', title: "Weekly Pub Quiz", priority: 10, duration: getModDur('ct-quiz', 60) });
-  queue.push({ type: 'MODULE', id: 'ct-fir', url: '../_ct-FIR/index.html', title: "Fireplace Ambiance", pinned: false, priority: 90, duration: getModDur('ct-fir', 180) }); // 3min default
-  queue.push({ type: 'MODULE', id: 'ct-soc', url: 'https://ctsc-app.web.app/#/tv', title: "Social Club TV Slides", pinned: true, priority: 8, duration: getModDur('ct-soc', 120) });
-  queue.push({ type: 'MODULE', id: 'ct-tik', url: 'https://mrmegatronix.github.io/_ct-TIK/', title: "Coasters Tavern TikTok", pinned: true, priority: 7, duration: getModDur('ct-tik', 120) });
+  const isLocalFile = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const socUrl = isLocalFile ? '../_ct-SOC/index.html' : 'https://ctsc-app.web.app/#/tv';
+  const tikUrl = isLocalFile ? '../_ct-TIK/index.html' : 'https://mrmegatronix.github.io/_ct-TIK/';
+  queue.push({ type: 'MODULE', id: 'ct-soc', url: socUrl, title: "Social Club TV Slides", pinned: true, priority: 8, duration: getModDur('ct-soc', 120) });
+  queue.push({ type: 'MODULE', id: 'ct-tik', url: tikUrl, title: "Coasters Tavern TikTok", pinned: true, priority: 7, duration: getModDur('ct-tik', 120) });
   queue.push({ type: 'MODULE', id: 'ct-loyalty', url: 'loyalty-slide.html', title: "Coasters Loyalty App", pinned: true, priority: 6, duration: getModDur('ct-loyalty', 60), accentColor: '#89CFF0' });
 
   // 4. Apply Module Filters
