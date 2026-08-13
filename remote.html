@@ -91,8 +91,7 @@
   <div class="grid-3">
     <button class="btn" onclick="jump('ct-ace')"><span class="btn-icon">🃏</span><span>ACE</span></button>
     <button class="btn" onclick="jump('ct-mmr')"><span class="btn-icon">🥩</span><span>MMR</span></button>
-    <button class="btn" onclick="jump('ct-robs')"><span class="btn-icon">🥩</span><span>ROBS</span></button>
-    <button class="btn" onclick="jump('ct-quiz')"><span class="btn-icon">🧠</span><span>QUIZ</span></button>
+    <button class="btn" onclick="jump('ct-quiz')"><span class="btn-icon">❓</span><span>QUIZ</span></button>
     <button class="btn" onclick="jump('ct-wea1')"><span class="btn-icon">🌦</span><span>WEA1</span></button>
     <button class="btn" onclick="jump('ct-fir')"><span class="btn-icon">🔥</span><span>FIR</span></button>
     <button class="btn" onclick="jump('ct-soc')"><span class="btn-icon">🤝</span><span>SOC</span></button>
@@ -154,19 +153,6 @@
         <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
       </div>
       <div class="mod-dur-wrapper" id="dur-wrap-ct-mmr"><input type="number" class="mod-dur" id="dur-ct-mmr" placeholder="s"></div>
-    </div>
-    <!-- ROBS -->
-    <div class="mod-row" id="row-ct-robs">
-      <div class="mod-name">🥩 ROBS</div>
-      <div class="mod-toggle">
-        <button class="mod-btn btn-on" onclick="toggleModule('ROBS', true)">ON</button>
-        <button class="mod-btn btn-off" onclick="toggleModule('ROBS', false)">OFF</button>
-      </div>
-      <div style="display: flex; align-items: center; gap: 4px;">
-        <input type="checkbox" id="all-ct-robs" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-robs', this.checked)">
-        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
-      </div>
-      <div class="mod-dur-wrapper" id="dur-wrap-ct-robs"><input type="number" class="mod-dur" id="dur-ct-robs" placeholder="s"></div>
     </div>
     <!-- QUIZ -->
     <div class="mod-row" id="row-ct-quiz">
@@ -276,7 +262,7 @@
     const bc_sub = new BroadcastChannel('mom_sync');
 
     // Default durations fallback
-    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-mmr': 600, 'ct-robs': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-quiz': 60, 'ct-fir': 180, 'ct-soc': 120, 'ct-tik': 120, 'ct-loyalty': 60 };
+    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-quiz': 60, 'ct-fir': 180, 'ct-soc': 120, 'ct-tik': 120, 'ct-loyalty': 60 };
 
     function getClientId() {
       let id = localStorage.getItem('matrix_client_id');
@@ -460,7 +446,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-robs', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty'];
+        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {

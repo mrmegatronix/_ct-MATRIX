@@ -660,9 +660,8 @@
         const schedules = config.moduleSchedules || {};
 
         const modules = [
-            { id: 'ct-quiz', name: 'QUIZ', title: 'Weekly Pub Quiz', defaultDays: [3], defaultStart: '18:00', defaultEnd: '19:10', defaultEnabled: true },
+            { id: 'ct-quiz', name: 'QUIZ', title: 'Quiz Slides', defaultDays: [1], defaultStart: '18:00', defaultEnd: '21:00', defaultEnabled: false },
             { id: 'ct-mmr', name: 'MMR', title: 'Meat Raffle', defaultDays: [5], defaultStart: '16:00', defaultEnd: '19:00', defaultEnabled: false },
-            { id: 'ct-robs', name: 'ROBS', title: 'Robs Bonus Box', defaultDays: [0], defaultStart: '16:00', defaultEnd: '19:00', defaultEnabled: false },
             { id: 'ct-ace', name: 'ACE', title: 'Chase Ace', defaultDays: [4], defaultStart: '17:00', defaultEnd: '20:00', defaultEnabled: false },
             { id: 'ct-soc', name: 'SOC', title: 'Social Club', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '22:00', defaultEnabled: false },
             { id: 'ct-loyalty', name: 'LOYALTY', title: 'Loyalty App', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
@@ -767,7 +766,7 @@
     }
 
     window.saveAllModuleSchedules = function() {
-        const moduleIds = ['ct-quiz', 'ct-mmr', 'ct-robs', 'ct-ace', 'ct-soc', 'ct-loyalty', 'ct-tik', 'ct-wea1', 'ct-fir'];
+        const moduleIds = ['ct-quiz', 'ct-mmr', 'ct-ace', 'ct-soc', 'ct-loyalty', 'ct-tik', 'ct-wea1', 'ct-fir'];
         const schedules = {};
 
         function timeToDec(timeStr) {
@@ -835,7 +834,6 @@
             { id: 'ct-matrix', name: 'MATRIX', defaultDuration: 30 },
             { id: 'ct-ace', name: 'ACE', defaultDuration: 180 },
             { id: 'ct-mmr', name: 'MMR', defaultDuration: 600 },
-            { id: 'ct-robs', name: 'ROBS', defaultDuration: 600 },
             { id: 'ct-quiz', name: 'QUIZ', defaultDuration: 60 },
             { id: 'ct-wea1', name: 'WEA1', defaultDuration: 60 },
             { id: 'ct-fir', name: 'FIR', defaultDuration: 180 },
@@ -924,7 +922,6 @@
             { id: 'MATRIX', name: 'LIVE SLIDES', path: '_ct-MATRIX' },
             { id: 'ACE', name: 'CHASE ACE', path: '_ct-ACE' },
             { id: 'MMR', name: 'MEAT RAFFLE', path: '_ct-MMR' },
-            { id: 'ROBS', name: 'ROBS BONUS BOX', path: '_ct-ROBS' },
             { id: 'QUIZ', name: 'WEEKLY QUIZ', path: '_ct-QUIZ' },
             { id: 'WEA1', name: 'WEATHER', path: '_ct-wea1' },
             { id: 'FIR', name: 'FIREPLACE', path: '_ct-FIR' },
@@ -973,8 +970,7 @@
         const modules = [
             { id: 'ct-matrix', name: 'MATRIX', title: 'Core Slides', defaultDur: 30, hasAdmin: false },
             { id: 'ct-ace', name: 'ACE', title: 'Chase Ace', defaultDur: 180, hasAdmin: true },
-            { id: 'ct-mmr', name: 'MMR', title: 'Meat Raffle', defaultDur: 600, hasAdmin: true },
-            { id: 'ct-robs', name: 'ROBS', title: 'Robs Bonus Box', defaultDur: 600, hasAdmin: true },
+            { id: 'ct-mmr', name: 'MMR', title: 'Monster Meat Raffle', defaultDur: 600, hasAdmin: true },
             { id: 'ct-quiz', name: 'QUIZ', title: 'Pub Quiz', defaultDur: 60, hasAdmin: true },
             { id: 'ct-wea1', name: 'WEA1', title: 'Weather', defaultDur: 60, hasAdmin: false },
             { id: 'ct-fir', name: 'FIR', title: 'Fireplace', defaultDur: 180, hasAdmin: false },
@@ -1051,7 +1047,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-robs', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty'];
+        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {
@@ -1104,7 +1100,7 @@
     }
 
     function saveHomeModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-robs', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty'];
+        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {
