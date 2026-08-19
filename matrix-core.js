@@ -691,6 +691,7 @@ function buildSlideQueue(data) {
   queue.push({ type: 'MODULE', id: 'ct-soc', url: socUrl, title: "Social Club TV Slides", pinned: true, priority: 8, duration: getModDur('ct-soc', 120) });
   queue.push({ type: 'MODULE', id: 'ct-tik', url: tikUrl, title: "Coasters Tavern TikTok", pinned: true, priority: 7, duration: getModDur('ct-tik', 120) });
   queue.push({ type: 'MODULE', id: 'ct-loyalty', url: 'loyalty-slide.html', title: "Coasters Loyalty App", pinned: true, priority: 6, duration: getModDur('ct-loyalty', 60), accentColor: '#89CFF0' });
+  queue.push({ type: 'MODULE', id: 'ct-trip', url: '../_ct-TRIP/index.html', title: "Live Bus Tracking", priority: 50, duration: getModDur('ct-trip', 120) });
 
   // 4. Apply Module Filters
   let filteredQueue = queue.filter(s => {
