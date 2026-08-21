@@ -1353,6 +1353,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
       if (slide.id === 'ct-soc') moduleColor = '#d4af37';
       if (slide.id === 'ct-tik') moduleColor = '#ff0050';
       if (slide.id === 'ct-loyalty') moduleColor = '#89CFF0';
+      if (slide.id === 'ct-trip') moduleColor = '#10b981';
       
       document.documentElement.style.setProperty('--theme-color', moduleColor);
       document.documentElement.style.setProperty('--theme-glow', `${moduleColor}60`);

@@ -9,19 +9,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #09090b;
-      --surface: #18181b;
-      --surface-bright: #27272a;
-      --accent: #10b981;
+      --bg: #020617;
+      --surface: rgba(15, 23, 42, 0.6);
+      --surface-bright: rgba(30, 41, 59, 0.8);
+      --accent: #06b6d4;
+      --accent-glow: rgba(6, 182, 212, 0.5);
       --red: #ef4444;
       --purple: #8b5cf6;
       --text: #f8fafc;
       --text-dim: #94a3b8;
-      --btn-bg: #18181b;
-      --border: #27272a;
+      --btn-bg: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.1);
     }
     body { 
-      background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; 
+      background: radial-gradient(circle at top right, #1e1b4b 0%, var(--bg) 60%); color: var(--text); font-family: 'Inter', sans-serif; 
       margin: 0; padding: 12px 10px 80px 10px; display: flex; flex-direction: column; align-items: center;
       min-height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
       box-sizing: border-box;
@@ -37,43 +38,48 @@
       color: var(--text); padding: 10px 4px; font-size: 0.65rem; font-weight: 700;
       text-transform: uppercase; display: flex; flex-direction: column; align-items: center;
       gap: 5px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+      backdrop-filter: blur(12px); transition: 0.2s;
     }
-    .btn:active { transform: scale(0.95); background: var(--accent); color: #000; }
+    .btn:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
     .btn-icon { font-size: 1.3rem; }
-    .btn-primary { border-color: var(--accent); color: var(--accent); }
+    .btn-primary { border-color: var(--accent); color: var(--accent); background: rgba(6, 182, 212, 0.1); }
     
     .section-title { width: 100%; max-width: 600px; font-size: 0.65rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; margin-bottom: 5px; }
     
     .modules { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 600px; flex-grow: 1; }
-    .mod-row { display: grid; grid-template-columns: 85px 1fr auto 50px; gap: 8px; background: var(--btn-bg); padding: 6px 10px; border-radius: 12px; align-items: center; border: 1px solid var(--border); }
-    .mod-name { font-size: 0.75rem; font-weight: 900; white-space: nowrap; }
     
-    .mod-toggle { display: flex; background: #000; border-radius: 6px; overflow: hidden; }
-    .mod-btn { flex: 1; padding: 6px 0; text-align: center; font-size: 0.65rem; font-weight: 900; border: none; cursor: pointer; color: #666; background: transparent; transition: 0.2s; }
-    .mod-btn.active-on { background: var(--accent); color: #000; }
-    .mod-btn.active-off { background: #333; color: #fff; }
+    /* New Sleek Mod Cards */
+    .mod-card { background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); backdrop-filter: blur(12px); display: flex; flex-direction: column; }
+    .mod-header { display: flex; justify-content: space-between; align-items: center; }
+    .mod-name { font-size: 0.85rem; font-weight: 900; color: var(--text); }
+    .gear-btn { background: transparent; border: none; font-size: 1.1rem; cursor: pointer; padding: 4px; opacity: 0.5; transition: 0.2s; -webkit-tap-highlight-color: transparent; }
+    .gear-btn:active { transform: scale(0.9); opacity: 1; }
+    .mod-settings { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+    .mod-settings.open { max-height: 100px; }
     
-    .mod-dur-wrapper { position: relative; }
-    .mod-dur { width: 100%; background: #000; color: #fff; border: 1px solid #333; padding: 6px; border-radius: 6px; text-align: center; font-size: 0.75rem; font-family: monospace; box-sizing: border-box; }
-    .mod-dur-wrapper::after { content: 's'; position: absolute; right: 5px; top: 50%; transform: translateY(-50%); font-size: 0.6rem; color: #666; pointer-events: none; }
+    .mod-switch-cb:checked + .mod-switch-bg { background: var(--accent) !important; border-color: var(--accent) !important; box-shadow: 0 0 10px var(--accent-glow); }
+    .mod-switch-cb:checked + .mod-switch-bg .mod-switch-knob { transform: translateX(20px); }
     
-    .save-btn { width: 100%; max-width: 600px; background: var(--accent); color: #000; font-weight: 900; padding: 12px; border: none; border-radius: 12px; font-size: 0.8rem; cursor: pointer; margin-bottom: 10px; }
+    .mod-dur { width: 60px; background: rgba(0,0,0,0.3); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 6px; border-radius: 6px; text-align: center; font-size: 0.85rem; font-weight: bold; font-family: monospace; box-sizing: border-box; outline: none; transition: 0.2s; }
+    .mod-dur:focus { border-color: var(--accent); }
+    
+    .save-btn { width: 100%; max-width: 600px; background: linear-gradient(135deg, var(--accent), #3b82f6); color: #fff; font-weight: 900; padding: 14px; border: none; border-radius: 12px; font-size: 0.9rem; cursor: pointer; margin-bottom: 10px; margin-top: 10px; box-shadow: 0 10px 20px -10px rgba(6, 182, 212, 0.5); }
     .save-btn:active { transform: scale(0.98); }
     
-    .upcoming-box { width: 100%; max-width: 600px; background: var(--btn-bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; }
-    .upcoming-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; padding: 5px; border-bottom: 1px solid var(--border); }
+    .upcoming-box { width: 100%; max-width: 600px; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border); border-radius: 12px; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; backdrop-filter: blur(12px); }
+    .upcoming-item { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .upcoming-item:last-child { border-bottom: none; }
-    .upcoming-title { font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
-    .upcoming-type { font-weight: 900; color: var(--accent); font-size: 0.6rem; }
-    .upcoming-active { background: rgba(16, 185, 129, 0.1); border-radius: 4px; border: 1px solid var(--accent); }
-
-    .status-bar { background: rgba(255,255,255,0.05); padding: 5px 15px; border-radius: 50px; font-size: 0.65rem; opacity: 0.5; margin-bottom: 20px; }
+    .upcoming-title { font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+    .upcoming-type { font-weight: 900; color: var(--accent); font-size: 0.65rem; }
+    .upcoming-active { background: rgba(6, 182, 212, 0.1); border-radius: 6px; border: 1px solid rgba(6, 182, 212, 0.3); }
+    
+    .status-bar { background: rgba(255,255,255,0.05); padding: 6px 16px; border-radius: 50px; font-size: 0.7rem; opacity: 0.6; margin-bottom: 20px; font-weight: 700; }
     
     /* Navigation Hub */
-    .nav-hub { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(9, 9, 11, 0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--border); padding: 10px 5px; display: flex; justify-content: center; gap: 12px; z-index: 1000; }
-    .nav-link { color: var(--text-dim); text-decoration: none; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; transition: color 0.2s; }
+    .nav-hub { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(24px); border-top: 1px solid var(--border); padding: 12px 5px; display: flex; justify-content: center; gap: 16px; z-index: 1000; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
+    .nav-link { color: var(--text-dim); text-decoration: none; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; transition: color 0.2s; }
     .nav-link:hover { color: var(--text); }
-    .nav-link.active { color: var(--accent); }
+    .nav-link.active { color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
   </style>
 </head>
 <body>
@@ -97,6 +103,7 @@
     <button class="btn" onclick="jump('ct-soc')"><span class="btn-icon">🤝</span><span>SOC</span></button>
     <button class="btn" onclick="jump('ct-tik')"><span class="btn-icon">🎵</span><span>TIK</span></button>
     <button class="btn" onclick="jump('ct-loyalty')"><span class="btn-icon">💳</span><span>LOYALTY</span></button>
+    <button class="btn" onclick="jump('ct-trip')"><span class="btn-icon">✈️</span><span>TRIP</span></button>
     <button class="btn" onclick="send('NEXT')"><span class="btn-icon">📺</span><span>ADS</span></button>
   </div>
 
@@ -116,122 +123,274 @@
   <div class="section-title">Modules & Timers</div>
   <div class="modules">
     <!-- MATRIX -->
-    <div class="mod-row" id="row-ct-matrix">
-      <div class="mod-name">📺 MATRIX</div>
-      <div class="mod-toggle">
-        <button class="mod-btn btn-on" onclick="toggleModule('MATRIX', true)">ON</button>
-        <button class="mod-btn btn-off" onclick="toggleModule('MATRIX', false)">OFF</button>
+    <div class="mod-card" id="row-ct-matrix">
+      <div class="mod-header">
+        <div class="mod-name">📺 MATRIX</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="position:relative; width:44px; height:24px; cursor:pointer;">
+             <input type="checkbox" class="mod-switch-cb" id="switch-ct-matrix" onchange="toggleModule('MATRIX', this.checked)" style="opacity:0; width:0; height:0; position:absolute;">
+             <div class="mod-switch-bg" style="position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:24px; transition:0.3s; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="mod-switch-knob" style="position:absolute; top:1px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+             </div>
+          </label>
+          <button class="gear-btn" onclick="document.getElementById('settings-ct-matrix').classList.toggle('open')">⚙️</button>
+        </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 4px;">
-        <input type="checkbox" id="all-ct-matrix" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-matrix', this.checked)">
-        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      <div class="mod-settings" id="settings-ct-matrix">
+         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <label style="display:flex; align-items:center; gap: 6px; font-size: 0.75rem; color: #aaa; cursor: pointer;">
+                <input type="checkbox" id="all-ct-matrix" style="margin: 0; width: 14px; height: 14px; accent-color: var(--accent);" onchange="toggleRemotePlayAll('ct-matrix', this.checked)">
+                <span>Play All (Loop)</span>
+            </label>
+            <div class="mod-dur-wrapper" id="dur-wrap-ct-matrix" style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.65rem; color: #666; font-weight: 800;">SEC</span>
+                <input type="number" class="mod-dur" id="dur-ct-matrix" placeholder="s">
+            </div>
+         </div>
       </div>
-      <div class="mod-dur-wrapper" id="dur-wrap-ct-matrix"><input type="number" class="mod-dur" id="dur-ct-matrix" placeholder="s"></div>
     </div>
     <!-- ACE -->
-    <div class="mod-row" id="row-ct-ace">
-      <div class="mod-name">🃏 ACE</div>
-      <div class="mod-toggle">
-        <button class="mod-btn btn-on" onclick="toggleModule('ACE', true)">ON</button>
-        <button class="mod-btn btn-off" onclick="toggleModule('ACE', false)">OFF</button>
+    <div class="mod-card" id="row-ct-ace">
+      <div class="mod-header">
+        <div class="mod-name">🃏 ACE</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="position:relative; width:44px; height:24px; cursor:pointer;">
+             <input type="checkbox" class="mod-switch-cb" id="switch-ct-ace" onchange="toggleModule('ACE', this.checked)" style="opacity:0; width:0; height:0; position:absolute;">
+             <div class="mod-switch-bg" style="position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:24px; transition:0.3s; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="mod-switch-knob" style="position:absolute; top:1px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+             </div>
+          </label>
+          <button class="gear-btn" onclick="document.getElementById('settings-ct-ace').classList.toggle('open')">⚙️</button>
+        </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 4px;">
-        <input type="checkbox" id="all-ct-ace" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-ace', this.checked)">
-        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      <div class="mod-settings" id="settings-ct-ace">
+         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <label style="display:flex; align-items:center; gap: 6px; font-size: 0.75rem; color: #aaa; cursor: pointer;">
+                <input type="checkbox" id="all-ct-ace" style="margin: 0; width: 14px; height: 14px; accent-color: var(--accent);" onchange="toggleRemotePlayAll('ct-ace', this.checked)">
+                <span>Play All (Loop)</span>
+            </label>
+            <div class="mod-dur-wrapper" id="dur-wrap-ct-ace" style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.65rem; color: #666; font-weight: 800;">SEC</span>
+                <input type="number" class="mod-dur" id="dur-ct-ace" placeholder="s">
+            </div>
+         </div>
       </div>
-      <div class="mod-dur-wrapper" id="dur-wrap-ct-ace"><input type="number" class="mod-dur" id="dur-ct-ace" placeholder="s"></div>
     </div>
     <!-- MMR -->
-    <div class="mod-row" id="row-ct-mmr">
-      <div class="mod-name">🥩 MMR</div>
-      <div class="mod-toggle">
-        <button class="mod-btn btn-on" onclick="toggleModule('MMR', true)">ON</button>
-        <button class="mod-btn btn-off" onclick="toggleModule('MMR', false)">OFF</button>
+    <div class="mod-card" id="row-ct-mmr">
+      <div class="mod-header">
+        <div class="mod-name">🥩 MMR</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="position:relative; width:44px; height:24px; cursor:pointer;">
+             <input type="checkbox" class="mod-switch-cb" id="switch-ct-mmr" onchange="toggleModule('MMR', this.checked)" style="opacity:0; width:0; height:0; position:absolute;">
+             <div class="mod-switch-bg" style="position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:24px; transition:0.3s; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="mod-switch-knob" style="position:absolute; top:1px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+             </div>
+          </label>
+          <button class="gear-btn" onclick="document.getElementById('settings-ct-mmr').classList.toggle('open')">⚙️</button>
+        </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 4px;">
-        <input type="checkbox" id="all-ct-mmr" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-mmr', this.checked)">
-        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      <div class="mod-settings" id="settings-ct-mmr">
+         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <label style="display:flex; align-items:center; gap: 6px; font-size: 0.75rem; color: #aaa; cursor: pointer;">
+                <input type="checkbox" id="all-ct-mmr" style="margin: 0; width: 14px; height: 14px; accent-color: var(--accent);" onchange="toggleRemotePlayAll('ct-mmr', this.checked)">
+                <span>Play All (Loop)</span>
+            </label>
+            <div class="mod-dur-wrapper" id="dur-wrap-ct-mmr" style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.65rem; color: #666; font-weight: 800;">SEC</span>
+                <input type="number" class="mod-dur" id="dur-ct-mmr" placeholder="s">
+            </div>
+         </div>
       </div>
-      <div class="mod-dur-wrapper" id="dur-wrap-ct-mmr"><input type="number" class="mod-dur" id="dur-ct-mmr" placeholder="s"></div>
     </div>
     <!-- QUIZ -->
-    <div class="mod-row" id="row-ct-quiz">
-      <div class="mod-name">🧠 QUIZ</div>
-      <div class="mod-toggle">
-        <button class="mod-btn btn-on" onclick="toggleModule('QUIZ', true)">ON</button>
-        <button class="mod-btn btn-off" onclick="toggleModule('QUIZ', false)">OFF</button>
+    <div class="mod-card" id="row-ct-quiz">
+      <div class="mod-header">
+        <div class="mod-name">🧠 QUIZ</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="position:relative; width:44px; height:24px; cursor:pointer;">
+             <input type="checkbox" class="mod-switch-cb" id="switch-ct-quiz" onchange="toggleModule('QUIZ', this.checked)" style="opacity:0; width:0; height:0; position:absolute;">
+             <div class="mod-switch-bg" style="position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:24px; transition:0.3s; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="mod-switch-knob" style="position:absolute; top:1px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+             </div>
+          </label>
+          <button class="gear-btn" onclick="document.getElementById('settings-ct-quiz').classList.toggle('open')">⚙️</button>
+        </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 4px;">
-        <input type="checkbox" id="all-ct-quiz" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-quiz', this.checked)">
-        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      <div class="mod-settings" id="settings-ct-quiz">
+         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <label style="display:flex; align-items:center; gap: 6px; font-size: 0.75rem; color: #aaa; cursor: pointer;">
+                <input type="checkbox" id="all-ct-quiz" style="margin: 0; width: 14px; height: 14px; accent-color: var(--accent);" onchange="toggleRemotePlayAll('ct-quiz', this.checked)">
+                <span>Play All (Loop)</span>
+            </label>
+            <div class="mod-dur-wrapper" id="dur-wrap-ct-quiz" style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.65rem; color: #666; font-weight: 800;">SEC</span>
+                <input type="number" class="mod-dur" id="dur-ct-quiz" placeholder="s">
+            </div>
+         </div>
       </div>
-      <div class="mod-dur-wrapper" id="dur-wrap-ct-quiz"><input type="number" class="mod-dur" id="dur-ct-quiz" placeholder="s"></div>
     </div>
-
     <!-- WEA1 -->
-    <div class="mod-row" id="row-ct-wea1">
-      <div class="mod-name">🌦 WEA1</div>
-      <div class="mod-toggle">
-        <button class="mod-btn btn-on" onclick="toggleModule('WEA1', true)">ON</button>
-        <button class="mod-btn btn-off" onclick="toggleModule('WEA1', false)">OFF</button>
+    <div class="mod-card" id="row-ct-wea1">
+      <div class="mod-header">
+        <div class="mod-name">🌦 WEA1</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="position:relative; width:44px; height:24px; cursor:pointer;">
+             <input type="checkbox" class="mod-switch-cb" id="switch-ct-wea1" onchange="toggleModule('WEA1', this.checked)" style="opacity:0; width:0; height:0; position:absolute;">
+             <div class="mod-switch-bg" style="position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:24px; transition:0.3s; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="mod-switch-knob" style="position:absolute; top:1px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+             </div>
+          </label>
+          <button class="gear-btn" onclick="document.getElementById('settings-ct-wea1').classList.toggle('open')">⚙️</button>
+        </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 4px;">
-        <input type="checkbox" id="all-ct-wea1" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-wea1', this.checked)">
-        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      <div class="mod-settings" id="settings-ct-wea1">
+         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <label style="display:flex; align-items:center; gap: 6px; font-size: 0.75rem; color: #aaa; cursor: pointer;">
+                <input type="checkbox" id="all-ct-wea1" style="margin: 0; width: 14px; height: 14px; accent-color: var(--accent);" onchange="toggleRemotePlayAll('ct-wea1', this.checked)">
+                <span>Play All (Loop)</span>
+            </label>
+            <div class="mod-dur-wrapper" id="dur-wrap-ct-wea1" style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.65rem; color: #666; font-weight: 800;">SEC</span>
+                <input type="number" class="mod-dur" id="dur-ct-wea1" placeholder="s">
+            </div>
+         </div>
       </div>
-      <div class="mod-dur-wrapper" id="dur-wrap-ct-wea1"><input type="number" class="mod-dur" id="dur-ct-wea1" placeholder="s"></div>
     </div>
     <!-- FIR -->
-    <div class="mod-row" id="row-ct-fir">
-      <div class="mod-name">🔥 FIR</div>
-      <div class="mod-toggle">
-        <button class="mod-btn btn-on" onclick="toggleModule('FIR', true)">ON</button>
-        <button class="mod-btn btn-off" onclick="toggleModule('FIR', false)">OFF</button>
+    <div class="mod-card" id="row-ct-fir">
+      <div class="mod-header">
+        <div class="mod-name">🔥 FIR</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="position:relative; width:44px; height:24px; cursor:pointer;">
+             <input type="checkbox" class="mod-switch-cb" id="switch-ct-fir" onchange="toggleModule('FIR', this.checked)" style="opacity:0; width:0; height:0; position:absolute;">
+             <div class="mod-switch-bg" style="position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:24px; transition:0.3s; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="mod-switch-knob" style="position:absolute; top:1px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+             </div>
+          </label>
+          <button class="gear-btn" onclick="document.getElementById('settings-ct-fir').classList.toggle('open')">⚙️</button>
+        </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 4px;">
-        <input type="checkbox" id="all-ct-fir" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-fir', this.checked)">
-        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      <div class="mod-settings" id="settings-ct-fir">
+         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <label style="display:flex; align-items:center; gap: 6px; font-size: 0.75rem; color: #aaa; cursor: pointer;">
+                <input type="checkbox" id="all-ct-fir" style="margin: 0; width: 14px; height: 14px; accent-color: var(--accent);" onchange="toggleRemotePlayAll('ct-fir', this.checked)">
+                <span>Play All (Loop)</span>
+            </label>
+            <div class="mod-dur-wrapper" id="dur-wrap-ct-fir" style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.65rem; color: #666; font-weight: 800;">SEC</span>
+                <input type="number" class="mod-dur" id="dur-ct-fir" placeholder="s">
+            </div>
+         </div>
       </div>
-      <div class="mod-dur-wrapper" id="dur-wrap-ct-fir"><input type="number" class="mod-dur" id="dur-ct-fir" placeholder="s"></div>
     </div>
     <!-- SOC -->
-    <div class="mod-row" id="row-ct-soc">
-      <div class="mod-name">🤝 SOC</div>
-      <div class="mod-toggle">
-        <button class="mod-btn btn-on" onclick="toggleModule('SOC', true)">ON</button>
-        <button class="mod-btn btn-off" onclick="toggleModule('SOC', false)">OFF</button>
+    <div class="mod-card" id="row-ct-soc">
+      <div class="mod-header">
+        <div class="mod-name">🤝 SOC</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="position:relative; width:44px; height:24px; cursor:pointer;">
+             <input type="checkbox" class="mod-switch-cb" id="switch-ct-soc" onchange="toggleModule('SOC', this.checked)" style="opacity:0; width:0; height:0; position:absolute;">
+             <div class="mod-switch-bg" style="position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:24px; transition:0.3s; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="mod-switch-knob" style="position:absolute; top:1px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+             </div>
+          </label>
+          <button class="gear-btn" onclick="document.getElementById('settings-ct-soc').classList.toggle('open')">⚙️</button>
+        </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 4px;">
-        <input type="checkbox" id="all-ct-soc" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-soc', this.checked)">
-        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      <div class="mod-settings" id="settings-ct-soc">
+         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <label style="display:flex; align-items:center; gap: 6px; font-size: 0.75rem; color: #aaa; cursor: pointer;">
+                <input type="checkbox" id="all-ct-soc" style="margin: 0; width: 14px; height: 14px; accent-color: var(--accent);" onchange="toggleRemotePlayAll('ct-soc', this.checked)">
+                <span>Play All (Loop)</span>
+            </label>
+            <div class="mod-dur-wrapper" id="dur-wrap-ct-soc" style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.65rem; color: #666; font-weight: 800;">SEC</span>
+                <input type="number" class="mod-dur" id="dur-ct-soc" placeholder="s">
+            </div>
+         </div>
       </div>
-      <div class="mod-dur-wrapper" id="dur-wrap-ct-soc"><input type="number" class="mod-dur" id="dur-ct-soc" placeholder="s"></div>
     </div>
     <!-- TIK -->
-    <div class="mod-row" id="row-ct-tik">
-      <div class="mod-name">🎵 TIK</div>
-      <div class="mod-toggle">
-        <button class="mod-btn btn-on" onclick="toggleModule('TIK', true)">ON</button>
-        <button class="mod-btn btn-off" onclick="toggleModule('TIK', false)">OFF</button>
+    <div class="mod-card" id="row-ct-tik">
+      <div class="mod-header">
+        <div class="mod-name">🎵 TIK</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="position:relative; width:44px; height:24px; cursor:pointer;">
+             <input type="checkbox" class="mod-switch-cb" id="switch-ct-tik" onchange="toggleModule('TIK', this.checked)" style="opacity:0; width:0; height:0; position:absolute;">
+             <div class="mod-switch-bg" style="position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:24px; transition:0.3s; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="mod-switch-knob" style="position:absolute; top:1px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+             </div>
+          </label>
+          <button class="gear-btn" onclick="document.getElementById('settings-ct-tik').classList.toggle('open')">⚙️</button>
+        </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 4px;">
-        <input type="checkbox" id="all-ct-tik" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-tik', this.checked)">
-        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      <div class="mod-settings" id="settings-ct-tik">
+         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <label style="display:flex; align-items:center; gap: 6px; font-size: 0.75rem; color: #aaa; cursor: pointer;">
+                <input type="checkbox" id="all-ct-tik" style="margin: 0; width: 14px; height: 14px; accent-color: var(--accent);" onchange="toggleRemotePlayAll('ct-tik', this.checked)">
+                <span>Play All (Loop)</span>
+            </label>
+            <div class="mod-dur-wrapper" id="dur-wrap-ct-tik" style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.65rem; color: #666; font-weight: 800;">SEC</span>
+                <input type="number" class="mod-dur" id="dur-ct-tik" placeholder="s">
+            </div>
+         </div>
       </div>
-      <div class="mod-dur-wrapper" id="dur-wrap-ct-tik"><input type="number" class="mod-dur" id="dur-ct-tik" placeholder="s"></div>
     </div>
     <!-- LOYALTY -->
-    <div class="mod-row" id="row-ct-loyalty">
-      <div class="mod-name">💳 LOYALTY</div>
-      <div class="mod-toggle">
-        <button class="mod-btn btn-on" onclick="toggleModule('LOYALTY', true)">ON</button>
-        <button class="mod-btn btn-off" onclick="toggleModule('LOYALTY', false)">OFF</button>
+    <div class="mod-card" id="row-ct-loyalty">
+      <div class="mod-header">
+        <div class="mod-name">💳 LOYALTY</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="position:relative; width:44px; height:24px; cursor:pointer;">
+             <input type="checkbox" class="mod-switch-cb" id="switch-ct-loyalty" onchange="toggleModule('LOYALTY', this.checked)" style="opacity:0; width:0; height:0; position:absolute;">
+             <div class="mod-switch-bg" style="position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:24px; transition:0.3s; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="mod-switch-knob" style="position:absolute; top:1px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+             </div>
+          </label>
+          <button class="gear-btn" onclick="document.getElementById('settings-ct-loyalty').classList.toggle('open')">⚙️</button>
+        </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 4px;">
-        <input type="checkbox" id="all-ct-loyalty" style="margin: 0; width: 12px; height: 12px;" onchange="toggleRemotePlayAll('ct-loyalty', this.checked)">
-        <span style="font-size: 0.55rem; color: #888; font-weight: bold;">ALL</span>
+      <div class="mod-settings" id="settings-ct-loyalty">
+         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <label style="display:flex; align-items:center; gap: 6px; font-size: 0.75rem; color: #aaa; cursor: pointer;">
+                <input type="checkbox" id="all-ct-loyalty" style="margin: 0; width: 14px; height: 14px; accent-color: var(--accent);" onchange="toggleRemotePlayAll('ct-loyalty', this.checked)">
+                <span>Play All (Loop)</span>
+            </label>
+            <div class="mod-dur-wrapper" id="dur-wrap-ct-loyalty" style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.65rem; color: #666; font-weight: 800;">SEC</span>
+                <input type="number" class="mod-dur" id="dur-ct-loyalty" placeholder="s">
+            </div>
+         </div>
       </div>
-      <div class="mod-dur-wrapper" id="dur-wrap-ct-loyalty"><input type="number" class="mod-dur" id="dur-ct-loyalty" placeholder="s"></div>
+    </div>
+    <!-- TRIP -->
+    <div class="mod-card" id="row-ct-trip">
+      <div class="mod-header">
+        <div class="mod-name">✈️ TRIP</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="position:relative; width:44px; height:24px; cursor:pointer;">
+             <input type="checkbox" class="mod-switch-cb" id="switch-ct-trip" onchange="toggleModule('TRIP', this.checked)" style="opacity:0; width:0; height:0; position:absolute;">
+             <div class="mod-switch-bg" style="position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:24px; transition:0.3s; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="mod-switch-knob" style="position:absolute; top:1px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+             </div>
+          </label>
+          <button class="gear-btn" onclick="document.getElementById('settings-ct-trip').classList.toggle('open')">⚙️</button>
+        </div>
+      </div>
+      <div class="mod-settings" id="settings-ct-trip">
+         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <label style="display:flex; align-items:center; gap: 6px; font-size: 0.75rem; color: #aaa; cursor: pointer;">
+                <input type="checkbox" id="all-ct-trip" style="margin: 0; width: 14px; height: 14px; accent-color: var(--accent);" onchange="toggleRemotePlayAll('ct-trip', this.checked)">
+                <span>Play All (Loop)</span>
+            </label>
+            <div class="mod-dur-wrapper" id="dur-wrap-ct-trip" style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.65rem; color: #666; font-weight: 800;">SEC</span>
+                <input type="number" class="mod-dur" id="dur-ct-trip" placeholder="s">
+            </div>
+         </div>
+      </div>
     </div>
   </div>
 
@@ -262,7 +421,7 @@
     const bc_sub = new BroadcastChannel('mom_sync');
 
     // Default durations fallback
-    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-quiz': 60, 'ct-fir': 180, 'ct-soc': 120, 'ct-tik': 120, 'ct-loyalty': 60 };
+    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-quiz': 60, 'ct-fir': 180, 'ct-soc': 120, 'ct-tik': 120, 'ct-loyalty': 60, 'ct-trip': 60 };
 
     function getClientId() {
       let id = localStorage.getItem('matrix_client_id');
@@ -288,7 +447,7 @@
         }
       } catch(e) {}
       
-      const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty'];
+      const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty', 'ct-trip'];
       moduleIds.forEach(id => {
         const row = document.getElementById('row-' + id);
         if (!row) return;
@@ -301,35 +460,42 @@
         if (durVal === 'all') {
             if (allCb) allCb.checked = true;
             const wrap = document.getElementById('dur-wrap-' + id);
-            if (wrap) wrap.style.visibility = 'hidden';
-            if (durInput) durInput.value = DEFAULT_DURS[id];
+            if (wrap) wrap.style.opacity = '0.3';
+            if (durInput) {
+                durInput.value = DEFAULT_DURS[id];
+                durInput.disabled = true;
+            }
         } else {
             if (allCb) allCb.checked = false;
             const wrap = document.getElementById('dur-wrap-' + id);
-            if (wrap) wrap.style.visibility = 'visible';
-            if (durInput) durInput.value = durVal;
+            if (wrap) wrap.style.opacity = '1';
+            if (durInput) {
+                durInput.value = durVal;
+                durInput.disabled = false;
+            }
         }
 
         // Setup Toggles
         const isOff = config.disabledModules && config.disabledModules.includes(id);
         const status = window.getModuleStatus ? window.getModuleStatus(id) : { mode: isOff ? 'OFF' : 'ON', label: isOff ? 'OFF' : 'ON', active: !isOff };
-        const btnOn = row.querySelector('.btn-on');
-        const btnOff = row.querySelector('.btn-off');
-        if (status.mode === 'OFF') {
-          btnOn.classList.remove('active-on');
-          btnOn.innerText = 'ON';
-          btnOff.classList.add('active-off');
-          btnOff.innerText = 'OFF';
-        } else if (status.mode === 'SCHEDULED') {
-          btnOn.classList.add('active-on');
-          btnOn.innerText = status.active ? 'SCHED' : 'OFF-HRS';
-          btnOff.classList.remove('active-off');
-          btnOff.innerText = 'OFF';
-        } else {
-          btnOn.classList.add('active-on');
-          btnOn.innerText = 'ON';
-          btnOff.classList.remove('active-off');
-          btnOff.innerText = 'OFF';
+        
+        const switchCb = document.getElementById('switch-' + id);
+        const modName = row.querySelector('.mod-name');
+        
+        if (switchCb) {
+            if (status.mode === 'OFF') {
+                switchCb.checked = false;
+                if (modName) modName.style.opacity = '0.5';
+            } else {
+                switchCb.checked = true;
+                if (modName) modName.style.opacity = '1';
+                
+                if (status.mode === 'SCHEDULED' && !status.active) {
+                    if (modName) modName.style.color = '#f59e0b';
+                } else {
+                    if (modName) modName.style.color = 'var(--text)';
+                }
+            }
         }
       });
       
@@ -446,7 +612,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty'];
+        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty', 'ct-trip'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {
@@ -500,9 +666,9 @@
 
     window.toggleRemotePlayAll = function(id, isChecked) {
         const wrap = document.getElementById('dur-wrap-' + id);
-        if (wrap) {
-            wrap.style.visibility = isChecked ? 'hidden' : 'visible';
-        }
+        const durInput = document.getElementById('dur-' + id);
+        if (wrap) wrap.style.opacity = isChecked ? '0.3' : '1';
+        if (durInput) durInput.disabled = isChecked;
     };
 
     function vibrate(pattern = 50) {

@@ -9,18 +9,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #09090b;
-      --surface: #18181b;
-      --surface-bright: #27272a;
-      --surface-hover: #27272a;
-      --accent: #10b981;
-      --accent-glow: rgba(16, 185, 129, 0.5);
+      --bg: #020617;
+      --surface: rgba(15, 23, 42, 0.6);
+      --surface-bright: rgba(30, 41, 59, 0.8);
+      --surface-hover: rgba(30, 41, 59, 0.8);
+      --accent: #06b6d4;
+      --accent-hover: #0891b2;
+      --accent-glow: rgba(6, 182, 212, 0.5);
       --success: #10b981;
       --success-glow: rgba(16, 185, 129, 0.5);
       --text: #f8fafc;
       --text-dim: #94a3b8;
-      --border: #27272a;
-      --glass: rgba(24, 24, 27, 0.98);
+      --border: rgba(255, 255, 255, 0.1);
+      --glass: rgba(15, 23, 42, 0.85);
       --nav-w: 240px;
       --header-h: 80px;
       --bottom-h: 220px;
@@ -45,7 +46,8 @@
     
     * { box-sizing: border-box; }
     body { 
-        background: var(--bg); color: var(--text); 
+        background: radial-gradient(circle at top right, #1e1b4b 0%, var(--bg) 60%); 
+        color: var(--text); 
         font-family: 'Inter', sans-serif; margin: 0; padding: 0;
         height: 100vh; overflow: hidden;
     }
@@ -123,14 +125,24 @@
     }
 
     .ctrl-btn {
-        background: var(--surface-bright); border: 1px solid var(--border);
-        color: #fff; padding: 8px 16px; border-radius: 6px;
+        background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+        color: #fff; padding: 8px 16px; border-radius: 8px;
         cursor: pointer; font-weight: 800; font-size: 0.7rem;
         display: flex; align-items: center; gap: 8px; transition: 0.2s;
         text-decoration: none; text-transform: uppercase;
+        backdrop-filter: blur(8px);
     }
-    .ctrl-btn:hover { background: var(--accent); color: #000; border-color: var(--accent); }
-    .ctrl-btn.primary { background: var(--accent); color: #000; border: none; }
+    .ctrl-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); transform: translateY(-1px); }
+    .ctrl-btn.primary { 
+        background: linear-gradient(135deg, var(--accent), #3b82f6); 
+        color: #fff; border: none; text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 15px -5px rgba(6, 182, 212, 0.5);
+    }
+    .ctrl-btn.primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px -5px rgba(6, 182, 212, 0.6);
+        filter: brightness(1.1);
+    }
 
     /* SIDEBAR - COMPACTED */
     .nav-side {
@@ -399,12 +411,13 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        backdrop-filter: blur(8px);
     }
-    .pin-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); transform: translateY(-2px); }
-    .pin-btn:active { transform: scale(0.95); background: var(--accent); color: #000; }
+    .pin-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
+    .pin-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.15); }
     .pin-btn.special { color: var(--accent); font-weight: 800; font-size: 1.1rem; }
-    .pin-btn.primary { background: var(--accent); color: #000; border: none; font-weight: 900; }
-    .pin-btn.primary:hover { background: #34d399; box-shadow: 0 0 20px var(--accent-glow); }
+    .pin-btn.primary { background: linear-gradient(135deg, var(--accent), #3b82f6); color: #fff; border: none; font-weight: 900; }
+    .pin-btn.primary:hover { filter: brightness(1.1); box-shadow: 0 0 20px var(--accent-glow); }
 
     .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
     @keyframes shake {
@@ -502,7 +515,7 @@
         <div id="module-tree">
             <div class="nav-section-title">CORE INFRASTRUCTURE</div>
             <div class="tree-node">
-                <div class="tree-header" onclick="toggleNode(this)">_ct-MATRIX (Core)</div>
+                <div class="tree-header" onclick="toggleNode(this)" style="font-weight: 800; font-size: 0.85rem; letter-spacing: 0.5px;">MATRIX</div>
                 <div class="tree-children">
                     <a href="javascript:void(0)" class="tree-item" onclick="loadModule('MATRIX', 'index.html')">Display Engine</a>
                     <a href="javascript:void(0)" class="tree-item" onclick="loadModule('POSTER', 'postermaker.html')">A4 Poster Maker</a>
@@ -667,7 +680,8 @@
             { id: 'ct-loyalty', name: 'LOYALTY', title: 'Loyalty App', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
             { id: 'ct-tik', name: 'TIK', title: 'TikTok Feed', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
             { id: 'ct-wea1', name: 'WEA1', title: 'Live Weather', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
-            { id: 'ct-fir', name: 'FIR', title: 'Fireplace Loop', defaultDays: [1,2,3,4,5,6,0], defaultStart: '17:00', defaultEnd: '23:00', defaultEnabled: false }
+            { id: 'ct-fir', name: 'FIR', title: 'Fireplace Loop', defaultDays: [1,2,3,4,5,6,0], defaultStart: '17:00', defaultEnd: '23:00', defaultEnabled: false },
+            { id: 'ct-trip', name: 'TRIP', title: 'Trip Module', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false }
         ];
 
         const daysMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -706,39 +720,48 @@
                 statusBadge = '<span style="background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); padding: 3px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800;">SCHEDULED (OFF-HOURS)</span>';
             }
 
-            const dayCheckboxes = daysMap.map((dName, dIdx) => `
-                <label style="display:inline-flex; align-items:center; gap: 3px; font-size: 0.7rem; color: ${activeDays.includes(dIdx) ? '#fff' : '#666'}; cursor: pointer;">
-                    <input type="checkbox" id="sched-day-${m.id}-${dIdx}" ${activeDays.includes(dIdx) ? 'checked' : ''} style="margin:0; width:12px; height:12px;">
-                    <span>${dName}</span>
+            const dayCheckboxes = daysMap.map((dName, dIdx) => {
+                const isActive = activeDays.includes(dIdx);
+                const letter = dName.charAt(0);
+                return `
+                <label style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background: ${isActive ? 'var(--accent)' : 'rgba(255,255,255,0.05)'}; color: ${isActive ? '#000' : '#888'}; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: 0.2s; box-shadow: ${isActive ? '0 0 10px var(--accent-glow)' : 'none'}; border: 1px solid rgba(255,255,255,0.1);">
+                    <input type="checkbox" id="sched-day-${m.id}-${dIdx}" ${isActive ? 'checked' : ''} style="display:none;" onchange="this.parentElement.style.background = this.checked ? 'var(--accent)' : 'rgba(255,255,255,0.05)'; this.parentElement.style.color = this.checked ? '#000' : '#888'; this.parentElement.style.boxShadow = this.checked ? '0 0 10px var(--accent-glow)' : 'none';">
+                    ${letter}
                 </label>
-            `).join(' ');
+                `;
+            }).join(' ');
 
             return `
-                <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.75rem;">
+                <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1.25rem; margin-bottom: 1rem; backdrop-filter: blur(12px);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
                         <div>
-                            <span style="font-weight: 900; font-size: 1rem; color: var(--accent); letter-spacing: 0.5px;">_${m.id.toUpperCase()}</span>
-                            <span style="font-size: 0.8rem; color: #bbb; margin-left: 8px;">${m.title}</span>
+                            <span style="font-weight: 900; font-size: 1.1rem; color: var(--accent); letter-spacing: 0.5px;">_${m.id.toUpperCase()}</span>
+                            <span style="font-size: 0.85rem; color: #bbb; margin-left: 8px;">${m.title}</span>
                         </div>
                         <div>${statusBadge}</div>
                     </div>
                     
-                    <div style="display:grid; grid-template-columns: auto 1fr auto; gap: 1.5rem; align-items:center; background: rgba(255,255,255,0.02); padding: 0.75rem 1rem; border-radius: 8px;">
-                        <label style="display:flex; align-items:center; gap: 6px; font-size: 0.75rem; font-weight: 800; cursor: pointer; color: #fff;">
-                            <input type="checkbox" id="sched-enable-${m.id}" ${isSchedEnabled ? 'checked' : ''} style="width:16px; height:16px;">
-                            <span>Enable Schedule Window</span>
+                    <div style="display:grid; grid-template-columns: auto 1fr auto; gap: 1.5rem; align-items:center; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <label style="display:flex; align-items:center; gap: 10px; font-size: 0.75rem; font-weight: 800; cursor: pointer; color: #fff;">
+                            <div style="position:relative; width: 36px; height: 20px;">
+                                <input type="checkbox" id="sched-enable-${m.id}" ${isSchedEnabled ? 'checked' : ''} style="opacity:0; width:0; height:0; position:absolute;" onchange="this.nextElementSibling.style.background = this.checked ? 'var(--accent)' : 'rgba(255,255,255,0.1)'; this.nextElementSibling.firstElementChild.style.transform = this.checked ? 'translateX(16px)' : 'translateX(0)';">
+                                <div style="position:absolute; inset:0; background: ${isSchedEnabled ? 'var(--accent)' : 'rgba(255,255,255,0.1)'}; border-radius: 20px; transition: 0.3s; border: 1px solid rgba(255,255,255,0.1);">
+                                    <div style="position:absolute; top: 1px; left: 1px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: 0.3s; transform: ${isSchedEnabled ? 'translateX(16px)' : 'translateX(0)'}; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></div>
+                                </div>
+                            </div>
+                            <span>Enable Window</span>
                         </label>
                         
-                        <div style="display:flex; align-items:center; gap: 10px; flex-wrap: wrap;">
+                        <div style="display:flex; align-items:center; gap: 12px; flex-wrap: wrap;">
                             <span style="font-size: 0.65rem; color: #888; font-weight: 700; text-transform: uppercase;">Active Days:</span>
-                            <div style="display:flex; gap: 8px;">${dayCheckboxes}</div>
+                            <div style="display:flex; gap: 6px;">${dayCheckboxes}</div>
                         </div>
 
                         <div style="display:flex; align-items:center; gap: 8px;">
                             <span style="font-size: 0.65rem; color: #888; font-weight: 700; text-transform: uppercase;">Window:</span>
-                            <input type="time" id="sched-start-${m.id}" value="${startTimeStr}" style="background:#000; border:1px solid #444; color:#fff; padding:3px 6px; border-radius:4px; font-size:0.75rem;">
+                            <input type="time" id="sched-start-${m.id}" value="${startTimeStr}" style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold; outline:none; transition:0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
                             <span style="font-size: 0.7rem; color:#888;">to</span>
-                            <input type="time" id="sched-end-${m.id}" value="${endTimeStr}" style="background:#000; border:1px solid #444; color:#fff; padding:3px 6px; border-radius:4px; font-size:0.75rem;">
+                            <input type="time" id="sched-end-${m.id}" value="${endTimeStr}" style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1); color:#fff; padding:6px 10px; border-radius:8px; font-size:0.75rem; font-weight:bold; outline:none; transition:0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'">
                         </div>
                     </div>
                 </div>
@@ -766,7 +789,7 @@
     }
 
     window.saveAllModuleSchedules = function() {
-        const moduleIds = ['ct-quiz', 'ct-mmr', 'ct-ace', 'ct-soc', 'ct-loyalty', 'ct-tik', 'ct-wea1', 'ct-fir'];
+        const moduleIds = ['ct-quiz', 'ct-mmr', 'ct-ace', 'ct-soc', 'ct-loyalty', 'ct-tik', 'ct-wea1', 'ct-fir', 'ct-trip'];
         const schedules = {};
 
         function timeToDec(timeStr) {
@@ -839,24 +862,32 @@
             { id: 'ct-fir', name: 'FIR', defaultDuration: 180 },
             { id: 'ct-soc', name: 'SOC', defaultDuration: 120 },
             { id: 'ct-tik', name: 'TIK', defaultDuration: 120 },
-            { id: 'ct-loyalty', name: 'LOYALTY', defaultDuration: 60 }
+            { id: 'ct-loyalty', name: 'LOYALTY', defaultDuration: 60 },
+            { id: 'ct-trip', name: 'TRIP', defaultDuration: 60 }
         ];
 
         const durationRows = modules.map(m => {
             const finalDur = config.moduleDurations && config.moduleDurations[m.id] ? config.moduleDurations[m.id] : 'all';
             const isAll = finalDur === 'all';
             return `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding: 12px 16px; background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--accent);">
-                    <div style="font-weight: 800; font-size: 0.9rem;">${m.name}</div>
-                    <div style="display:flex; align-items:center; gap: 12px;">
-                        <label style="display:flex; align-items:center; gap: 4px; font-size: 0.75rem; color: #aaa; cursor: pointer;">
-                            <input type="checkbox" id="home-all-${m.id}" ${isAll ? 'checked' : ''} onchange="toggleHomePlayAll('${m.id}', this.checked); saveHomeModuleDurations();" style="margin:0; width:14px; height:14px;">
-                            <span>Play All</span>
-                        </label>
-                        <div id="home-dur-container-${m.id}" style="display:${isAll ? 'none' : 'flex'}; align-items:center; gap: 8px;">
-                            <input type="number" id="home-dur-${m.id}" value="${isAll ? m.defaultDuration : finalDur}" min="10" max="9999" onchange="saveHomeModuleDurations()" style="width: 70px; background: #000; border: 1px solid #333; color: #fff; padding: 6px; border-radius: 4px; text-align: center; font-weight: bold;">
-                            <span style="font-size: 0.7rem; color: #888;">SEC</span>
+                <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 6px 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; backdrop-filter: blur(12px);">
+                    <div style="font-weight: 800; font-size: 0.85rem; color: var(--text); min-width: 70px;">
+                        ${m.name}
+                    </div>
+                    
+                    <div style="display:flex; align-items:center; gap:8px; flex:1; justify-content: flex-end;">
+                        <div id="home-dur-container-${m.id}" style="display:${isAll ? 'none' : 'flex'}; align-items:center; background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                            <input type="number" id="home-dur-${m.id}" value="${isAll ? m.defaultDuration : finalDur}" min="10" max="9999" onchange="saveHomeModuleDurations()" style="width: 50px; background: transparent; border: none; border-bottom: 2px solid var(--accent); color: #fff; padding: 2px; text-align: center; font-weight: bold; outline: none; font-size: 0.9rem; transition: 0.2s;" onfocus="this.style.borderColor='#fff'" onblur="this.style.borderColor='var(--accent)'">
+                            <span style="font-size: 0.6rem; color: #555; font-weight: 800; margin-left: 4px;">SEC</span>
                         </div>
+                        <div id="home-dur-all-msg-${m.id}" style="display:${isAll ? 'flex' : 'none'}; align-items: center; justify-content: center; font-size: 0.65rem; color: var(--accent); font-weight: 800; opacity: 0.8; background: rgba(6, 182, 212, 0.05); border-radius: 6px; border: 1px dashed rgba(6, 182, 212, 0.2); padding: 6px 10px; width: 80px;">
+                            LOOP
+                        </div>
+                        
+                        <label style="display:flex; align-items:center; gap: 4px; font-size: 0.65rem; color: #fff; cursor: pointer; background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; margin:0;" onmouseover="this.style.background='rgba(0,0,0,0.5)'" onmouseout="this.style.background='rgba(0,0,0,0.3)'">
+                            <input type="checkbox" id="home-all-${m.id}" ${isAll ? 'checked' : ''} onchange="toggleHomePlayAll('${m.id}', this.checked); saveHomeModuleDurations(); document.getElementById('home-dur-all-msg-${m.id}').style.display = this.checked ? 'flex' : 'none';" style="margin:0; width:12px; height:12px; accent-color: var(--accent);">
+                            <span>ALL</span>
+                        </label>
                     </div>
                 </div>
             `;
@@ -872,21 +903,25 @@
                     <div style="display:flex; gap: 10px;">
                         <button class="ctrl-btn primary" onclick="requestTelemetry()">Refresh Telemetry</button>
                         <button class="ctrl-btn" onclick="loadModule('COMMANDER', 'live-commander.html?compact=true&v=' + Date.now())">Live Commander</button>
+                        <button class="ctrl-btn" onclick="window.open('remote.html', '_blank')" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border-color: rgba(245, 158, 11, 0.5);">Open Remote</button>
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 280px; gap: 1.5rem; align-items: start;">
-                    <div class="panel" style="padding: 1.25rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px;">
-                        <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.6; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">Module Play Durations</div>
-                        ${durationRows}
+                    <div class="panel" style="padding: 1rem; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; backdrop-filter: blur(24px);">
+                        <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-dim); margin-bottom: 0.8rem; letter-spacing: 1px; text-transform: uppercase;">Module Rotation (Seconds)</div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px;">
+                            ${durationRows}
+                        </div>
                     </div>
 
-                    <div class="panel" style="padding: 1.25rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px;">
-                        <div style="font-size: 0.7rem; font-weight: 800; opacity: 0.6; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">Quick Actions</div>
-                        <button class="ctrl-btn primary" style="width: 100%; margin-bottom: 10px; justify-content: center;" onclick="requestTelemetry()">Refresh Telemetry</button>
-                        <button class="ctrl-btn" style="width: 100%; margin-bottom: 10px; justify-content: center;" onclick="loadModule('COMMANDER', 'live-commander.html?compact=true&v=' + Date.now())">Open Live Commander</button>
-                        <button class="ctrl-btn" style="width: 100%; margin-bottom: 10px; justify-content: center;" onclick="loadWorkspaceView('SCHEDULES')">Module Schedules</button>
-                        <button class="ctrl-btn" style="width: 100%; justify-content: center;" onclick="loadWorkspaceView('PLAYLIST')">Playlist Grid View</button>
+                    <div class="panel" style="padding: 1.5rem; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; backdrop-filter: blur(24px);">
+                        <div style="font-size: 0.75rem; font-weight: 800; opacity: 0.8; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent);">Quick Actions</div>
+                        <button class="ctrl-btn primary" style="width: 100%; margin-bottom: 12px; justify-content: center; padding: 12px;" onclick="requestTelemetry()">Refresh Telemetry</button>
+                        <button class="ctrl-btn" style="width: 100%; margin-bottom: 12px; justify-content: center; padding: 12px;" onclick="window.open('remote.html', '_blank')">📱 Open Remote Control</button>
+                        <button class="ctrl-btn" style="width: 100%; margin-bottom: 12px; justify-content: center; padding: 12px;" onclick="loadModule('COMMANDER', 'live-commander.html?compact=true&v=' + Date.now())">Open Live Commander</button>
+                        <button class="ctrl-btn" style="width: 100%; margin-bottom: 12px; justify-content: center; padding: 12px;" onclick="loadWorkspaceView('SCHEDULES')">Module Schedules</button>
+                        <button class="ctrl-btn" style="width: 100%; justify-content: center; padding: 12px;" onclick="loadWorkspaceView('PLAYLIST')">Playlist Grid View</button>
                     </div>
                 </div>
 
@@ -927,7 +962,8 @@
             { id: 'FIR', name: 'FIREPLACE', path: '_ct-FIR' },
             { id: 'SOC', name: 'SOCIAL CLUB', path: '_ct-SOC' },
             { id: 'TIK', name: 'TIKTOK FEED', path: '_ct-TIK' },
-            { id: 'LOYALTY', name: 'LOYALTY APP', path: '_ct-MATRIX', customUrl: 'loyalty-slide.html' }
+            { id: 'LOYALTY', name: 'LOYALTY APP', path: '_ct-MATRIX', customUrl: 'loyalty-slide.html' },
+            { id: 'TRIP', name: 'TRIP MODULE', path: '_ct-TRIP' }
         ];
 
         tray.innerHTML = modules.map(m => {
@@ -976,7 +1012,8 @@
             { id: 'ct-fir', name: 'FIR', title: 'Fireplace', defaultDur: 180, hasAdmin: false },
             { id: 'ct-soc', name: 'SOC', title: 'Social Club', defaultDur: 120, hasAdmin: true },
             { id: 'ct-tik', name: 'TIK', title: 'TikTok Feed', defaultDur: 120, hasAdmin: false },
-            { id: 'ct-loyalty', name: 'LOYALTY', title: 'Loyalty App', defaultDur: 60, hasAdmin: false, customUrl: 'loyalty-slide.html' }
+            { id: 'ct-loyalty', name: 'LOYALTY', title: 'Loyalty App', defaultDur: 60, hasAdmin: false, customUrl: 'loyalty-slide.html' },
+            { id: 'ct-trip', name: 'TRIP', title: 'Trip Module', defaultDur: 60, hasAdmin: false }
         ];
 
         side.innerHTML = modules.map(m => {
@@ -1011,7 +1048,7 @@
             return `
                 <div class="tree-node">
                     <div class="tree-header" style="display:flex; justify-content:space-between; align-items:center; padding: 6px 10px;">
-                        <span onclick="toggleNode(this.parentElement)" style="flex:1;">_${m.id.toUpperCase()} (${m.title})</span>
+                        <span onclick="toggleNode(this.parentElement)" style="flex:1; font-weight:800; font-size:0.85rem; letter-spacing:0.5px;">${m.name}</span>
                         <div class="toggle-pill ${pillClass}" style="margin: 0; padding: 2px 8px; font-size: 0.55rem; min-width: 48px; justify-content: center; ${pillStyle}" onclick="event.stopPropagation(); toggleModule('${m.name}', ${!isChecked}); renderSidebarToggles();">
                             <span>${pillLabel}</span>
                         </div>
@@ -1047,7 +1084,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty'];
+        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty', 'ct-trip'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {
@@ -1100,7 +1137,7 @@
     }
 
     function saveHomeModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty'];
+        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty', 'ct-trip'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {
