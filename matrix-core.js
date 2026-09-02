@@ -473,7 +473,7 @@ function parseCSVToEvents(text) {
   // 16:Footer Hyperlink, 17:Slide Duration, 18:Slide Background,
   // 19:Foreground Image, 20:Bubble Text, 21:Lock Slide, 22:Lock Day, 23:Lock Time,
   // 24:Transition, 25:Zoom
-  const events = result.slice(1).map(clean => {
+  const events = result.slice(1).filter(clean => clean.some(cell => cell && cell.trim() !== '')).map(clean => {
     return {
       date: clean[0],
       day: clean[1],
@@ -600,6 +600,11 @@ function buildSlideQueue(data) {
           const isCurrent = isEventCurrent(targetDate, ev.event_type, ev.title);
 
           if (isCurrent) {
+            // Prevent completely blank slides from rendering
+            if (!ev.title && !ev.notes && !ev.fgImage && !ev.bgImage) {
+                return;
+            }
+
             // 1. RUTHLESS TBC/TBA filtering - scan ALL text fields (no exceptions)
             const ruthlessString = [
               ev.title, ev.notes, ev.event_type, ev.location, ev.price, ev.time, ev.hiddenNotes, ev.footer
@@ -691,7 +696,7 @@ function buildSlideQueue(data) {
   queue.push({ type: 'MODULE', id: 'ct-soc', url: socUrl, title: "Social Club TV Slides", pinned: true, priority: 8, duration: getModDur('ct-soc', 120) });
   queue.push({ type: 'MODULE', id: 'ct-tik', url: tikUrl, title: "Coasters Tavern TikTok", pinned: true, priority: 7, duration: getModDur('ct-tik', 120) });
   queue.push({ type: 'MODULE', id: 'ct-loyalty', url: 'loyalty-slide.html', title: "Coasters Loyalty App", pinned: true, priority: 6, duration: getModDur('ct-loyalty', 60), accentColor: '#89CFF0' });
-  queue.push({ type: 'MODULE', id: 'ct-trip', url: '../_ct-TRIP/index.html', title: "Live Bus Tracking", priority: 50, duration: getModDur('ct-trip', 120) });
+  // queue.push({ type: 'MODULE', id: 'ct-trip', url: '../_ct-TRIP/index.html', title: "Live Bus Tracking", priority: 50, duration: getModDur('ct-trip', 120) });
 
   // 4. Apply Module Filters
   let filteredQueue = queue.filter(s => {
