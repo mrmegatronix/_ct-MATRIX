@@ -1528,7 +1528,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
           <div class="slide-bg" style="background: #000;">
             <img src="${slide.fgImage}" alt="" style="width: 100%; height: 100%; object-fit: contain; animation: none;">
           </div>
-          ${renderPremiumFooterRow(slide, themeColor)}
+          ${(slide.title || slide.subtitle || slide.qr || slide.footer || slide.price || slide.location) ? renderPremiumFooterRow(slide, themeColor) : ''}
         `;
       } else {
         slideEl.innerHTML = `
