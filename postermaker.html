@@ -711,7 +711,7 @@
             border-radius: 10px;
             font-family: 'Montserrat', sans-serif;
             font-weight: 900;
-            font-size: 0.9rem;
+            font-size: var(--price-size, 0.9rem);
             color: #fef08a;
             letter-spacing: 0.05em;
             text-transform: uppercase;
@@ -1308,9 +1308,22 @@
                     </button>
                 </div>
 
-                <div class="form-group">
-                    <label>Price Badge Text</label>
-                    <input type="text" id="inputPrice" placeholder="e.g. FREE ENTRY, $15 TICKETS" oninput="updatePoster()">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Price Badge Text</label>
+                        <input type="text" id="inputPrice" placeholder="e.g. FREE ENTRY" oninput="updatePoster()">
+                    </div>
+                    <div class="form-group">
+                        <label>Price Size <span class="val-badge" id="valPriceSize">0.9rem</span></label>
+                        <input type="range" id="sliderPriceSize" min="0.5" max="3" step="0.1" value="0.9" oninput="onLayoutChange()">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top: -10px;">
+                    <label class="toggle-switch" style="display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="checkApplyMultiple">
+                        <span class="slider"></span>
+                        <span style="font-size:0.8rem; color: #cbd5e1; font-weight:600;">Apply Layouts & Toggles to Batch Print</span>
+                    </label>
                 </div>
 
                 <div class="form-row">
@@ -1874,6 +1887,7 @@
             const graphicFit = document.getElementById('selectGraphicFit').value;
 
             const qrSize = document.getElementById('sliderQRSize').value;
+            const priceSize = document.getElementById('sliderPriceSize').value;
 
             // Update badge displays
             document.getElementById('valTitleSize').innerText = `${titleSize}rem`;
@@ -1888,9 +1902,11 @@
             document.getElementById('valGraphicHeight').innerText = `${graphicHeight}px`;
             document.getElementById('valGraphicY').innerText = `${graphicY}px`;
             document.getElementById('valQRSize').innerText = `${qrSize}px`;
+            document.getElementById('valPriceSize').innerText = `${priceSize}rem`;
 
             // Apply CSS Variables
             const root = document.documentElement;
+            root.style.setProperty('--price-size', `${priceSize}rem`);
             root.style.setProperty('--title-font-size', `${titleSize}rem`);
             root.style.setProperty('--title-offset-y', `${titleY}px`);
             root.style.setProperty('--title-align', titleAlign);
@@ -1936,6 +1952,7 @@
             document.getElementById('selectGraphicFit').value = 'contain';
 
             document.getElementById('sliderQRSize').value = 52;
+            document.getElementById('sliderPriceSize').value = 0.9;
 
             onLayoutChange();
         }
@@ -2342,6 +2359,20 @@
             const batchContainer = document.getElementById('batchPrintContainer');
             batchContainer.innerHTML = '';
 
+            const applyMulti = document.getElementById('checkApplyMultiple')?.checked;
+            
+            // Visibility flags (use editor values if applyMulti is true, else default to true)
+            const showLogo = applyMulti ? document.getElementById('showLogo').checked : true;
+            const showTag = applyMulti ? document.getElementById('showTag').checked : true;
+            const showAccentBar = applyMulti ? document.getElementById('showAccentBar').checked : true;
+            const showDetails = applyMulti ? document.getElementById('showDetails').checked : true;
+            const showGraphic = applyMulti ? document.getElementById('showGraphic').checked : true;
+            const showPrice = applyMulti ? document.getElementById('showPrice').checked : true;
+            const showDateTime = applyMulti ? document.getElementById('showDateTime').checked : true;
+            const showLocation = applyMulti ? document.getElementById('showLocation').checked : true;
+            const showQR = applyMulti ? document.getElementById('showQR').checked : true;
+            const showVenueStrip = applyMulti ? document.getElementById('showVenueStrip').checked : true;
+
             // Generate HTML for each selected slide
             selectedSlideIndexes.forEach(idx => {
                 const ev = rawEvents[idx];
@@ -2355,28 +2386,28 @@
                     <div class="poster-bg-layer" style="background-image: url('${bg}');"></div>
                     <div class="poster-bg-overlay"></div>
                     <div class="poster-inner-frame">
-                        <div class="poster-logo-container">
+                        <div class="poster-logo-container" style="display: ${showLogo ? 'flex' : 'none'};">
                             <img src="images/coasters-logo-original.png" alt="Coasters Tavern">
                         </div>
                         <div class="poster-card-content">
-                            ${tag ? `<div class="poster-tag-wrap"><span class="poster-day-tag" style="background-color: ${ev.accentColor}35; border-color: ${ev.accentColor};">${tag}</span></div>` : ''}
+                            ${(tag && showTag) ? `<div class="poster-tag-wrap"><span class="poster-day-tag" style="background-color: ${ev.accentColor}35; border-color: ${ev.accentColor};">${tag}</span></div>` : ''}
                             <div class="poster-title-wrap"><h1 class="poster-premium-title">${ev.title || 'SPECIAL EVENT'}</h1></div>
-                            <div class="poster-accent-bar" style="background: ${ev.accentColor};"></div>
-                            ${ev.fgImage ? `<div class="poster-graphic-wrap"><img src="${ev.fgImage}" alt="Event Graphic"></div>` : ''}
-                            ${ev.subtitle ? `<div class="poster-desc-wrap"><div class="poster-premium-desc">${ev.subtitle.replace(/\n/g, '<br>')}</div></div>` : ''}
+                            ${showAccentBar ? `<div class="poster-accent-bar" style="background: ${ev.accentColor};"></div>` : ''}
+                            ${(ev.fgImage && showGraphic) ? `<div class="poster-graphic-wrap"><img src="${ev.fgImage}" alt="Event Graphic"></div>` : ''}
+                            ${(ev.subtitle && showDetails) ? `<div class="poster-desc-wrap"><div class="poster-premium-desc">${ev.subtitle.replace(/\n/g, '<br>')}</div></div>` : ''}
                         </div>
                         <div>
                             <div class="poster-footer-row">
-                                ${ev.date || ev.day ? `<div class="poster-meta-item"><span>🗓️</span> <span>${ev.date || ev.day}</span></div>` : ''}
-                                ${ev.price ? `<div class="poster-price-badge"><div class="poster-price-badge-inner">${ev.price}</div></div>` : ''}
-                                ${ev.time ? `<div class="poster-meta-item"><span>⏰</span> <span>${ev.time}</span></div>` : ''}
-                                <div class="poster-meta-item"><span>📍</span> <span>${ev.location || 'MAIN LOUNGE'}</span></div>
-                                <div class="poster-footer-combined-box">
+                                ${(ev.date || ev.day) && showDateTime ? `<div class="poster-meta-item"><span>🗓️</span> <span>${ev.date || ev.day}</span></div>` : ''}
+                                ${(ev.price && showPrice) ? `<div class="poster-price-badge"><div class="poster-price-badge-inner">${ev.price}</div></div>` : ''}
+                                ${(ev.time && showDateTime) ? `<div class="poster-meta-item"><span>⏰</span> <span>${ev.time}</span></div>` : ''}
+                                ${showLocation ? `<div class="poster-meta-item"><span>📍</span> <span>${ev.location || 'MAIN LOUNGE'}</span></div>` : ''}
+                                <div class="poster-footer-combined-box" style="display: ${showQR ? 'flex' : 'none'};">
                                     <div class="poster-footer-text">${(ev.footer || 'SCAN TO BOOK\nA TABLE NOW').replace(/\n/g, '<br>')}</div>
                                     <div class="poster-footer-qr-img"><div class="batch-qr-${idx}"></div></div>
                                 </div>
                             </div>
-                            <div class="poster-venue-strip">COASTERS TAVERN • 156 MAIN NORTH RD, REDWOOD, CHRISTCHURCH • COASTERS.CO.NZ</div>
+                            ${showVenueStrip ? `<div class="poster-venue-strip">COASTERS TAVERN • 156 MAIN NORTH RD, REDWOOD, CHRISTCHURCH • COASTERS.CO.NZ</div>` : ''}
                         </div>
                     </div>
                 `;
