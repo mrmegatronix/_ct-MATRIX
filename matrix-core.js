@@ -142,7 +142,7 @@ async function initMatrix() {
   if (!window.MATRIX.STATE.syncInterval) {
     window.MATRIX.STATE.syncInterval = setInterval(async () => {
       console.log('[MATRIX v2] Failsafe auto-syncing data...');
-      const freshData = await loadAllDataSources();
+      const freshData = await loadAllDataSources(true);
       buildSlideQueue(freshData);
     }, 15 * 60 * 1000);
   }
@@ -228,7 +228,7 @@ async function initMatrix() {
           const fingerprint = (res.headers.get('Content-Length') || '') + (res.headers.get('Last-Modified') || '');
           if (window.MATRIX.STATE.lastModifiedTags['gsheet'] && window.MATRIX.STATE.lastModifiedTags['gsheet'] !== fingerprint) {
               console.log(`[MATRIX Watchdog] Detected changes in GSheet`);
-              const freshData = await loadAllDataSources();
+              const freshData = await loadAllDataSources(true);
               buildSlideQueue(freshData);
               if (bc) bc.postMessage({ type: 'DATA_HOT_RELOADED' });
           }
@@ -357,7 +357,22 @@ function setupHeaderAutoHide() {
  * No local JSON, no local CSV, no local images.
  * All slide data comes from the published Google Sheet.
  */
-async function loadAllDataSources() {
+async function loadAllDataSources(forceFresh = false) {
+  // Stale-While-Revalidate: return cached CSV immediately on boot to eliminate blank screen
+  if (!forceFresh) {
+    try {
+      const cached = localStorage.getItem('matrix_cached_csv');
+      if (cached && cached.trim().length > 10) {
+        const parsed = parseCSVToEvents(cached);
+        if (parsed && parsed.length > 0 && parsed[0].events && parsed[0].events.length > 0) {
+          console.log(`[MATRIX] Instant boot: loaded ${parsed[0].events.length} events from local cache.`);
+          fetchCloudCSVInBackground();
+          return parsed;
+        }
+      }
+    } catch (e) { /* ignore */ }
+  }
+
   try {
     const events = await fetchCloudCSV();
     if (events && events.length > 0 && events[0].events && events[0].events.length > 0) {
@@ -370,6 +385,25 @@ async function loadAllDataSources() {
   // Ultimate safety net: always return at least the hardcoded fallback
   console.warn('[MATRIX] All data sources empty — using hardcoded fallback.');
   return getHardcodedFallback('loadAllDataSources-empty');
+}
+
+async function fetchCloudCSVInBackground() {
+  try {
+    const fresh = await fetchCloudCSV();
+    if (fresh && fresh.length > 0 && fresh[0].events && fresh[0].events.length > 0) {
+      console.log(`[MATRIX] Background sync loaded ${fresh[0].events.length} events. Updating slide queue.`);
+      const currentSlide = window.MATRIX.STATE.slides[window.MATRIX.STATE.currentIndex];
+      buildSlideQueue(fresh);
+      if (currentSlide) {
+        const newIdx = window.MATRIX.STATE.slides.findIndex(s => s.id === currentSlide.id);
+        if (newIdx !== -1) {
+          window.MATRIX.STATE.currentIndex = newIdx;
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[MATRIX] Background CSV sync failed:', e);
+  }
 }
 
 
