@@ -74,6 +74,9 @@ async function initMatrix() {
   } else {
     showStatus('Error: No slides to display');
   }
+
+  // 3.5 Setup Keyboard Navigation
+  setupSlideshowKeyboardNav();
   
   // 4. Global Broadcast Listeners
   bc.onmessage = (e) => {
@@ -1216,6 +1219,164 @@ window.prevSlide = prevSlide;
 window.togglePause = togglePause;
 window.jumpToProject = jumpToProject;
 
+function restartModuleFirstSlide() {
+  const s = window.MATRIX.STATE;
+  if (!s.slides.length || s.currentIndex < 0) return;
+  const current = s.slides[s.currentIndex];
+  if (current && current.type === 'MODULE') {
+    const frame = document.querySelector('.module-frame');
+    if (frame && frame.contentWindow) {
+      try { frame.contentWindow.postMessage({ type: 'GOTO_FIRST' }, '*'); } catch (e) {}
+    }
+    renderActiveSlide();
+  } else {
+    const firstIdx = s.slides.findIndex(sl => sl.type !== 'MODULE');
+    s.currentIndex = firstIdx !== -1 ? firstIdx : 0;
+    renderActiveSlide();
+  }
+}
+
+function skipToNextModule() {
+  const s = window.MATRIX.STATE;
+  if (!s.slides.length) return;
+  let targetIdx = -1;
+  for (let i = 1; i < s.slides.length; i++) {
+    const idx = (s.currentIndex + i) % s.slides.length;
+    if (s.slides[idx].type === 'MODULE' && isSlideActive(s.slides[idx])) {
+      targetIdx = idx;
+      break;
+    }
+  }
+  if (targetIdx !== -1) {
+    s.currentIndex = targetIdx;
+    renderActiveSlide();
+  } else {
+    nextSlide();
+  }
+}
+
+function showKeyboardHud(text) {
+  let hud = document.getElementById('matrix-keyboard-hud');
+  if (!hud) {
+    hud = document.createElement('div');
+    hud.id = 'matrix-keyboard-hud';
+    hud.style.cssText = 'position:fixed; bottom:2.5rem; right:2.5rem; z-index:999999; background:rgba(0,0,0,0.85); color:#fbbf24; border:1px solid rgba(251,191,36,0.5); padding:0.6rem 1.4rem; border-radius:9999px; font-family:Inter,sans-serif; font-size:1.1rem; font-weight:700; pointer-events:none; box-shadow:0 10px 30px rgba(0,0,0,0.7); backdrop-filter:blur(10px); transition:opacity 0.25s ease, transform 0.25s ease; opacity:0; transform:translateY(10px);';
+    document.body.appendChild(hud);
+  }
+  hud.innerText = text;
+  hud.style.opacity = '1';
+  hud.style.transform = 'translateY(0)';
+  clearTimeout(hud._t);
+  hud._t = setTimeout(() => {
+    hud.style.opacity = '0';
+    hud.style.transform = 'translateY(10px)';
+  }, 2000);
+}
+
+function setupSlideshowKeyboardNav() {
+  if (window._slideshowKeyNavInitialized) return;
+  window._slideshowKeyNavInitialized = true;
+
+  window.addEventListener('keydown', (e) => {
+    const target = e.target;
+    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable)) {
+      return;
+    }
+
+    switch (e.key) {
+      case 'ArrowLeft':
+        e.preventDefault();
+        window.prevSlide();
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        window.nextSlide();
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        restartModuleFirstSlide();
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        skipToNextModule();
+        break;
+      case ' ':
+      case 'Space':
+        e.preventDefault();
+        window.togglePause();
+        break;
+      case 'a':
+      case 'A':
+        e.preventDefault();
+        window.open('masteradmin.html', '_blank');
+        break;
+      case 'r':
+      case 'R':
+        e.preventDefault();
+        window.open('remote.html', '_blank');
+        break;
+      case '0':
+        e.preventDefault();
+        window.MATRIX.STATE.isLocked = !window.MATRIX.STATE.isLocked;
+        const bar = document.getElementById('progress-bar');
+        if (window.MATRIX.STATE.isLocked) {
+          clearTimeout(window.MATRIX.STATE.timer);
+          if (bar) bar.style.transition = 'none';
+          showKeyboardHud('🔒 SLIDE LOCKED (0 to unlock)');
+        } else {
+          showKeyboardHud('🔓 SLIDE UNLOCKED');
+          if (!window.MATRIX.STATE.isPaused) {
+            window.nextSlide();
+          }
+        }
+        break;
+      default:
+        if (e.key >= '1' && e.key <= '9') {
+          e.preventDefault();
+          const secs = parseInt(e.key, 10) * 10;
+          const ms = secs * 1000;
+          window.MATRIX.CONFIG.SWAP_DELAY = ms;
+          const s = window.MATRIX.STATE;
+          const curr = s.slides[s.currentIndex];
+          if (curr && curr.type !== 'MODULE') {
+            curr.duration = secs;
+          }
+          clearTimeout(s.timer);
+          const pBar = document.getElementById('progress-bar');
+          if (pBar && curr?.type !== 'MODULE' && curr?.id !== 'ct-fir') {
+            pBar.style.transition = 'none';
+            pBar.style.width = '0%';
+          }
+          if (!s.isPaused && !s.isLocked) {
+            s.timer = setTimeout(window.nextSlide, ms);
+            if (pBar && curr?.type !== 'MODULE' && curr?.id !== 'ct-fir') {
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  pBar.style.transition = `width ${ms}ms linear`;
+                  pBar.style.width = '100%';
+                });
+              });
+            }
+          }
+          showKeyboardHud(`⏱ Duration: ${secs}s`);
+        }
+        break;
+    }
+  });
+
+  window.addEventListener('message', (e) => {
+    if (!e.data) return;
+    if (e.data.type === 'SKIP_MODULE') skipToNextModule();
+    if (e.data.type === 'PREV_SLIDE') window.prevSlide();
+    if (e.data.type === 'NEXT_SLIDE') window.nextSlide();
+    if (e.data.type === 'TOGGLE_PAUSE') window.togglePause();
+  });
+}
+
+window.restartModuleFirstSlide = restartModuleFirstSlide;
+window.skipToNextModule = skipToNextModule;
+window.setupSlideshowKeyboardNav = setupSlideshowKeyboardNav;
+
 /**
  * Premium Slide Renderer
  * Generates the premium TV-quality DOM structure for each slide.
@@ -1287,7 +1448,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
               bar.style.display = '';
               bar.style.transition = 'none';
               bar.style.width = '0%';
-              if (!window.MATRIX.STATE.isPaused) {
+              if (!window.MATRIX.STATE.isPaused && !window.MATRIX.STATE.isLocked) {
                   requestAnimationFrame(() => {
                       requestAnimationFrame(() => {
                           bar.style.transition = `width ${delay}ms linear`;
@@ -1297,7 +1458,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
               }
           }
       }
-      if (!window.MATRIX.STATE.isPaused) {
+      if (!window.MATRIX.STATE.isPaused && !window.MATRIX.STATE.isLocked) {
           window.MATRIX.STATE.timer = setTimeout(window.nextSlide, delay);
       }
       return;
@@ -1617,7 +1778,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
       }
     }
 
-    if (!window.MATRIX.STATE.isPaused) {
+    if (!window.MATRIX.STATE.isPaused && !window.MATRIX.STATE.isLocked) {
       const defaultDelay = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
       const finalDelay = overrideDelay !== null ? overrideDelay : defaultDelay;
       window.MATRIX.STATE.timer = setTimeout(nextSlide, finalDelay);
@@ -1722,7 +1883,7 @@ function renderPremiumFooterRow(slide, color) {
       ${showLoc ? `<div class="premium-meta-item location-pill">📍 ${slide.location}</div>` : ''}
       ${(showFooter || showQR) ? `
         <div class="premium-meta-item footer-combined-box">
-          ${showFooter ? `<div class="premium-footer">📷 ${String(footerText).replace(/\n/g, '<br>')}</div>` : ''}
+          ${showFooter ? `<div class="premium-footer">📱 ${String(footerText).replace(/\n/g, '<br>')}</div>` : ''}
           ${showQR ? `
             <div class="footer-qr-img">
               <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=L&data=${encodeURIComponent(qrData)}" alt="QR">
