@@ -736,20 +736,20 @@ function buildSlideQueue(data) {
   // queue.push({ type: 'MODULE', id: 'ct-trip', url: '../_ct-TRIP/index.html', title: "Live Bus Tracking", priority: 50, duration: getModDur('ct-trip', 120) });
 
   // Flame Lantern Logo Slide (Disabled)
-  // queue.push({
-  //   id: 'ct-flame-logo',
-  //   type: 'EVENT',
-  //   subType: 'Logo',
-  //   isLogo: true,
-  //   title: '',
-  //   subtitle: '',
-  //   bgImage: 'images/GOLD-FLAME-LOGO-BLACK-CLEAN.png',
-  //   flamePosition: '60%',
-  //   flameLeft: '50%',
-  //   duration: getModDur('ct-flame-logo', 20),
-  //   pinned: true,
-  //   priority: 2
-  // });
+  queue.push({
+    id: 'ct-flame-logo',
+    type: 'EVENT',
+    subType: 'Logo',
+    isLogo: true,
+    title: '',
+    subtitle: '',
+    bgImage: 'images/GOLD-FLAME-LOGO-BLACK-CLEAN.png',
+    flamePosition: '58%',
+    flameLeft: '50%',
+    duration: getModDur('ct-flame-logo', 20),
+    pinned: true,
+    priority: 2
+  });
 
   // 4. Apply Module Filters
   let filteredQueue = queue.filter(s => {
@@ -1597,30 +1597,20 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
 
       if (isLogo) {
         slideEl.innerHTML = `
-          <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: ${bgColor};">
-            <div class="logo-wrapper" style="position:relative; height: 75vh; display: flex; justify-content: center; animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
-              ${bgImg ? `<img src="${bgImg}" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative; opacity: 1; filter: none; animation: none;" />` : ''}
-              <div class="flame-anchor" style="position: absolute; left: 50%; top: ${slide.flamePosition || '60%'}; width: 0; height: 0; z-index: 3; transform: scale(1.5);">
-                <div class="flame-container">
-                    <div class="flame-glow"></div>
-                    <div class="flame-core"></div>
-                    <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
-                    <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
-                    <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
-                    <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
-                </div>
-                <!-- Reflection -->
-                <div class="flame-container reflection" style="transform: scaleY(-0.6) translateY(-40px); opacity: 0.3; filter: blur(4px);">
-                    <div class="flame-glow" style="opacity:0.2;"></div>
-                    <div class="flame-core"></div>
-                    <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
-                    <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
-                    <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
-                    <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
-                </div>
+          <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: ${bgColor}; height: 100vh; width: 100vw; overflow: hidden; margin: 0; padding: 0;">
+            <div class="logo-wrapper" style="position:relative; height: 85vh; width: 100%; display: flex; justify-content: center; align-items: center; animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
+              ${bgImg ? `<img src="${bgImg}" alt="Flame Lantern" class="logo-image-glow" style="height: 100%; width: auto; z-index: 2; position:relative; animation: logo-reflection 0.5s infinite alternate;" />` : ''}
+              
+              <div class="flame-anchor" style="position: absolute; left: ${slide.flameLeft || '50%'}; top: ${slide.flamePosition || '58%'}; width: 0; height: 0; z-index: 3; transform: scale(1.5);">
+                <!-- Ultra Realistic Teardrop Flame -->
+                <div class="fire-outer"></div>
+                <div class="fire-inner"></div>
+                <div class="fire-core"></div>
+                <!-- Ambient Reflection Glow on Logo -->
+                <div class="ambient-glow"></div>
               </div>
             </div>
-            <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
+            <div class="slide-bg-overlay"  style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
           </div>
           ${renderPremiumFooterRow(slide, themeColor)}
         `;
