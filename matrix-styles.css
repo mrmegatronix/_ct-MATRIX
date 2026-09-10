@@ -257,7 +257,7 @@ body {
   line-height: 1.1;
   color: #fff;
   text-shadow: 0 0 50px var(--theme-glow);
-  filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 1));
+  
   letter-spacing: -0.04em;
   max-width: 100%;
   margin: 0 auto;
@@ -285,7 +285,7 @@ body {
   line-height: 1.4;
   max-width: 100%;
   margin: 0 auto;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.8));
+  
   text-wrap: balance;
   overflow-wrap: break-word;
   text-align: center;
@@ -364,7 +364,7 @@ body {
   line-height: 1.1;
   color: #fff;
   text-shadow: 0 0 60px var(--theme-glow);
-  filter: drop-shadow(0 15px 40px rgba(0, 0, 0, 1));
+  
   letter-spacing: -0.04em;
   max-width: 90%;
   margin: 0 auto;
@@ -379,7 +379,7 @@ body {
   line-height: 1.4;
   max-width: 80%;
   margin: 0 auto;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.8));
+  
   text-wrap: balance;
   text-align: center;
 }
@@ -657,7 +657,7 @@ body {
   font-size: clamp(1.6rem, 2.2vw, 2.4rem);
   font-weight: 900;
   color: #fff;
-  filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.8));
+  
 }
 
 /* ==========================================================================
@@ -938,7 +938,7 @@ body {
 .social-icon {
   font-size: 12rem;
   margin-bottom: 1rem;
-  filter: drop-shadow(0 0 30px var(--theme-glow));
+  
   animation: float 4s ease-in-out infinite;
 }
 
@@ -1526,13 +1526,10 @@ body {
    ========================================================================== */
 
 .logo-image-glow {
-  filter: drop-shadow(0 0 40px rgba(255,100,0,0.6));
+  mix-blend-mode: screen;
 }
 
-@keyframes logo-reflection {
-  0% { filter: drop-shadow(0 0 30px rgba(255,100,0,0.5)) drop-shadow(0 0 10px rgba(255,200,0,0.2)); }
-  100% { filter: drop-shadow(0 0 50px rgba(255,120,0,0.8)) drop-shadow(0 0 20px rgba(255,220,0,0.4)); }
-}
+
 
 .fire-outer {
   position: absolute;

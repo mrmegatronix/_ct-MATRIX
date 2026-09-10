@@ -1493,7 +1493,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
       <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: #000;">
         <div class="logo-wrapper" style="position:relative; height: 90vh; display: flex; justify-content: center; animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
           <img src="images/GOLD-FLAME-LOGO-BLACK-CLEAN.png" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative;">
-          <div class="flame-anchor" style="position: absolute; left: 50%; top: 60%; width: 0; height: 0; z-index: 3; transform: scale(1.5);">
+          <div class="flame-anchor" style="position: absolute; left: 50%; top: 60%; width: 0; height: 0; z-index: 2; transform: scale(1.5);">
             <div class="flame-container">
                 <div class="flame-glow"></div>
                 <div class="flame-core"></div>
@@ -1599,9 +1599,9 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
         slideEl.innerHTML = `
           <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: ${bgColor}; height: 100vh; width: 100vw; overflow: hidden; margin: 0; padding: 0;">
             <div class="logo-wrapper" style="position:relative; height: 85vh; width: 100%; display: flex; justify-content: center; align-items: center; animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
-              ${bgImg ? `<img src="${bgImg}" alt="Flame Lantern" class="logo-image-glow" style="height: 100%; width: auto; z-index: 2; position:relative; animation: logo-reflection 0.5s infinite alternate;" />` : ''}
+              ${bgImg ? `<img src="${bgImg}" alt="Flame Lantern" class="logo-image-glow" style="height: 100%; width: auto; z-index: 3; position:relative;" />` : ''}
               
-              <div class="flame-anchor" style="position: absolute; left: ${slide.flameLeft || '50%'}; top: ${slide.flamePosition || '58%'}; width: 0; height: 0; z-index: 3; transform: scale(1.5);">
+              <div class="flame-anchor" style="position: absolute; left: ${slide.flameLeft || '50%'}; top: ${slide.flamePosition || '58%'}; width: 0; height: 0; z-index: 2; transform: scale(1.5);">
                 <!-- Ultra Realistic Teardrop Flame -->
                 <div class="fire-outer"></div>
                 <div class="fire-inner"></div>
