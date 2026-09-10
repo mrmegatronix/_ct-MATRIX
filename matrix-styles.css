@@ -1329,3 +1329,194 @@ body {
   letter-spacing: 1px;
   font-weight: 700;
 }
+
+/* ==========================================================================
+   HAS-QR DEDICATED SLIDE LAYOUT
+   ========================================================================== */
+
+.slide.has-qr .premium-card {
+  align-items: flex-start;
+  text-align: left;
+  padding: 14vh 6rem 160px 8rem;
+}
+
+.slide.has-qr .premium-tag-wrapper {
+  justify-content: flex-start;
+  left: 8rem;
+}
+
+.slide.has-qr .premium-title-wrapper {
+  justify-content: flex-start;
+  width: 72%;
+  max-width: 72%;
+}
+
+.slide.has-qr .premium-title {
+  text-align: left;
+  margin: 0;
+  font-size: clamp(6.2rem, 8vw, 9.2rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.slide.has-qr .premium-accent-wrapper {
+  justify-content: flex-start;
+}
+
+.slide.has-qr .accent-bar {
+  margin: 0;
+  width: 420px;
+}
+
+.slide.has-qr .premium-desc-wrapper {
+  justify-content: flex-start;
+  width: 72%;
+  max-width: 72%;
+  margin-top: 1.5rem;
+}
+
+.slide.has-qr .premium-desc {
+  text-align: left;
+  font-size: 3.4rem;
+  line-height: 1.35;
+  color: #f1f5f9;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.slide.has-qr .special-event-card {
+  align-items: flex-start;
+  text-align: left;
+  padding: 14vh 6rem 160px 8rem;
+}
+
+.slide.has-qr .special-event-card .premium-tag-wrapper,
+.slide.has-qr .special-event-card .premium-accent-wrapper,
+.slide.has-qr .special-event-card .premium-desc-wrapper {
+  justify-content: flex-start;
+}
+
+.slide.has-qr .special-event-card .premium-title-wrapper {
+  justify-content: flex-start;
+  width: 72%;
+  max-width: 72%;
+}
+
+.slide.has-qr .special-title {
+  text-align: left;
+  margin: 0;
+}
+
+.slide.has-qr .special-desc {
+  text-align: left;
+}
+
+/* Centered Footer Boxes along width of page */
+.slide.has-qr .premium-footer-row {
+  position: absolute;
+  bottom: 35px;
+  left: 42%;
+  right: auto;
+  transform: translateX(-50%);
+  width: auto;
+  max-width: 60%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  padding: 0.8rem 2.8rem;
+  border-radius: 2rem;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 2px solid var(--theme-color);
+  box-shadow: 0 0 25px var(--theme-glow), 0 5px 30px rgba(0, 0, 0, 0.5);
+  opacity: 1;
+  z-index: 30;
+  animation: content-enter 1s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards, pulse-glow-small 3s infinite ease-in-out;
+}
+
+.slide.has-qr .premium-footer-row .price-badge {
+  margin: 0;
+  transform: scale(1.1);
+}
+
+/* Standalone Floating Bottom-Right QR Card */
+.hero-qr-card {
+  position: absolute;
+  bottom: 35px;
+  right: 40px;
+  z-index: 35;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 1rem 1.2rem;
+  background: rgba(3, 7, 18, 0.85);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 2px solid var(--theme-color);
+  border-radius: 1.6rem;
+  box-shadow: 0 0 30px var(--theme-glow), 0 10px 40px rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  animation: content-enter 1s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards, pulse-glow-small 3s infinite ease-in-out;
+}
+
+.hero-qr-header {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.hero-qr-tile {
+  position: relative;
+  width: 170px;
+  height: 170px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 5px;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-qr-center-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32%;
+  height: 32%;
+  background: #fff;
+  border-radius: 50%;
+  padding: 2px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+
+.hero-qr-center-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.hero-qr-url {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 180px;
+}

@@ -735,6 +735,22 @@ function buildSlideQueue(data) {
   queue.push({ type: 'MODULE', id: 'ct-loyalty', url: 'loyalty-slide.html', title: "Coasters Loyalty App", pinned: true, priority: 6, duration: getModDur('ct-loyalty', 60), accentColor: '#89CFF0' });
   // queue.push({ type: 'MODULE', id: 'ct-trip', url: '../_ct-TRIP/index.html', title: "Live Bus Tracking", priority: 50, duration: getModDur('ct-trip', 120) });
 
+  // Flame Lantern Logo Slide (Disabled)
+  // queue.push({
+  //   id: 'ct-flame-logo',
+  //   type: 'EVENT',
+  //   subType: 'Logo',
+  //   isLogo: true,
+  //   title: '',
+  //   subtitle: '',
+  //   bgImage: 'images/GOLD-FLAME-LOGO-BLACK-CLEAN.png',
+  //   flamePosition: '60%',
+  //   flameLeft: '50%',
+  //   duration: getModDur('ct-flame-logo', 20),
+  //   pinned: true,
+  //   priority: 2
+  // });
+
   // 4. Apply Module Filters
   let filteredQueue = queue.filter(s => {
     if (s.disabled) return false;
@@ -1533,6 +1549,13 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
     const transitionClass = (slide.transition || '').toLowerCase().replace(/\s/g, '-');
     slideEl.className = 'slide ' + transitionClass;
 
+    // QR Station layout: applies to all slides that use a QR code from CSV (excluding modules/social/loyalty/menu/live)
+    const qrData = slide.qr || slide.qrUrl || slide.footerQR || slide.footerLink;
+    const hasQR = !!qrData && slide.type !== 'MODULE' && slide.type !== 'LIVE' && slide.type !== 'LOYALTY' && slide.type !== 'SOCIAL LINK' && slide.type !== 'MENU';
+    if (hasQR) {
+      slideEl.classList.add('has-qr');
+    }
+
     // Apply custom zoom if specified
     if (slide.zoom) {
       slideEl.setAttribute('data-zoom', 'true');
@@ -1715,6 +1738,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
               </div>` : ''}
             </div>
             ${renderPremiumFooterRow(slide, themeColor)}
+            ${hasQR ? renderHeroQRStation(slide, themeColor, qrData) : ''}
         `;
       } else if (slide.fgImage) {
         // FULLSCREEN IMAGE MODE (Col 19 / T)
@@ -1724,6 +1748,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
             <img src="${slide.fgImage}" alt="" style="width: 100%; height: 100%; object-fit: contain; animation: none;">
           </div>
           ${renderPremiumFooterRow(slide, themeColor)}
+          ${hasQR ? renderHeroQRStation(slide, themeColor, qrData) : ''}
         `;
       } else {
         slideEl.innerHTML = `
@@ -1754,6 +1779,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
           </div>
           <!-- Consolidated Footer Row (Price, Meta, QR) -->
           ${renderPremiumFooterRow(slide, color)}
+          ${hasQR ? renderHeroQRStation(slide, color, qrData) : ''}
         `;
       }
     }
@@ -1840,11 +1866,49 @@ function preloadNextSlideImage() {
 }
 
 /**
+ * renderHeroQRStation - Dedicated floating QR card in bottom-right with Coasters Tavern logo
+ */
+function renderHeroQRStation(slide, color, qrData) {
+  if (!qrData) return '';
+
+  let headerText = slide.footer ? String(slide.footer).replace(/[📱📷]/g, '').trim() : 'SCAN TO BOOK';
+  headerText = headerText.replace(/\n+/g, ' ');
+  if (!headerText) headerText = 'SCAN TO BOOK';
+
+  let displayUrl = 'coasterstavern.co.nz';
+  const link = slide.footerLink || (typeof qrData === 'string' && qrData.startsWith('http') ? qrData : '');
+  if (link) {
+    try {
+      const parsed = new URL(link);
+      displayUrl = parsed.hostname.replace(/^www\./, '') + (parsed.pathname && parsed.pathname !== '/' ? parsed.pathname : '');
+    } catch (e) {
+      displayUrl = link.replace(/^https?:\/\/(www\.)?/, '').split('?')[0];
+    }
+  }
+
+  const isImageFile = typeof qrData === 'string' && (qrData.endsWith('.png') || qrData.endsWith('.jpg') || qrData.endsWith('.jpeg') || qrData.startsWith('images/') || qrData.startsWith('./images/'));
+  const qrImgSrc = isImageFile ? qrData : `https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=H&data=${encodeURIComponent(qrData)}`;
+
+  return `
+    <div class="hero-qr-card">
+      <div class="hero-qr-header">📱 ${headerText}</div>
+      <div class="hero-qr-tile">
+        <img class="qr-matrix" src="${qrImgSrc}" alt="QR" style="width:100%;height:100%;">
+        <div class="hero-qr-center-logo">
+          <img src="images/logo.png" alt="Coasters">
+        </div>
+      </div>
+      <div class="hero-qr-url">${displayUrl}</div>
+    </div>
+  `;
+}
+
+/**
  * renderPremiumFooterRow - Consolidated UI for Price, QR, and Meta-data
  */
 function renderPremiumFooterRow(slide, color) {
   const qrData = slide.qr || slide.qrUrl || slide.footerQR || slide.footerLink;
-  const showQR = !!qrData;
+  const isDedicatedQR = !!qrData && slide.type !== 'MODULE' && slide.type !== 'LIVE' && slide.type !== 'LOYALTY' && slide.type !== 'SOCIAL LINK' && slide.type !== 'MENU';
   const showPrice = !!slide.price;
   
   // Meta Logic (Time/Date/Location/Days)
@@ -1861,7 +1925,8 @@ function renderPremiumFooterRow(slide, color) {
   if (/scan\s+to\s+book\s+a\s+table/i.test(footerText)) {
     footerText = 'SCAN TO BOOK\nA TABLE NOW';
   }
-  const showFooter = !!footerText;
+  const showFooter = !isDedicatedQR && !!footerText;
+  const showLegacyQR = !isDedicatedQR && !!qrData;
 
   const subTypeLower = (slide.subType || slide.type || '').toLowerCase();
   const isTargetEvent = ['band', 'bands', 'live music', 'super rugby', 'rugby', 'nrl', 'league'].some(t => subTypeLower.includes(t));
@@ -1881,10 +1946,10 @@ function renderPremiumFooterRow(slide, color) {
       ` : ''}
       ${timeStr && !timeRedundant ? `<div class="premium-meta-item time-pill">⏰ ${timeStr}</div>` : ''}
       ${showLoc ? `<div class="premium-meta-item location-pill">📍 ${slide.location}</div>` : ''}
-      ${(showFooter || showQR) ? `
+      ${(showFooter || showLegacyQR) ? `
         <div class="premium-meta-item footer-combined-box">
           ${showFooter ? `<div class="premium-footer">📱 ${String(footerText).replace(/\n/g, '<br>')}</div>` : ''}
-          ${showQR ? `
+          ${showLegacyQR ? `
             <div class="footer-qr-img">
               <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&ecc=L&data=${encodeURIComponent(qrData)}" alt="QR">
             </div>
