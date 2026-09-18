@@ -154,6 +154,34 @@ async function initMatrix() {
   if (!window.MATRIX.STATE.dailyResetTimer) {
     window.MATRIX.STATE.dailyResetTimer = setInterval(() => {
       const now = new Date();
+      // 6 AM Reset: Clear manual slides and reset to default times
+      if (now.getHours() === 6 && now.getMinutes() === 0) {
+        const todayStr = now.toDateString();
+        if (window.MATRIX.STATE.last6amResetDate !== todayStr) {
+          window.MATRIX.STATE.last6amResetDate = todayStr;
+          console.log('[MATRIX] 6 AM Auto-Reset: Clearing manual slides and resetting modules/times.');
+          handleLiveSlide({ active: false });
+          clearTimeout(window.MATRIX.STATE.timer);
+          window.MATRIX.STATE.timer = null;
+          
+          window.MATRIX.CONFIG.SWAP_DELAY = 30000;
+          window.MATRIX.CONFIG.MODULE_DELAY = 60000;
+          window.MATRIX.CONFIG.disabledModules = [];
+          window.MATRIX.STATE.manualSlides = [];
+          localStorage.removeItem('matrix_manual_slides');
+          localStorage.setItem('matrix_config', JSON.stringify(window.MATRIX.CONFIG));
+          
+          if (bc) {
+            bc.postMessage({ type: 'LIVE_SLIDE', payload: { active: false } });
+            bc.postMessage({ type: 'SETTINGS_UPDATE', payload: { disabledModules: [] } });
+            bc.postMessage({ type: 'SYNC_DATA' });
+          }
+          window.MATRIX.STATE.currentIndex = -1;
+          window.initMatrix();
+        }
+      }
+
+
       if (now.getHours() === 2 && now.getMinutes() === 0) {
         const todayStr = now.toDateString();
         if (window.MATRIX.STATE.last2amResetDate !== todayStr) {
@@ -1881,7 +1909,7 @@ function renderHeroQRStation(slide, color, qrData) {
 
   return `
     <div class="hero-qr-card">
-      <div class="hero-qr-header">📱 ${headerText}</div>
+      <div class="hero-qr-header">📷 ${headerText.replace('SCAN TO BOOK NOW', 'SCAN TO<br>BOOK NOW').replace('SCAN TO BOOK', 'SCAN TO<br>BOOK')}</div>
       <div class="hero-qr-tile">
         <img class="qr-matrix" src="${qrImgSrc}" alt="QR" style="width:100%;height:100%;">
         <div class="hero-qr-center-logo">
