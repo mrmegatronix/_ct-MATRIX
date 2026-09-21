@@ -1909,7 +1909,7 @@ function renderHeroQRStation(slide, color, qrData) {
 
   return `
     <div class="hero-qr-card">
-      <div class="hero-qr-header">📷 ${headerText.replace('SCAN TO BOOK NOW', 'SCAN TO<br>BOOK NOW').replace('SCAN TO BOOK', 'SCAN TO<br>BOOK')}</div>
+      <div class="hero-qr-header">${headerText.replace('SCAN TO BOOK NOW', 'SCAN TO<br>BOOK NOW').replace('SCAN TO BOOK', 'SCAN TO<br>BOOK')}</div>
       <div class="hero-qr-tile">
         <img class="qr-matrix" src="${qrImgSrc}" alt="QR" style="width:100%;height:100%;">
         <div class="hero-qr-center-logo">
