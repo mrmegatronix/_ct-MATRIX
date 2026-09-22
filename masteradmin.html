@@ -563,11 +563,12 @@
 
         <!-- BOTTOM RIGHT PANEL (BILLBOARD FEED) -->
         <div class="panel">
-            <div class="panel-header" style="background: var(--surface); color: var(--accent)">
-                <span>B-FRAME (BILLBOARD FEED)</span>
+            <div class="panel-header" style="background: var(--surface); color: var(--text-dim)">
+                <span>B-FRAME (BILLBOARD FEED - OFF)</span>
             </div>
-            <div class="scaled-frame">
-                <iframe id="billboard-frame" src="billboard.html" scrolling="no"></iframe>
+            <div class="scaled-frame" style="background: #000; display: flex; align-items: center; justify-content: center;">
+                <iframe id="billboard-frame" src="billboard.html" scrolling="no" style="display: none;"></iframe>
+                <div style="color: #666; font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; font-weight: bold; letter-spacing: 0.1em; text-align: center;">FEED DISABLED</div>
             </div>
         </div>
     </div>

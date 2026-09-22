@@ -884,10 +884,34 @@
   <div id="progress-bar"></div>
 
   <script>
+    const BILLBOARD_FEED_ENABLED = false;
+
+    function disableBillboardFeed() {
+      const vp = document.getElementById('viewport');
+      if (vp) vp.style.display = 'none';
+      const glow = document.getElementById('glow');
+      if (glow) glow.style.display = 'none';
+      const pb = document.getElementById('progress-bar');
+      if (pb) pb.style.display = 'none';
+      const status = document.getElementById('status');
+      if (status) status.style.display = 'none';
+      const dot = document.getElementById('sync-status-dot');
+      if (dot) dot.style.display = 'none';
+      document.body.style.backgroundColor = '#000';
+    }
+
+    if (!BILLBOARD_FEED_ENABLED) {
+      disableBillboardFeed();
+    }
+
     const bc = new BroadcastChannel('ct_matrix_sync');
     let currentSlideId = null;
 
     bc.onmessage = (e) => {
+      if (!BILLBOARD_FEED_ENABLED || e.data.type === 'BILLBOARD_FEED_OFF') {
+        disableBillboardFeed();
+        return;
+      }
       if (e.data.type === 'CURRENT_SLIDE_BROADCAST' && e.data.slide) {
         renderSlide(e.data.slide, e.data.index, e.data.startTime, e.data.delay);
       } else if (e.data.type === 'SLIDES_DUMP' && e.data.slides && e.data.currentIndex !== undefined) {
@@ -896,10 +920,12 @@
       }
     };
 
-    // Request data on load in case master is already running
-    setTimeout(() => {
-      bc.postMessage({ type: 'GET_SLIDES_DUMP' });
-    }, 500);
+    if (BILLBOARD_FEED_ENABLED) {
+      // Request data on load in case master is already running
+      setTimeout(() => {
+        bc.postMessage({ type: 'GET_SLIDES_DUMP' });
+      }, 500);
+    }
 
     function parseMatrixDate(dateStr) {
       if (!dateStr) return null;

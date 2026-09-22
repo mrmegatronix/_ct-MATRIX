@@ -141,6 +141,7 @@ async function initMatrix() {
   }
 
   applyUISettings();
+  if (bc) bc.postMessage({ type: 'BILLBOARD_FEED_OFF' });
 
   // 5. Auto Data Sync every 15 minutes (failsafe)
   if (!window.MATRIX.STATE.syncInterval) {
@@ -978,6 +979,15 @@ function adjustActiveSlideText() {
       if (descFontSize >= titleFontSize) {
         descFontEl.style.fontSize = Math.max(titleFontSize - 4, FOOTER_TEXT_SIZE) + 'px';
       }
+    }
+  }
+
+  // Accent bar width matches title width
+  const accentBarEl = slideEl.querySelector('.accent-bar');
+  if (titleEl && accentBarEl) {
+    const titleWidth = titleEl.getBoundingClientRect().width;
+    if (titleWidth > 0) {
+      accentBarEl.style.width = Math.round(titleWidth) + 'px';
     }
   }
 }
