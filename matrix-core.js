@@ -1379,6 +1379,11 @@ function setupSlideshowKeyboardNav() {
         e.preventDefault();
         window.open('remote.html', '_blank');
         break;
+      case 'v':
+      case 'V':
+        e.preventDefault();
+        window.open('preview.html', '_blank');
+        break;
       case '0':
         e.preventDefault();
         window.MATRIX.STATE.isLocked = !window.MATRIX.STATE.isLocked;
