@@ -71,10 +71,19 @@
     <main class="slide-viewport" id="slide-viewport">
       <!-- Instant Boot Slide: Eliminates blank black screen before slides load -->
       <div class="slide active no-transition" id="slide-target" data-slide-id="boot-splash">
-        <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: #000;">
-          <div class="logo-wrapper" style="position:relative; height: 75vh; display: flex; justify-content: center;">
-            <img src="images/GOLD-FLAME-LOGO-BLACK-CLEAN.png" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative; opacity: 1;">
+        <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: #000; height: 100vh; width: 100vw; overflow: hidden; margin: 0; padding: 0;">
+          <div class="logo-wrapper" style="position:relative; height: 85vh; width: 100%; display: flex; justify-content: center; align-items: center;">
+            <img src="images/GOLD-FLAME-LOGO-BLACK-CLEAN.png" alt="Flame Lantern" class="logo-image-glow" style="height: 100%; width: auto; z-index: 3; position:relative; opacity: 1;">
+            <div class="flame-anchor" style="position: absolute; left: 50.3%; top: 61.5%; width: 0; height: 0; z-index: 2; transform: scale(1.5);">
+              <!-- Ultra Realistic Teardrop Flame -->
+              <div class="fire-outer"></div>
+              <div class="fire-inner"></div>
+              <div class="fire-core"></div>
+              <!-- Ambient Reflection Glow on Logo -->
+              <div class="ambient-glow"></div>
+            </div>
           </div>
+          <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
         </div>
       </div>
     </main>
@@ -89,7 +98,7 @@
     </div>
   </div>
 
-  <script src="matrix-core.js?v=202609101610"></script>
+  <script src="matrix-core.js?v=202609220040"></script>
   <script>
     // Confetti Trigger
     window.triggerConfetti = function () {

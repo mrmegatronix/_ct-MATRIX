@@ -121,6 +121,7 @@ async function initMatrix() {
           type: 'SLIDES_DUMP', 
           slides: window.MATRIX.STATE.slides, 
           currentIndex: window.MATRIX.STATE.currentIndex,
+          currentSlide: window.MATRIX.STATE.slides[window.MATRIX.STATE.currentIndex],
           startTime: window.MATRIX.STATE.currentSlideStartTime,
           delay: window.MATRIX.STATE.currentSlideDelay,
           lastSync: new Date().toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false }),
@@ -580,10 +581,13 @@ function parseCSVToEvents(text) {
     };
   }).filter(e => {
     if (!e.title && !e.date) return false;
-    const nameStr = (e.title || '').toLowerCase();
+    const nameStr = (e.title || '').toLowerCase().trim();
+    const dateStr = (e.date || '').toLowerCase().trim();
+    const typeStr = (e.event_type || '').toLowerCase().trim();
+    if (nameStr === 'event name' || dateStr === 'date' || typeStr === 'event type') return false;
     const timeStr = (e.time || '').toLowerCase();
     const descStr = (e.notes || '').toLowerCase();
-    const isAllBlacks = nameStr.includes('all blacks') || (e.event_type || '').toLowerCase().includes('all blacks');
+    const isAllBlacks = nameStr.includes('all blacks') || typeStr.includes('all blacks');
     if (!isAllBlacks && (nameStr.includes('tbc') || timeStr.includes('tbc') || descStr.includes('tbc'))) {
       return false;
     }
@@ -709,7 +713,10 @@ function buildSlideQueue(data) {
                 }
             }
 
-            const detId = 'ev-' + (ev.title + (ev.date || ev.day) + ev.time).replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20);
+            const rawTitle = (ev.title || '').replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20);
+            const rawDate = (ev.date || ev.day || '').replace(/[^a-z0-9]/gi, '').toLowerCase();
+            const rawTime = (ev.time || '').replace(/[^a-z0-9]/gi, '').toLowerCase();
+            const detId = 'ev-' + rawTitle + (rawDate ? '-' + rawDate : '') + (rawTime ? '-' + rawTime : '');
             queue.push({
               id: detId,
               type: 'EVENT',
@@ -772,8 +779,8 @@ function buildSlideQueue(data) {
     title: '',
     subtitle: '',
     bgImage: 'images/GOLD-FLAME-LOGO-BLACK-CLEAN.png',
-    flamePosition: '58%',
-    flameLeft: '50%',
+    flamePosition: '61.5%',
+    flameLeft: '50.3%',
     duration: getModDur('ct-flame-logo', 20),
     pinned: true,
     priority: 2
@@ -803,6 +810,7 @@ function buildSlideQueue(data) {
       type: 'SLIDES_DUMP', 
       slides: window.MATRIX.STATE.slides, 
       currentIndex: window.MATRIX.STATE.currentIndex,
+      currentSlide: window.MATRIX.STATE.slides[window.MATRIX.STATE.currentIndex],
       startTime: window.MATRIX.STATE.currentSlideStartTime,
       delay: window.MATRIX.STATE.currentSlideDelay,
       lastSync: new Date().toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false }),
@@ -1262,6 +1270,8 @@ window.nextSlide = nextSlide;
 window.prevSlide = prevSlide;
 window.togglePause = togglePause;
 window.jumpToProject = jumpToProject;
+window.renderActiveSlide = renderActiveSlide;
+window.renderSlide = renderSlide;
 
 function restartModuleFirstSlide() {
   const s = window.MATRIX.STATE;
@@ -1521,24 +1531,13 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
       <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: #000;">
         <div class="logo-wrapper" style="position:relative; height: 90vh; display: flex; justify-content: center; animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
           <img src="images/GOLD-FLAME-LOGO-BLACK-CLEAN.png" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative;">
-          <div class="flame-anchor" style="position: absolute; left: 50%; top: 60%; width: 0; height: 0; z-index: 2; transform: scale(1.5);">
-            <div class="flame-container">
-                <div class="flame-glow"></div>
-                <div class="flame-core"></div>
-                <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
-                <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
-                <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
-                <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
-            </div>
-            <!-- Reflection -->
-            <div class="flame-container reflection" style="transform: scaleY(-0.6) translateY(-40px); opacity: 0.3; filter: blur(4px);">
-                <div class="flame-glow" style="opacity:0.2;"></div>
-                <div class="flame-core"></div>
-                <div class="flame-particle" style="width: 30px; height: 50px; animation-delay: 0s"></div>
-                <div class="flame-particle" style="width: 25px; height: 45px; animation-delay: 0.3s"></div>
-                <div class="flame-particle" style="width: 28px; height: 48px; animation-delay: 0.6s"></div>
-                <div class="flame-particle" style="width: 22px; height: 42px; animation-delay: 0.9s"></div>
-            </div>
+          <div class="flame-anchor" style="position: absolute; left: 50.3%; top: 61.5%; width: 0; height: 0; z-index: 2; transform: scale(1.5);">
+            <!-- Ultra Realistic Teardrop Flame -->
+            <div class="fire-outer"></div>
+            <div class="fire-inner"></div>
+            <div class="fire-core"></div>
+            <!-- Ambient Reflection Glow on Logo -->
+            <div class="ambient-glow"></div>
           </div>
         </div>
         <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
@@ -1629,7 +1628,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
             <div class="logo-wrapper" style="position:relative; height: 85vh; width: 100%; display: flex; justify-content: center; align-items: center; animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
               ${bgImg ? `<img src="${bgImg}" alt="Flame Lantern" class="logo-image-glow" style="height: 100%; width: auto; z-index: 3; position:relative;" />` : ''}
               
-              <div class="flame-anchor" style="position: absolute; left: ${slide.flameLeft || '50%'}; top: ${slide.flamePosition || '58%'}; width: 0; height: 0; z-index: 2; transform: scale(1.5);">
+              <div class="flame-anchor" style="position: absolute; left: ${slide.flameLeft || '50.3%'}; top: ${slide.flamePosition || '61.5%'}; width: 0; height: 0; z-index: 2; transform: scale(1.5);">
                 <!-- Ultra Realistic Teardrop Flame -->
                 <div class="fire-outer"></div>
                 <div class="fire-inner"></div>
@@ -1640,7 +1639,6 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
             </div>
             <div class="slide-bg-overlay"  style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
           </div>
-          ${renderPremiumFooterRow(slide, themeColor)}
         `;
       } else if (slide.type === 'LIVE') {
         const accent = slide.accent || '#06b6d4';
