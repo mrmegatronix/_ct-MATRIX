@@ -680,6 +680,8 @@
             { id: 'ct-soc', name: 'SOC', title: 'Social Club', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '22:00', defaultEnabled: false },
             { id: 'ct-loyalty', name: 'LOYALTY', title: 'Loyalty App', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
             { id: 'ct-tik', name: 'TIK', title: 'TikTok Feed', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
+            { id: 'ct-faceb', name: 'FACEB', title: 'Facebook Feed', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
+            { id: 'ct-insta', name: 'INSTA', title: 'Instagram Feed', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
             { id: 'ct-wea1', name: 'WEA1', title: 'Live Weather', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
             { id: 'ct-fir', name: 'FIR', title: 'Fireplace Loop', defaultDays: [1,2,3,4,5,6,0], defaultStart: '17:00', defaultEnd: '23:00', defaultEnabled: false },
             { id: 'ct-trip', name: 'TRIP', title: 'Trip Module', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false }
@@ -790,7 +792,7 @@
     }
 
     window.saveAllModuleSchedules = function() {
-        const moduleIds = ['ct-quiz', 'ct-mmr', 'ct-ace', 'ct-soc', 'ct-loyalty', 'ct-tik', 'ct-wea1', 'ct-fir', 'ct-trip'];
+        const moduleIds = ['ct-quiz', 'ct-mmr', 'ct-ace', 'ct-soc', 'ct-loyalty', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-wea1', 'ct-fir', 'ct-trip'];
         const schedules = {};
 
         function timeToDec(timeStr) {
@@ -862,7 +864,9 @@
             { id: 'ct-wea1', name: 'WEA1', defaultDuration: 60 },
             { id: 'ct-fir', name: 'FIR', defaultDuration: 180 },
             { id: 'ct-soc', name: 'SOC', defaultDuration: 120 },
-            { id: 'ct-tik', name: 'TIK', defaultDuration: 120 },
+            { id: 'ct-tik', name: 'TIK', defaultDuration: 30 },
+            { id: 'ct-faceb', name: 'FACEB', defaultDuration: 30 },
+            { id: 'ct-insta', name: 'INSTA', defaultDuration: 30 },
             { id: 'ct-loyalty', name: 'LOYALTY', defaultDuration: 60 },
             { id: 'ct-trip', name: 'TRIP', defaultDuration: 60 }
         ];
@@ -963,6 +967,8 @@
             { id: 'FIR', name: 'FIREPLACE', path: '_ct-FIR' },
             { id: 'SOC', name: 'SOCIAL CLUB', path: '_ct-SOC' },
             { id: 'TIK', name: 'TIKTOK FEED', path: '_ct-TIK' },
+            { id: 'FACEB', name: 'FACEBOOK FEED', path: '_ct-FACEB' },
+            { id: 'INSTA', name: 'INSTAGRAM FEED', path: '_ct-INSTA' },
             { id: 'LOYALTY', name: 'LOYALTY APP', path: '_ct-MATRIX', customUrl: 'loyalty-slide.html' },
             { id: 'TRIP', name: 'TRIP MODULE', path: '_ct-TRIP' }
         ];
@@ -1012,7 +1018,9 @@
             { id: 'ct-wea1', name: 'WEA1', title: 'Weather', defaultDur: 60, hasAdmin: false },
             { id: 'ct-fir', name: 'FIR', title: 'Fireplace', defaultDur: 180, hasAdmin: false },
             { id: 'ct-soc', name: 'SOC', title: 'Social Club', defaultDur: 120, hasAdmin: true },
-            { id: 'ct-tik', name: 'TIK', title: 'TikTok Feed', defaultDur: 120, hasAdmin: false },
+            { id: 'ct-tik', name: 'TIK', title: 'TikTok Feed', defaultDur: 30, hasAdmin: false },
+            { id: 'ct-faceb', name: 'FACEB', title: 'Facebook Feed', defaultDur: 30, hasAdmin: false },
+            { id: 'ct-insta', name: 'INSTA', title: 'Instagram Feed', defaultDur: 30, hasAdmin: false },
             { id: 'ct-loyalty', name: 'LOYALTY', title: 'Loyalty App', defaultDur: 60, hasAdmin: false, customUrl: 'loyalty-slide.html' },
             { id: 'ct-trip', name: 'TRIP', title: 'Trip Module', defaultDur: 60, hasAdmin: false }
         ];
@@ -1085,7 +1093,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty', 'ct-trip'];
+        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {
@@ -1138,7 +1146,7 @@
     }
 
     function saveHomeModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty', 'ct-trip'];
+        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {

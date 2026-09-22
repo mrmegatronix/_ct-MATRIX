@@ -102,6 +102,8 @@
     <button class="btn" onclick="jump('ct-fir')"><span class="btn-icon">🔥</span><span>FIR</span></button>
     <button class="btn" onclick="jump('ct-soc')"><span class="btn-icon">🤝</span><span>SOC</span></button>
     <button class="btn" onclick="jump('ct-tik')"><span class="btn-icon">🎵</span><span>TIK</span></button>
+    <button class="btn" onclick="jump('ct-faceb')"><span class="btn-icon">👍</span><span>FACEB</span></button>
+    <button class="btn" onclick="jump('ct-insta')"><span class="btn-icon">📸</span><span>INSTA</span></button>
     <button class="btn" onclick="jump('ct-loyalty')"><span class="btn-icon">💳</span><span>LOYALTY</span></button>
     <button class="btn" onclick="jump('ct-trip')"><span class="btn-icon">✈️</span><span>TRIP</span></button>
     <button class="btn" onclick="send('NEXT')"><span class="btn-icon">📺</span><span>ADS</span></button>
@@ -338,6 +340,60 @@
          </div>
       </div>
     </div>
+    <!-- FACEB -->
+    <div class="mod-card" id="row-ct-faceb">
+      <div class="mod-header">
+        <div class="mod-name">👍 FACEB</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="position:relative; width:44px; height:24px; cursor:pointer;">
+             <input type="checkbox" class="mod-switch-cb" id="switch-ct-faceb" onchange="toggleModule('FACEB', this.checked)" style="opacity:0; width:0; height:0; position:absolute;">
+             <div class="mod-switch-bg" style="position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:24px; transition:0.3s; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="mod-switch-knob" style="position:absolute; top:1px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+             </div>
+          </label>
+          <button class="gear-btn" onclick="document.getElementById('settings-ct-faceb').classList.toggle('open')">⚙️</button>
+        </div>
+      </div>
+      <div class="mod-settings" id="settings-ct-faceb">
+         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <label style="display:flex; align-items:center; gap: 6px; font-size: 0.75rem; color: #aaa; cursor: pointer;">
+                <input type="checkbox" id="all-ct-faceb" style="margin: 0; width: 14px; height: 14px; accent-color: var(--accent);" onchange="toggleRemotePlayAll('ct-faceb', this.checked)">
+                <span>Play All (Loop)</span>
+            </label>
+            <div class="mod-dur-wrapper" id="dur-wrap-ct-faceb" style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.65rem; color: #666; font-weight: 800;">SEC</span>
+                <input type="number" class="mod-dur" id="dur-ct-faceb" placeholder="s">
+            </div>
+         </div>
+      </div>
+    </div>
+    <!-- INSTA -->
+    <div class="mod-card" id="row-ct-insta">
+      <div class="mod-header">
+        <div class="mod-name">📸 INSTA</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="position:relative; width:44px; height:24px; cursor:pointer;">
+             <input type="checkbox" class="mod-switch-cb" id="switch-ct-insta" onchange="toggleModule('INSTA', this.checked)" style="opacity:0; width:0; height:0; position:absolute;">
+             <div class="mod-switch-bg" style="position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:24px; transition:0.3s; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="mod-switch-knob" style="position:absolute; top:1px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+             </div>
+          </label>
+          <button class="gear-btn" onclick="document.getElementById('settings-ct-insta').classList.toggle('open')">⚙️</button>
+        </div>
+      </div>
+      <div class="mod-settings" id="settings-ct-insta">
+         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <label style="display:flex; align-items:center; gap: 6px; font-size: 0.75rem; color: #aaa; cursor: pointer;">
+                <input type="checkbox" id="all-ct-insta" style="margin: 0; width: 14px; height: 14px; accent-color: var(--accent);" onchange="toggleRemotePlayAll('ct-insta', this.checked)">
+                <span>Play All (Loop)</span>
+            </label>
+            <div class="mod-dur-wrapper" id="dur-wrap-ct-insta" style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.65rem; color: #666; font-weight: 800;">SEC</span>
+                <input type="number" class="mod-dur" id="dur-ct-insta" placeholder="s">
+            </div>
+         </div>
+      </div>
+    </div>
     <!-- LOYALTY -->
     <div class="mod-card" id="row-ct-loyalty">
       <div class="mod-header">
@@ -421,7 +477,7 @@
     const bc_sub = new BroadcastChannel('mom_sync');
 
     // Default durations fallback
-    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-quiz': 60, 'ct-fir': 180, 'ct-soc': 120, 'ct-tik': 120, 'ct-loyalty': 60, 'ct-trip': 60 };
+    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-quiz': 60, 'ct-fir': 180, 'ct-soc': 120, 'ct-tik': 30, 'ct-faceb': 30, 'ct-insta': 30, 'ct-loyalty': 60, 'ct-trip': 60 };
 
     function getClientId() {
       let id = localStorage.getItem('matrix_client_id');
@@ -447,7 +503,7 @@
         }
       } catch(e) {}
       
-      const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty', 'ct-trip'];
+      const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip'];
       moduleIds.forEach(id => {
         const row = document.getElementById('row-' + id);
         if (!row) return;
@@ -612,7 +668,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-loyalty', 'ct-trip'];
+        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {

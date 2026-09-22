@@ -766,8 +766,12 @@ function buildSlideQueue(data) {
   const isLocalFile = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const socUrl = isLocalFile ? '../_ct-SOC/index.html' : 'https://ctsc-app.web.app/#/tv';
   const tikUrl = isLocalFile ? '../_ct-TIK/index.html' : 'https://mrmegatronix.github.io/_ct-TIK/';
+  const facebUrl = isLocalFile ? '../_ct-FACEB/index.html' : 'https://mrmegatronix.github.io/_ct-FACEB/';
+  const instaUrl = isLocalFile ? '../_ct-INSTA/index.html' : 'https://mrmegatronix.github.io/_ct-INSTA/';
   queue.push({ type: 'MODULE', id: 'ct-soc', url: socUrl, title: "Social Club TV Slides", pinned: true, priority: 8, duration: getModDur('ct-soc', 120) });
-  queue.push({ type: 'MODULE', id: 'ct-tik', url: tikUrl, title: "Coasters Tavern TikTok", pinned: true, priority: 7, duration: getModDur('ct-tik', 120) });
+  queue.push({ type: 'MODULE', id: 'ct-tik', url: tikUrl, title: "Coasters Tavern TikTok", pinned: true, priority: 7, duration: getModDur('ct-tik', 30) });
+  queue.push({ type: 'MODULE', id: 'ct-faceb', url: facebUrl, title: "Coasters Tavern Facebook", pinned: true, priority: 7, duration: getModDur('ct-faceb', 30) });
+  queue.push({ type: 'MODULE', id: 'ct-insta', url: instaUrl, title: "Coasters Tavern Instagram", pinned: true, priority: 7, duration: getModDur('ct-insta', 30) });
   queue.push({ type: 'MODULE', id: 'ct-loyalty', url: 'loyalty-slide.html', title: "Coasters Loyalty App", pinned: true, priority: 6, duration: getModDur('ct-loyalty', 60), accentColor: '#89CFF0' });
   // queue.push({ type: 'MODULE', id: 'ct-trip', url: '../_ct-TRIP/index.html', title: "Live Bus Tracking", priority: 50, duration: getModDur('ct-trip', 120) });
 
@@ -1617,6 +1621,8 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
       if (slide.id === 'ct-quiz') moduleColor = '#3b82f6';
       if (slide.id === 'ct-soc') moduleColor = '#d4af37';
       if (slide.id === 'ct-tik') moduleColor = '#ff0050';
+      if (slide.id === 'ct-faceb') moduleColor = '#1877F2';
+      if (slide.id === 'ct-insta') moduleColor = '#E1306C';
       if (slide.id === 'ct-loyalty') moduleColor = '#89CFF0';
       if (slide.id === 'ct-trip') moduleColor = '#10b981';
       

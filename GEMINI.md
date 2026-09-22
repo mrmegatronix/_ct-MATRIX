@@ -13,3 +13,6 @@
     + new line
     ```
 *   **Placeholders:** Use `// ... existing code ...` comments generously to skip unchanged sections.
+
+## 3. Git Commit & Push Reporting Rules
+*   **GitHub Pages Links:** Whenever a repository is committed or pushed, conclude the response with a list of direct GitHub Pages web URL hyperlinks for each updated repository (`https://mrmegatronix.github.io/<repo>/`).
