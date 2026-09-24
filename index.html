@@ -113,11 +113,7 @@
 
     // Init — the global functions nextSlide, prevSlide, togglePause
     // are already exported by matrix-core.js onto the window object
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => window.initMatrix());
-    } else {
-      window.initMatrix();
-    }
+    window.addEventListener('DOMContentLoaded', () => window.initMatrix());
   </script>
   <script type="module" src="firebase-bridge.js"></script>
 </body>

@@ -688,6 +688,12 @@ function buildSlideQueue(data) {
             const isAllBlacks = (ev.event_type || '').toLowerCase().includes('all blacks') || 
                                 (ev.title || '').toLowerCase().includes('all blacks');
 
+            // NPC Filter: Skip all NPC slides unless Canterbury is in it
+            const fullEvText = [ev.event_type, ev.title, ev.notes, ev.billboardNotes].map(x => String(x || '').toLowerCase()).join(' ');
+            if (fullEvText.includes('npc') && !fullEvText.includes('canterbury')) {
+              return;
+            }
+
             // 2. All Blacks games between 11pm and 10am: do not display slide
             if (isAllBlacks && ev.time) {
               const gameTime = parseTimeStringToHours(ev.time);
@@ -1928,7 +1934,7 @@ function renderHeroQRStation(slide, color, qrData) {
 
   return `
     <div class="hero-qr-card">
-      <div class="hero-qr-header">📷 ${headerText.replace('SCAN TO BOOK NOW', 'SCAN TO<br>BOOK NOW').replace('SCAN TO BOOK', 'SCAN TO<br>BOOK')}</div>
+      <div class="hero-qr-header">SCAN TO<br>BOOK A TABLE</div>
       <div class="hero-qr-tile">
         <img class="qr-matrix" src="${qrImgSrc}" alt="QR" style="width:100%;height:100%;">
         <div class="hero-qr-center-logo">
