@@ -38,6 +38,8 @@ const bc = new BroadcastChannel(window.MATRIX.CONFIG.SYNC_CHANNEL);
  * Initialization
  */
 async function initMatrix() {
+  if (window.MATRIX.STATE.isBooting) return;
+  window.MATRIX.STATE.isBooting = true;
   console.log('[MATRIX v2] Booting premium display engine...');
   
   try {
@@ -70,8 +72,10 @@ async function initMatrix() {
   }
 
   if (window.MATRIX.STATE.slides.length > 0) {
+    window.MATRIX.STATE.isBooting = false;
     nextSlide();
   } else {
+    window.MATRIX.STATE.isBooting = false;
     showStatus('Error: No slides to display');
   }
 
