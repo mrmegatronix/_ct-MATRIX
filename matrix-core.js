@@ -1547,45 +1547,8 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
       return;
   }
 
-  // 1. Show interstitial loader transition
-  let loader = document.getElementById('transition-loader');
-  if (!loader) {
-    loader = document.createElement('div');
-    loader.id = 'transition-loader';
-    loader.className = 'slide fade-in';
-    loader.style.zIndex = '5000'; // above everything
-    loader.style.backgroundColor = '#000';
-    loader.style.transition = 'opacity 0.6s ease';
-    loader.innerHTML = `
-      <div class="slide-bg" style="display:flex; justify-content:center; align-items:center; background-color: #000;">
-        <div class="logo-wrapper" style="position:relative; height: 90vh; display: flex; justify-content: center; animation: cinematicZoom 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
-          <img src="images/GOLD-FLAME-LOGO-BLACK-CLEAN.png" alt="Flame Lantern" style="height: 100%; width: auto; z-index: 2; position:relative;">
-          <div class="flame-anchor" style="position: absolute; left: 50.3%; top: 61.5%; width: 0; height: 0; z-index: 2; transform: scale(1.5);">
-            <!-- Ultra Realistic Teardrop Flame -->
-            <div class="fire-outer"></div>
-            <div class="fire-inner"></div>
-            <div class="fire-core"></div>
-            <!-- Ambient Reflection Glow on Logo -->
-            <div class="ambient-glow"></div>
-          </div>
-        </div>
-        <div class="slide-bg-overlay" style="background: radial-gradient(circle, transparent 20%, #000 100%); z-index: 1;"></div>
-      </div>
-    `;
-    document.body.appendChild(loader);
-  }
-
-  // Show loader sporadically (Disabled as requested - annoying)
-  const showLoader = false; 
-
-  if (showLoader) {
-    loader.style.opacity = '1';
-    loader.style.visibility = 'visible';
-    loader.classList.add('active');
-  }
-
-  // Wait for fade in before swapping content
-  const transitionDelay = showLoader ? 600 : 0;
+  // 1. Loader transition (disabled)
+  const transitionDelay = 0;
   setTimeout(() => {
     // Remove old slide
     const existing = document.getElementById('slide-target');
@@ -1873,16 +1836,6 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
       }
     }
 
-    // Fade out loader after content has initialized
-    if (showLoader) {
-      setTimeout(() => {
-        loader.style.opacity = '0';
-        loader.style.visibility = 'hidden';
-        setTimeout(() => {
-          loader.classList.remove('active');
-        }, 600); // Wait for CSS transition
-      }, 1000); // 1-second hold to ensure modules/images load behind it
-    }
     preloadNextSlideImage();
   }, transitionDelay);
 }
