@@ -688,10 +688,9 @@ body {
   position: fixed;
   bottom: 0;
   left: 0;
-  height: 32px;
-  /* Significantly thicker for TV visibility */
+  height: 6px;
   background: linear-gradient(90deg, var(--theme-color), #fff);
-  box-shadow: 0 0 25px var(--theme-glow);
+  box-shadow: 0 0 10px var(--theme-glow);
   transition: width linear;
   z-index: 1000;
 }
