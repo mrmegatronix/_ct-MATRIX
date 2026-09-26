@@ -461,7 +461,7 @@
       <a href="remote.html" class="nav-link active">📱 Remote</a>
   </nav>
 
-  <script src="matrix-core.js"></script>
+  <script src="matrix-core.js?v=20260926_1522"></script>
   <script>
     if (localStorage.getItem('matrix_migration_20260804_enable_all_modules') !== 'done') {
         try {
@@ -473,8 +473,8 @@
         } catch(e) {}
     }
 
-    const bc = new BroadcastChannel('ct_matrix_sync');
-    const bc_sub = new BroadcastChannel('mom_sync');
+    var bc = window.bc || new BroadcastChannel('ct_matrix_sync');
+    var bc_sub = window.bc_sub || new BroadcastChannel('mom_sync');
 
     // Default durations fallback
     const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-ace': 180, 'ct-quiz': 60, 'ct-fir': 180, 'ct-soc': 120, 'ct-tik': 30, 'ct-faceb': 30, 'ct-insta': 30, 'ct-loyalty': 60, 'ct-trip': 60 };

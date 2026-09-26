@@ -32,7 +32,8 @@ window.MATRIX = {
   ]
 };
 
-const bc = new BroadcastChannel(window.MATRIX.CONFIG.SYNC_CHANNEL);
+window.bc = window.bc || new BroadcastChannel(window.MATRIX.CONFIG.SYNC_CHANNEL);
+var bc = window.bc;
 
 /**
  * Initialization
@@ -65,6 +66,7 @@ async function initMatrix() {
   if (previewId) {
     const pIdx = window.MATRIX.STATE.slides.findIndex(s => s.id === previewId);
     if (pIdx !== -1) {
+      window.MATRIX.STATE.isBooting = false;
       window.MATRIX.STATE.currentIndex = pIdx;
       renderActiveSlide();
       return; // Stay on this slide for preview
@@ -73,7 +75,9 @@ async function initMatrix() {
 
   if (window.MATRIX.STATE.slides.length > 0) {
     window.MATRIX.STATE.isBooting = false;
-    nextSlide();
+    if (window.MATRIX.STATE.currentIndex === -1) {
+      nextSlide();
+    }
   } else {
     window.MATRIX.STATE.isBooting = false;
     showStatus('Error: No slides to display');
@@ -94,9 +98,38 @@ async function initMatrix() {
     }
 
     switch(e.data.type) {
-      case 'NEXT': window.nextSlide(); break;
-      case 'PREV': window.prevSlide(); break;
-      case 'TOGGLE': window.togglePause(); break;
+      case 'NEXT':
+      case 'NAV_NEXT':
+      case 'NEXT_SLIDE':
+        window.nextSlide(); break;
+      case 'PREV':
+      case 'NAV_PREV':
+      case 'PREV_SLIDE':
+        window.prevSlide(); break;
+      case 'TOGGLE':
+      case 'NAV_PAUSE':
+      case 'TOGGLE_PAUSE':
+        window.togglePause(); break;
+      case 'NAV_RESTART':
+        window.restartModuleFirstSlide(); break;
+      case 'NAV_NEXT_MODULE':
+      case 'SKIP_MODULE':
+        window.skipToNextModule(); break;
+      case 'NAV_LOCK_TOGGLE':
+        window.MATRIX.STATE.isLocked = !window.MATRIX.STATE.isLocked;
+        if (window.MATRIX.STATE.isLocked) {
+          clearTimeout(window.MATRIX.STATE.timer);
+          const bar = document.getElementById('progress-bar');
+          if (bar) bar.style.transition = 'none';
+        } else if (!window.MATRIX.STATE.isPaused) {
+          window.nextSlide();
+        }
+        break;
+      case 'SET_DURATION':
+        if (e.data.payload && e.data.payload.duration) {
+          window.MATRIX.CONFIG.SWAP_DELAY = e.data.payload.duration;
+        }
+        break;
       case 'JUMP': window.jumpToProject(e.data.id); break;
       case 'PROJECT': window.jumpToProject(e.data.id); break;
       case 'SETTINGS_UPDATE': updateConfig(e.data.payload); break;
@@ -671,7 +704,13 @@ function buildSlideQueue(data) {
           }
 
           const targetDate = ev.date ? parseMatrixDate(ev.date) : virtualDate;
-          const isCurrent = isEventCurrent(targetDate, ev.event_type, ev.title);
+          const rawTitle = (ev.title || '').replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20);
+          const rawDate = (ev.date || ev.day || '').replace(/[^a-z0-9]/gi, '').toLowerCase();
+          const rawTime = (ev.time || '').replace(/[^a-z0-9]/gi, '').toLowerCase();
+          const detId = 'ev-' + rawTitle + (rawDate ? '-' + rawDate : '') + (rawTime ? '-' + rawTime : '');
+          const previewParam = (typeof window !== 'undefined' && window.location) ? new URLSearchParams(window.location.search).get('preview') : null;
+          const isPreviewTarget = previewParam && (detId === previewParam || (ev.id && ev.id === previewParam));
+          const isCurrent = isEventCurrent(targetDate, ev.event_type, ev.title) || isPreviewTarget;
 
           if (isCurrent) {
             // Prevent completely blank slides from rendering
@@ -724,10 +763,6 @@ function buildSlideQueue(data) {
                 }
             }
 
-            const rawTitle = (ev.title || '').replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 20);
-            const rawDate = (ev.date || ev.day || '').replace(/[^a-z0-9]/gi, '').toLowerCase();
-            const rawTime = (ev.time || '').replace(/[^a-z0-9]/gi, '').toLowerCase();
-            const detId = 'ev-' + rawTitle + (rawDate ? '-' + rawDate : '') + (rawTime ? '-' + rawTime : '');
             queue.push({
               id: detId,
               type: 'EVENT',
@@ -768,16 +803,21 @@ function buildSlideQueue(data) {
     if (val === 'all') return defaultDur;
     return val || defaultDur;
   };
-  queue.push({ type: 'MODULE', id: 'ct-mmr', url: '../_ct-MMR/index.html', title: "Meat Raffle Display", pinned: true, priority: 5, duration: getModDur('ct-mmr', 600) }); // Play all slides (10min default)
+  const resolveModuleUrl = (relPath, ghUrl) => {
+    if (window.location.protocol === 'file:') return relPath;
+    if (window.location.hostname.includes('github.io')) return relPath;
+    return ghUrl;
+  };
 
-  queue.push({ type: 'MODULE', id: 'ct-wea1', url: '../_ct-wea1/index.html', title: "Christchurch Weather", priority: 80, duration: getModDur('ct-wea1', 90) });
-  queue.push({ type: 'MODULE', id: 'ct-ace', url: '../_ct-ACE/index.html', title: "Chase the Ace", pinned: true, priority: 5, duration: getModDur('ct-ace', 180) }); // 6 slides * 30s
-  queue.push({ type: 'MODULE', id: 'ct-quiz', url: '../_ct-QUIZ/index.html', title: "Weekly Pub Quiz", priority: 10, duration: getModDur('ct-quiz', 60) });
-  const isLocalFile = window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  const socUrl = isLocalFile ? '../_ct-SOC/index.html' : 'https://ctsc-app.web.app/#/tv';
-  const tikUrl = isLocalFile ? '../_ct-TIK/index.html' : 'https://mrmegatronix.github.io/_ct-TIK/';
-  const facebUrl = isLocalFile ? '../_ct-FACEB/index.html' : 'https://mrmegatronix.github.io/_ct-FACEB/';
-  const instaUrl = isLocalFile ? '../_ct-INSTA/index.html' : 'https://mrmegatronix.github.io/_ct-INSTA/';
+  queue.push({ type: 'MODULE', id: 'ct-mmr', url: resolveModuleUrl('../_ct-MMR/index.html', 'https://mrmegatronix.github.io/_ct-MMR/index.html'), title: "Meat Raffle Display", pinned: true, priority: 5, duration: getModDur('ct-mmr', 600) });
+  queue.push({ type: 'MODULE', id: 'ct-wea1', url: resolveModuleUrl('../_ct-wea1/index.html', 'https://mrmegatronix.github.io/_ct-wea1/index.html'), title: "Christchurch Weather", priority: 80, duration: getModDur('ct-wea1', 90) });
+  queue.push({ type: 'MODULE', id: 'ct-ace', url: resolveModuleUrl('../_ct-ACE/index.html', 'https://mrmegatronix.github.io/_ct-ACE/index.html'), title: "Chase the Ace", pinned: true, priority: 5, duration: getModDur('ct-ace', 180) });
+  queue.push({ type: 'MODULE', id: 'ct-quiz', url: resolveModuleUrl('../_ct-QUIZ/index.html', 'https://mrmegatronix.github.io/_ct-QUIZ/index.html'), title: "Weekly Pub Quiz", priority: 10, duration: getModDur('ct-quiz', 60) });
+  queue.push({ type: 'MODULE', id: 'ct-fir', url: resolveModuleUrl('../_ct-FIR/index.html', 'https://mrmegatronix.github.io/_ct-FIR/index.html'), title: "Fireplace Ambiance", priority: 80, duration: getModDur('ct-fir', 180) });
+  const socUrl = (window.location.protocol === 'file:') ? '../_ct-SOC/index.html' : 'https://ctsc-app.web.app/#/tv';
+  const tikUrl = resolveModuleUrl('../_ct-TIK/index.html', 'https://mrmegatronix.github.io/_ct-TIK/');
+  const facebUrl = resolveModuleUrl('../_ct-FACEB/index.html', 'https://mrmegatronix.github.io/_ct-FACEB/');
+  const instaUrl = resolveModuleUrl('../_ct-INSTA/index.html', 'https://mrmegatronix.github.io/_ct-INSTA/');
   queue.push({ type: 'MODULE', id: 'ct-soc', url: socUrl, title: "Social Club TV Slides", pinned: true, priority: 8, duration: getModDur('ct-soc', 120) });
   queue.push({ type: 'MODULE', id: 'ct-tik', url: tikUrl, title: "Coasters Tavern TikTok", pinned: true, priority: 7, duration: getModDur('ct-tik', 30) });
   queue.push({ type: 'MODULE', id: 'ct-faceb', url: facebUrl, title: "Coasters Tavern Facebook", pinned: true, priority: 7, duration: getModDur('ct-faceb', 30) });
@@ -831,11 +871,6 @@ function buildSlideQueue(data) {
       lastSync: new Date().toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false }),
       senderTabId: window.matrixTabId || 'iframe'
     });
-  }
-  
-  // If we are already running and the queue changed, we might need to re-render
-  if (window.MATRIX.STATE.currentIndex === -1 && filteredQueue.length > 0) {
-    window.nextSlide();
   }
 }
 
@@ -1295,7 +1330,7 @@ window.prevSlide = prevSlide;
 window.togglePause = togglePause;
 window.jumpToProject = jumpToProject;
 window.renderActiveSlide = renderActiveSlide;
-window.renderSlide = renderSlide;
+window.renderSlide = renderActiveSlide;
 
 function restartModuleFirstSlide() {
   const s = window.MATRIX.STATE;
