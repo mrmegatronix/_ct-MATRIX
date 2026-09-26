@@ -821,9 +821,20 @@ function buildSlideQueue(data) {
     return ghUrl;
   };
 
+  // Saturday 6:00pm - 6:45pm: prioritize ct-ace for 6:30pm draw
+  const now = new Date();
+  const nzTimeStr = now.toLocaleString("en-US", { timeZone: "Pacific/Auckland" });
+  const nzDate = new Date(nzTimeStr);
+  const isSatDrawWindow = nzDate.getDay() === 6 && (
+    nzDate.getHours() === 18 && nzDate.getMinutes() < 45
+  );
+
+  const acePriority = isSatDrawWindow ? 1 : 5;
+  const acePinned = isSatDrawWindow ? true : true;
+
   queue.push({ type: 'MODULE', id: 'ct-mmr', url: resolveModuleUrl('../_ct-MMR/index.html', 'https://mrmegatronix.github.io/_ct-MMR/index.html'), title: "Meat Raffle Display", pinned: true, priority: 5, duration: getModDur('ct-mmr', 600) });
   queue.push({ type: 'MODULE', id: 'ct-wea1', url: resolveModuleUrl('../_ct-wea1/index.html', 'https://mrmegatronix.github.io/_ct-wea1/index.html'), title: "Christchurch Weather", priority: 80, duration: getModDur('ct-wea1', 90) });
-  queue.push({ type: 'MODULE', id: 'ct-ace', url: resolveModuleUrl('../_ct-ACE/index.html', 'https://mrmegatronix.github.io/_ct-ACE/index.html'), title: "Chase the Ace", pinned: true, priority: 5, duration: getModDur('ct-ace', 180) });
+  queue.push({ type: 'MODULE', id: 'ct-ace', url: resolveModuleUrl('../_ct-ACE/index.html', 'https://mrmegatronix.github.io/_ct-ACE/index.html'), title: "Chase the Ace", pinned: acePinned, priority: acePriority, duration: getModDur('ct-ace', 180) });
   queue.push({ type: 'MODULE', id: 'ct-quiz', url: resolveModuleUrl('../_ct-QUIZ/index.html', 'https://mrmegatronix.github.io/_ct-QUIZ/index.html'), title: "Weekly Pub Quiz", priority: 10, duration: getModDur('ct-quiz', 60) });
   queue.push({ type: 'MODULE', id: 'ct-fir', url: resolveModuleUrl('../_ct-FIR/index.html', 'https://mrmegatronix.github.io/_ct-FIR/index.html'), title: "Fireplace Ambiance", priority: 80, duration: getModDur('ct-fir', 180) });
   const socUrl = (window.location.protocol === 'file:') ? '../_ct-SOC/index.html' : 'https://ctsc-app.web.app/#/tv';
@@ -837,21 +848,7 @@ function buildSlideQueue(data) {
   queue.push({ type: 'MODULE', id: 'ct-loyalty', url: 'loyalty-slide.html', title: "Coasters Loyalty App", pinned: true, priority: 6, duration: getModDur('ct-loyalty', 60), accentColor: '#89CFF0' });
   // queue.push({ type: 'MODULE', id: 'ct-trip', url: '../_ct-TRIP/index.html', title: "Live Bus Tracking", priority: 50, duration: getModDur('ct-trip', 120) });
 
-  // Flame Lantern Logo Slide (Disabled)
-  queue.push({
-    id: 'ct-flame-logo',
-    type: 'EVENT',
-    subType: 'Logo',
-    isLogo: true,
-    title: '',
-    subtitle: '',
-    bgImage: 'images/GOLD-FLAME-LOGO-BLACK-CLEAN.png',
-    flamePosition: '61.5%',
-    flameLeft: '50.3%',
-    duration: getModDur('ct-flame-logo', 20),
-    pinned: true,
-    priority: 2
-  });
+  // Flame Lantern Logo Slide removed from recurring queue (opening slide only in index.html)
 
   // 4. Apply Module Filters
   let filteredQueue = queue.filter(s => {
