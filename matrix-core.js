@@ -629,6 +629,10 @@ function parseCSVToEvents(text) {
     if (!isAllBlacks && (nameStr.includes('tbc') || timeStr.includes('tbc') || descStr.includes('tbc'))) {
       return false;
     }
+    const isNRL = typeStr.includes('nrl') || nameStr.includes('nrl') || descStr.includes('nrl');
+    if (isNRL) {
+      return false;
+    }
     return true;
   });
 
@@ -730,6 +734,14 @@ function buildSlideQueue(data) {
 
             const isAllBlacks = (ev.event_type || '').toLowerCase().includes('all blacks') || 
                                 (ev.title || '').toLowerCase().includes('all blacks');
+
+            // NRL Filter: Skip all NRL slides
+            const isNRL = (ev.event_type || '').toLowerCase().includes('nrl') || 
+                          (ev.title || '').toLowerCase().includes('nrl') ||
+                          (ev.notes || '').toLowerCase().includes('nrl');
+            if (isNRL) {
+              return;
+            }
 
             // NPC Filter: Skip all NPC slides unless Canterbury is in it
             const fullEvText = [ev.event_type, ev.title, ev.notes, ev.billboardNotes].map(x => String(x || '').toLowerCase()).join(' ');
