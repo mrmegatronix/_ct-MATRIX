@@ -83,8 +83,12 @@
   </style>
 </head>
 <body>
-  <header>
-    <h1>MATRIX REMOTE</h1>
+  <header style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 12px;">
+    <h1 style="margin: 0;">MATRIX REMOTE</h1>
+    <div id="cloud-status" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.65rem; font-weight: 700; color: var(--text-dim); margin-top: 4px; padding: 2px 8px; border-radius: 12px; background: rgba(255,255,255,0.05);">
+      <span id="cloud-dot" style="width: 7px; height: 7px; border-radius: 50%; background: #10b981;"></span>
+      <span>FIREBASE LIVE</span>
+    </div>
   </header>
 
   <div class="grid-3">
@@ -461,15 +465,16 @@
       <a href="remote.html" class="nav-link active">📱 Remote</a>
   </nav>
 
-  <script src="matrix-core.js?v=20260926_1554"></script>
+  <script src="matrix-core.js?v=20261001_1545"></script>
   <script>
-    if (localStorage.getItem('matrix_migration_20260804_enable_all_modules') !== 'done') {
+    if (localStorage.getItem('matrix_migration_20261001_disable_ace') !== 'done') {
         try {
             const stored = localStorage.getItem('matrix_config');
             let config = stored ? JSON.parse(stored) : {};
-            config.disabledModules = [];
+            if (!config.disabledModules) config.disabledModules = [];
+            if (!config.disabledModules.includes('ct-ace')) config.disabledModules.push('ct-ace');
             localStorage.setItem('matrix_config', JSON.stringify(config));
-            localStorage.setItem('matrix_migration_20260804_enable_all_modules', 'done');
+            localStorage.setItem('matrix_migration_20261001_disable_ace', 'done');
         } catch(e) {}
     }
 
@@ -485,20 +490,22 @@
       return id;
     }
     function getTabId() {
+      if (window.matrixTabId) return window.matrixTabId;
       let id = sessionStorage.getItem('matrix_tab_id');
       if (!id) { id = 'tab_' + Math.random().toString(36).substr(2, 9); sessionStorage.setItem('matrix_tab_id', id); }
+      window.matrixTabId = id;
       return id;
     }
 
     function initUI() {
-      let config = { disabledModules: [], moduleDurations: {} };
+      let config = { disabledModules: ['ct-ace'], moduleDurations: {} };
       try {
         const stored = localStorage.getItem('matrix_config');
         if (stored) {
             const parsed = JSON.parse(stored);
             config = { ...config, ...parsed };
             if (!parsed.hasOwnProperty('disabledModules')) {
-                config.disabledModules = [];
+                config.disabledModules = ['ct-ace'];
             }
         }
       } catch(e) {}
@@ -751,15 +758,34 @@
     }
     
     window.sendToFirebase = function(msg) {
-        if (!db) return;
-        const payload = JSON.parse(JSON.stringify({ ...msg, source: getClientIdForFirebase(), isFirebaseBridge: true }));
-        set(ref(db, COMMAND_PATH), payload);
+        if (!db) {
+            console.warn('[REMOTE] Firebase DB not initialized');
+            return;
+        }
+        const payload = JSON.parse(JSON.stringify({
+            ...msg,
+            source: getClientIdForFirebase(),
+            senderTabId: getTabId(),
+            isFirebaseBridge: true
+        }));
+        
+        console.log('[REMOTE] ☁️ Sending to Firebase:', msg.type, payload);
+        set(ref(db, COMMAND_PATH), payload)
+            .then(() => {
+                console.log('[REMOTE] ✅ Firebase command synced:', msg.type);
+            })
+            .catch(err => {
+                console.error('[REMOTE] ❌ Firebase command failed:', err);
+                showStatus('CLOUD ERROR');
+            });
         
         // If it's a persistent state change, also update state node (mirrors masteradmin)
         const PERSISTENT_TYPES = ['MODULE_FILTER', 'SETTINGS_UPDATE', 'LIVE_SLIDE'];
         if (PERSISTENT_TYPES.includes(msg.type)) {
-            update(ref(db, STATE_PATH + '/' + msg.type), payload);
-            update(ref(db, STATE_PATH), { _last_updated_by: getClientIdForFirebase() });
+            update(ref(db, STATE_PATH + '/' + msg.type), payload)
+                .catch(err => console.error('[REMOTE] State update failed:', err));
+            update(ref(db, STATE_PATH), { _last_updated_by: getClientIdForFirebase() })
+                .catch(err => console.error('[REMOTE] State meta update failed:', err));
         }
     };
   </script>
