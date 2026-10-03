@@ -14,7 +14,7 @@ window.MATRIX = {
     SHOW_BANNER: true,
     ADMIN_PIN: '1234',
     GSHEETS_URL: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjplY4qgdlDPmFO4sKUoWHnBPoeqf-rY3Tc0Y50wgDbDutbTn4j_hXhW3aXhYVjvfbIlwcIOF07250/pub?gid=1948723750&single=true&output=csv',
-    disabledModules: ['ct-ace']
+    disabledModules: []
   },
   STATE: {
     slides: [],
@@ -331,13 +331,22 @@ async function initMatrix() {
  */
 function loadPersistedState() {
   try {
-    if (localStorage.getItem('matrix_migration_20261001_disable_ace') !== 'done') {
+    if (localStorage.getItem('matrix_migration_20261003_integrate_ace2') !== 'done') {
       const stored = localStorage.getItem('matrix_config');
       let config = stored ? JSON.parse(stored) : {};
-      if (!config.disabledModules) config.disabledModules = [];
-      if (!config.disabledModules.includes('ct-ace')) config.disabledModules.push('ct-ace');
+      if (config.disabledModules) {
+        config.disabledModules = config.disabledModules.filter(m => m !== 'ct-ace' && m !== 'ct-ace2');
+      } else {
+        config.disabledModules = [];
+      }
+      if (config.moduleDurations) {
+        if (config.moduleDurations['ct-ace']) {
+          config.moduleDurations['ct-ace2'] = config.moduleDurations['ct-ace'];
+          delete config.moduleDurations['ct-ace'];
+        }
+      }
       localStorage.setItem('matrix_config', JSON.stringify(config));
-      localStorage.setItem('matrix_migration_20261001_disable_ace', 'done');
+      localStorage.setItem('matrix_migration_20261003_integrate_ace2', 'done');
     }
   } catch(e) {
     console.warn('[MATRIX] Migration failed or storage access denied:', e);
@@ -347,7 +356,9 @@ function loadPersistedState() {
     const config = localStorage.getItem('matrix_config');
     if (config) window.MATRIX.CONFIG = { ...window.MATRIX.CONFIG, ...JSON.parse(config) };
     if (!window.MATRIX.CONFIG.disabledModules) {
-      window.MATRIX.CONFIG.disabledModules = ['ct-ace'];
+      window.MATRIX.CONFIG.disabledModules = [];
+    } else {
+      window.MATRIX.CONFIG.disabledModules = window.MATRIX.CONFIG.disabledModules.filter(m => m !== 'ct-ace');
     }
 
     const manual = localStorage.getItem('matrix_manual_slides');
@@ -822,21 +833,33 @@ function buildSlideQueue(data) {
     return ghUrl;
   };
 
-  // Saturday 6:00pm - 6:45pm: prioritize ct-ace for 6:30pm draw
+  // Tuesday & Saturday Draw & Buildup Priority for ct-ace2:
+  // Tuesday: Buildup 4:00 PM - 5:15 PM (pri 2), Draw 5:15 PM - 5:45 PM (pri 1) for 5:30 PM draw
+  // Saturday: Buildup 4:00 PM - 6:00 PM (pri 2), Draw 6:00 PM - 6:45 PM (pri 1) for 6:30 PM draw
   const now = new Date();
   const nzTimeStr = now.toLocaleString("en-US", { timeZone: "Pacific/Auckland" });
   const nzDate = new Date(nzTimeStr);
-  const isSatDrawWindow = nzDate.getDay() === 6 && (
-    nzDate.getHours() === 18 && nzDate.getMinutes() < 45
-  );
+  const nzDay = nzDate.getDay();
+  const nzHours = nzDate.getHours();
+  const nzMins = nzDate.getMinutes();
+  const nzDecTime = nzHours + nzMins / 60;
 
-  const acePriority = isSatDrawWindow ? 1 : 5;
-  const acePinned = isSatDrawWindow ? true : true;
+  const isTueDrawTime = (nzDay === 2 && nzDecTime >= 17.25 && nzDecTime < 17.75); // 5:15pm - 5:45pm
+  const isTueBuildup = (nzDay === 2 && nzDecTime >= 16.0 && nzDecTime < 17.25);   // 4:00pm - 5:15pm
+
+  const isSatDrawTime = (nzDay === 6 && nzDecTime >= 18.0 && nzDecTime < 18.75);  // 6:00pm - 6:45pm
+  const isSatBuildup = (nzDay === 6 && nzDecTime >= 16.0 && nzDecTime < 18.0);   // 4:00pm - 6:00pm
+
+  let ace2Priority = 5;
+  if (isTueDrawTime || isSatDrawTime) {
+    ace2Priority = 1;
+  } else if (isTueBuildup || isSatBuildup) {
+    ace2Priority = 2;
+  }
 
   queue.push({ type: 'MODULE', id: 'ct-mmr', url: resolveModuleUrl('../_ct-MMR/index.html', 'https://mrmegatronix.github.io/_ct-MMR/index.html'), title: "Meat Raffle Display", pinned: true, priority: 5, duration: getModDur('ct-mmr', 600) });
   queue.push({ type: 'MODULE', id: 'ct-wea1', url: resolveModuleUrl('../_ct-wea1/index.html', 'https://mrmegatronix.github.io/_ct-wea1/index.html'), title: "Christchurch Weather", priority: 80, duration: getModDur('ct-wea1', 90) });
-  // Chase The Ace module disabled from Matrix rotation
-  // queue.push({ type: 'MODULE', id: 'ct-ace', url: resolveModuleUrl('../_ct-ACE/index.html', 'https://mrmegatronix.github.io/_ct-ACE/index.html'), title: "Chase the Ace", pinned: acePinned, priority: acePriority, duration: getModDur('ct-ace', 180) });
+  queue.push({ type: 'MODULE', id: 'ct-ace2', url: resolveModuleUrl('../ct-ACE2/index.html', 'https://mrmegatronix.github.io/ct-ACE2/index.html'), title: "Chase the Ace", pinned: true, priority: ace2Priority, duration: getModDur('ct-ace2', 180) });
   queue.push({ type: 'MODULE', id: 'ct-quiz', url: resolveModuleUrl('../_ct-QUIZ/index.html', 'https://mrmegatronix.github.io/_ct-QUIZ/index.html'), title: "Weekly Pub Quiz", priority: 10, duration: getModDur('ct-quiz', 60) });
   queue.push({ type: 'MODULE', id: 'ct-fir', url: resolveModuleUrl('../_ct-FIR/index.html', 'https://mrmegatronix.github.io/_ct-FIR/index.html'), title: "Fireplace Ambiance", priority: 80, duration: getModDur('ct-fir', 180) });
   const socUrl = (window.location.protocol === 'file:') ? '../_ct-SOC/index.html' : 'https://ctsc-app.web.app/#/tv';

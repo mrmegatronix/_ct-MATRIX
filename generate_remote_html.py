@@ -2,7 +2,7 @@ import re
 
 modules = [
     ('ct-matrix', '📺 MATRIX', 'MATRIX'),
-    ('ct-ace', '🃏 ACE', 'ACE'),
+    ('ct-ace2', '🃏 ACE 2', 'ACE2'),
     ('ct-mmr', '🥩 MMR', 'MMR'),
     ('ct-quiz', '🧠 QUIZ', 'QUIZ'),
     ('ct-wea1', '🌦 WEA1', 'WEA1'),

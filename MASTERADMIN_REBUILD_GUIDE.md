@@ -159,8 +159,8 @@ window.IS_MASTER_DASHBOARD = true;
   - Dynamic module headers with toggle pill (`ON`, `OFF`, `SCHED`, `SCHED OFF`).
   - Expanding tree children containing:
     - Module rotation override input (seconds) + "Play All" checkbox.
-    - Module slide link (e.g. `../_ct-ACE/index.html`).
-    - Admin panel link (e.g. `../_ct-ACE/admin.html`) when `hasAdmin: true`.
+    - Module slide link (e.g. `../ct-ACE2/index.html`).
+    - Admin panel link (e.g. `../ct-ACE2/admin.html`) when `hasAdmin: true`.
 
 ### 4.4. C-Frame Operator Workspace (`#workspace-left`)
 - **Panel Header:** Title (`#ctrl-title`), Sub-page context buttons (`#context-links`), URL indicator (`#ctrl-url`).
@@ -194,7 +194,7 @@ window.IS_MASTER_DASHBOARD = true;
 ```javascript
 const MODULES = [
   { id: 'ct-matrix',  name: 'MATRIX',   path: '_ct-MATRIX', title: 'Core Slides',          defaultDur: 30,  hasAdmin: false },
-  { id: 'ct-ace',     name: 'ACE',      path: '_ct-ACE',    title: 'Chase Ace',            defaultDur: 180, hasAdmin: true,  defaultDays: [4],           defaultStart: '17:00', defaultEnd: '20:00' },
+  { id: 'ct-ace2',    name: 'ACE 2',    path: 'ct-ACE2',    title: 'Chase Ace 2',          defaultDur: 180, hasAdmin: true,  defaultDays: [2, 6],        defaultStart: '16:00', defaultEnd: '19:00' },
   { id: 'ct-mmr',     name: 'MMR',      path: '_ct-MMR',    title: 'Monster Meat Raffle',  defaultDur: 600, hasAdmin: true,  defaultDays: [5],           defaultStart: '16:00', defaultEnd: '19:00' },
   { id: 'ct-quiz',    name: 'QUIZ',     path: '_ct-QUIZ',   title: 'Pub Quiz',             defaultDur: 60,  hasAdmin: true,  defaultDays: [3],           defaultStart: '18:00', defaultEnd: '19:10' },
   { id: 'ct-wea1',    name: 'WEA1',     path: '_ct-wea1',   title: 'Weather',              defaultDur: 60,  hasAdmin: false, defaultDays: [0,1,2,3,4,5,6], defaultStart: '10:00', defaultEnd: '23:00' },

@@ -676,7 +676,7 @@
         const modules = [
             { id: 'ct-quiz', name: 'QUIZ', title: 'Quiz Slides', defaultDays: [1], defaultStart: '18:00', defaultEnd: '21:00', defaultEnabled: false },
             { id: 'ct-mmr', name: 'MMR', title: 'Meat Raffle', defaultDays: [5], defaultStart: '16:00', defaultEnd: '19:00', defaultEnabled: false },
-            { id: 'ct-ace', name: 'ACE', title: 'Chase Ace', defaultDays: [4], defaultStart: '17:00', defaultEnd: '20:00', defaultEnabled: false },
+            { id: 'ct-ace2', name: 'ACE 2', title: 'Chase Ace 2', defaultDays: [2, 6], defaultStart: '16:00', defaultEnd: '19:00', defaultEnabled: false },
             { id: 'ct-soc', name: 'SOC', title: 'Social Club', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '22:00', defaultEnabled: false },
             { id: 'ct-loyalty', name: 'LOYALTY', title: 'Loyalty App', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
             { id: 'ct-tik', name: 'TIK', title: 'TikTok Feed', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
@@ -792,7 +792,7 @@
     }
 
     window.saveAllModuleSchedules = function() {
-        const moduleIds = ['ct-quiz', 'ct-mmr', 'ct-ace', 'ct-soc', 'ct-loyalty', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-wea1', 'ct-fir', 'ct-trip'];
+        const moduleIds = ['ct-quiz', 'ct-mmr', 'ct-ace2', 'ct-soc', 'ct-loyalty', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-wea1', 'ct-fir', 'ct-trip'];
         const schedules = {};
 
         function timeToDec(timeStr) {
@@ -858,7 +858,7 @@
 
         const modules = [
             { id: 'ct-matrix', name: 'MATRIX', defaultDuration: 30 },
-            { id: 'ct-ace', name: 'ACE', defaultDuration: 180 },
+            { id: 'ct-ace2', name: 'ACE 2', defaultDuration: 180 },
             { id: 'ct-mmr', name: 'MMR', defaultDuration: 600 },
             { id: 'ct-quiz', name: 'QUIZ', defaultDuration: 60 },
             { id: 'ct-wea1', name: 'WEA1', defaultDuration: 60 },
@@ -960,7 +960,7 @@
 
         const modules = [
             { id: 'MATRIX', name: 'LIVE SLIDES', path: '_ct-MATRIX' },
-            { id: 'ACE', name: 'CHASE ACE', path: '_ct-ACE' },
+            { id: 'ACE2', name: 'CHASE ACE 2', path: 'ct-ACE2' },
             { id: 'MMR', name: 'MEAT RAFFLE', path: '_ct-MMR' },
             { id: 'QUIZ', name: 'WEEKLY QUIZ', path: '_ct-QUIZ' },
             { id: 'WEA1', name: 'WEATHER', path: '_ct-wea1' },
@@ -1012,7 +1012,7 @@
 
         const modules = [
             { id: 'ct-matrix', name: 'MATRIX', title: 'Core Slides', defaultDur: 30, hasAdmin: false },
-            { id: 'ct-ace', name: 'ACE', title: 'Chase Ace', defaultDur: 180, hasAdmin: true },
+            { id: 'ct-ace2', name: 'ACE 2', title: 'Chase Ace 2', defaultDur: 180, hasAdmin: true },
             { id: 'ct-mmr', name: 'MMR', title: 'Monster Meat Raffle', defaultDur: 600, hasAdmin: true },
             { id: 'ct-quiz', name: 'QUIZ', title: 'Pub Quiz', defaultDur: 60, hasAdmin: true },
             { id: 'ct-wea1', name: 'WEA1', title: 'Weather', defaultDur: 60, hasAdmin: false },
@@ -1093,7 +1093,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip'];
+        const moduleIds = ['ct-matrix', 'ct-ace2', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {
@@ -1146,7 +1146,7 @@
     }
 
     function saveHomeModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip'];
+        const moduleIds = ['ct-matrix', 'ct-ace2', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {
@@ -1217,7 +1217,7 @@
 
     const MODULE_PAGES = {
         'MATRIX': { main: 'index.html', admin: 'masteradmin.html' },
-        'ACE': { main: 'index.html', admin: 'admin.html' },
+        'ACE2': { main: 'index.html', admin: 'admin.html', remote: 'remote.html', preview: 'preview.html' },
         'MMR': { main: 'index.html', admin: 'admin.html' },
         'QUIZ': { main: 'index.html', admin: 'admin.html' },
         'SOC': { main: 'index.html', admin: 'admin.html' },
