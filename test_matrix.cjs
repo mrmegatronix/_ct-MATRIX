@@ -27,5 +27,6 @@ setTimeout(() => {
     console.log("Slides in queue: " + dom.window.MATRIX.STATE.slides.length);
     console.log("Current Index: " + dom.window.MATRIX.STATE.currentIndex);
     console.log("Done");
+    process.exit(0);
   }, 2000);
 }, 1000);
