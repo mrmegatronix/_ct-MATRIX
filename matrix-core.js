@@ -830,7 +830,6 @@ function buildSlideQueue(data) {
   const resolveModuleUrl = (relPath, ghUrl) => {
     if (window.location.protocol === 'file:') return relPath;
     if (window.location.hostname.includes('github.io')) return relPath;
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.') || window.location.hostname.endsWith('.local')) return relPath;
     return ghUrl;
   };
 
