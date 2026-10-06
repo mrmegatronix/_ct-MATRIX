@@ -62,13 +62,31 @@ async function initMatrix() {
   // 3. Start Rotation or Preview
   const urlParams = new URLSearchParams(window.location.search);
   const previewId = urlParams.get('preview');
-  
+  const slideParam = urlParams.get('slide');
+
+  if (urlParams.get('hideControls') === '1') {
+    const ctrls = document.querySelector('.slide-controls');
+    if (ctrls) ctrls.style.display = 'none';
+    const bar = document.getElementById('progress-bar');
+    if (bar) bar.style.display = 'none';
+  }
+
   if (previewId) {
     const pIdx = window.MATRIX.STATE.slides.findIndex(s => s.id === previewId);
     if (pIdx !== -1) {
       window.MATRIX.STATE.isBooting = false;
       window.MATRIX.STATE.currentIndex = pIdx;
-      renderActiveSlide();
+      renderActiveSlide(true);
+      return; // Stay on this slide for preview
+    }
+  }
+
+  if (slideParam !== null) {
+    const sIdx = parseInt(slideParam, 10);
+    if (!isNaN(sIdx) && sIdx >= 0 && sIdx < window.MATRIX.STATE.slides.length) {
+      window.MATRIX.STATE.isBooting = false;
+      window.MATRIX.STATE.currentIndex = sIdx;
+      renderActiveSlide(true);
       return; // Stay on this slide for preview
     }
   }
@@ -1550,6 +1568,11 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
   
   // If we are a slave TV, and a Master is currently broadcasting, do NOT broadcast our own local changes
   if (!isMaster && masterIsActive) {
+      skipBroadcast = true;
+  }
+
+  const activeParams = typeof window !== 'undefined' && window.location ? new URLSearchParams(window.location.search) : null;
+  if (activeParams && (activeParams.get('noBroadcast') === '1' || activeParams.get('slide') !== null || activeParams.get('preview') !== null || activeParams.get('hideControls') === '1')) {
       skipBroadcast = true;
   }
 

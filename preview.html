@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>_ct-MATRIX | Multi-Slide Preview Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07090e;
+      --card-bg: #0f131c;
+      --card-header: #141a26;
+      --card-footer: #0c1017;
+      --gold: #d4af37;
+      --gold-light: #f3e5ab;
+      --gold-glow: rgba(212, 175, 55, 0.4);
+      --border: rgba(212, 175, 55, 0.28);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #3b82f6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      padding-bottom: 50px;
+    }
+
+    /* Top Sticky Header */
+    .top-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(10, 14, 22, 0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    }
+
+    .header-main {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .brand-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.7rem;
+      font-weight: 900;
+      color: var(--gold);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      text-shadow: 0 0 20px var(--gold-glow);
+      white-space: nowrap;
+    }
+
+    .brand-sub {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    /* Blinking Clock */
+    .clock-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      background: rgba(212, 175, 55, 0.12);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
+    }
+
+    .blink-colon {
+      animation: colonBlink 1s step-start infinite;
+      display: inline-block;
+      margin: 0 1px;
+    }
+
+    @keyframes colonBlink {
+      50% { opacity: 0; }
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #161c28;
+      color: var(--gold-light);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: var(--gold);
+      color: #000;
+      box-shadow: 0 0 16px var(--gold-glow);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--gold);
+      color: #000;
+      border-color: var(--gold);
+    }
+    .btn-primary:hover {
+      background: #e6c250;
+      color: #000;
+    }
+
+    /* Sub Toolbar (Filter & Controls) */
+    .sub-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-top: 4px;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-pill {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+      border: 1px solid var(--border-subtle);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .filter-pill:hover {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .filter-pill.active {
+      background: var(--gold);
+      color: #000;
+      border-color: var(--gold);
+      box-shadow: 0 0 12px var(--gold-glow);
+    }
+
+    .search-box {
+      position: relative;
+      min-width: 260px;
+      max-width: 380px;
+      flex: 1;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 8px 14px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
+    }
+
+    .col-toggle-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .col-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--muted);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .col-btn.active, .col-btn:hover {
+      color: var(--gold-light);
+      border-color: var(--border);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: rgba(212, 175, 55, 0.15);
+      color: var(--gold-light);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    /* Grid Area */
+    .grid-wrap {
+      padding: 28px;
+      max-width: 1920px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+      gap: 26px;
+      transition: all 0.3s ease;
+    }
+
+    .preview-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .preview-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .preview-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+    /* Slide Card */
+    .slide-card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.65);
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .slide-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-4px);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85), 0 0 20px rgba(212, 175, 55, 0.2);
+    }
+
+    .slide-card-header {
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--card-header);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .card-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .slide-index-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--gold);
+      background: rgba(212, 175, 55, 0.15);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .slide-card-title {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* 16:9 Viewport Box */
+    .viewport-box {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 Aspect Ratio */
+      background: #000;
+      overflow: hidden;
+    }
+
+    .viewport-box iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1920px;
+      height: 1080px;
+      border: none;
+      transform-origin: top left;
+      pointer-events: auto;
+      background: #000;
+    }
+
+    .slide-card-footer {
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--card-footer);
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .footer-meta {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+
+    .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mini-btn {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--gold-light);
+      border: 1px solid var(--border-subtle);
+      padding: 5px 11px;
+      border-radius: 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .mini-btn:hover {
+      background: var(--gold);
+      color: #000;
+      border-color: var(--gold);
+    }
+
+    /* HUD toast */
+    #hud-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--gold);
+      color: var(--gold-light);
+      padding: 10px 24px;
+      border-radius: 9999px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7);
+      z-index: 9999;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    #hud-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* Loading indicator */
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      min-height: 400px;
+      font-size: 1.1rem;
+      color: var(--gold-light);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Sticky Header -->
+  <header class="top-header">
+    <div class="header-main">
+      <div class="brand-group">
+        <div>
+          <h1 class="brand-title">_ct-MATRIX</h1>
+          <div class="brand-sub">Multi-Slide Preview Monitor Grid</div>
+        </div>
+        <div class="clock-display" id="live-clock" title="Pacific/Auckland Time">
+          <span id="clk-h">12</span><span class="blink-colon">:</span><span id="clk-m">00</span><span class="blink-colon">:</span><span id="clk-s">00</span> <span id="clk-ampm">PM</span>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <span class="badge" id="slide-count-badge">Loading Slides...</span>
+        <a href="index.html" target="_blank" class="btn btn-primary" title="Launch Full Billboard">▶ Launch Signage TV</a>
+        <a href="masteradmin.html" target="_blank" class="btn" title="Open Master Admin">⚙ Master Admin</a>
+        <a href="remote.html" target="_blank" class="btn" title="Open Remote Controller">📱 Remote</a>
+        <button class="btn" onclick="reloadPreview()" title="Refresh All Slides">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <!-- Sub Toolbar -->
+    <div class="sub-toolbar">
+      <div class="filter-group">
+        <button class="filter-pill active" onclick="setFilter('all', this)">All Slides</button>
+        <button class="filter-pill" onclick="setFilter('EVENT', this)">Events</button>
+        <button class="filter-pill" onclick="setFilter('MODULE', this)">Modules</button>
+        <button class="filter-pill" onclick="setFilter('PROMO', this)">Promos</button>
+      </div>
+
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="Search slides by title, day, notes..." oninput="handleSearch(this.value)">
+      </div>
+
+      <div class="col-toggle-group">
+        <span style="font-size:0.75rem; color:var(--muted); font-weight:700; margin-right:4px;">GRID:</span>
+        <button class="col-btn" onclick="setCols(2, this)">2 Col</button>
+        <button class="col-btn active" onclick="setCols(3, this)">3 Col</button>
+        <button class="col-btn" onclick="setCols(4, this)">4 Col</button>
+        <button class="col-btn" onclick="setCols('auto', this)">Auto</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Slide Grid Container -->
+  <main class="grid-wrap">
+    <div class="preview-grid cols-3" id="preview-grid">
+      <div class="loading-state">
+        <div>⚡ Loading _ct-MATRIX Slide Manifest...</div>
+      </div>
+    </div>
+  </main>
+
+  <div id="hud-toast">HUD Message</div>
+
+  <!-- Off-screen hidden viewport for queue initialization -->
+  <div id="slide-viewport" style="display:none; position:fixed; left:-9999px;">
+    <div id="slide-target"></div>
+  </div>
+
+  <script src="matrix-core.js?v=20261007_preview"></script>
+  <script>
+    let allSlides = [];
+    let currentFilter = 'all';
+    let currentSearch = '';
+    const bc = new BroadcastChannel('ct_matrix_sync');
+
+    // 1. Clock with Blinking Colons (Pacific/Auckland Timezone)
+    function updateClock() {
+      const now = new Date();
+      const nzStr = now.toLocaleTimeString('en-US', {
+        timeZone: 'Pacific/Auckland',
+        hour12: true,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      // Example: "08:35:12 AM"
+      const match = nzStr.match(/(\d{1,2}):(\d{2}):(\d{2})\s*(AM|PM)/i);
+      if (match) {
+        document.getElementById('clk-h').textContent = match[1];
+        document.getElementById('clk-m').textContent = match[2];
+        document.getElementById('clk-s').textContent = match[3];
+        document.getElementById('clk-ampm').textContent = match[4].toUpperCase();
+      }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // 2. HUD Notification
+    function showHud(msg) {
+      const toast = document.getElementById('hud-toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    // 3. Scale Responsive 16:9 Viewport Boxes
+    function updateScales() {
+      const boxes = document.querySelectorAll('.viewport-box');
+      boxes.forEach(box => {
+        const iframe = box.querySelector('iframe');
+        if (!iframe) return;
+        const width = box.clientWidth;
+        if (width > 0) {
+          const scale = width / 1920;
+          iframe.style.transform = `scale(${scale})`;
+        }
+      });
+    }
+    window.addEventListener('resize', updateScales);
+
+    // 4. Slide Queue Loader
+    async function loadManifestAndRender() {
+      const grid = document.getElementById('preview-grid');
+      try {
+        // Initialize Matrix data without auto-rotation
+        if (window.MATRIX && window.MATRIX.STATE) {
+          window.MATRIX.STATE.isPaused = true;
+        }
+        await window.initMatrix();
+
+        allSlides = (window.MATRIX && window.MATRIX.STATE && window.MATRIX.STATE.slides) || [];
+
+        // Prepend Boot Flame Slide as Slide 0 if not present
+        const hasBoot = allSlides.some(s => s.id === 'boot-splash');
+        if (!hasBoot) {
+          allSlides.unshift({
+            id: 'boot-splash',
+            type: 'INTRO',
+            subType: 'Ambient Flame',
+            title: 'Teardrop Flame (Ambient Intro)',
+            subtitle: 'Cinematic Lantern Flame Stage',
+            date: '',
+            time: 'Always Active',
+            duration: 30,
+            accentColor: '#d4af37'
+          });
+        }
+
+        renderGrid();
+      } catch (err) {
+        console.error('Failed to load slide queue:', err);
+        grid.innerHTML = `<div class="loading-state" style="color:#ef4444;">❌ Failed to load slides: ${err.message}</div>`;
+      }
+    }
+
+    // 5. Render Slide Cards
+    function renderGrid() {
+      const grid = document.getElementById('preview-grid');
+      const badge = document.getElementById('slide-count-badge');
+      
+      const filtered = allSlides.filter((slide, index) => {
+        // Filter by category
+        if (currentFilter !== 'all') {
+          if (currentFilter === 'EVENT' && slide.type !== 'EVENT') return false;
+          if (currentFilter === 'MODULE' && slide.type !== 'MODULE') return false;
+          if (currentFilter === 'PROMO' && slide.type !== 'PROMO' && slide.type !== 'INTRO') return false;
+        }
+
+        // Filter by search text
+        if (currentSearch.trim()) {
+          const q = currentSearch.toLowerCase();
+          const title = String(slide.title || '').toLowerCase();
+          const sub = String(slide.subtitle || slide.notes || '').toLowerCase();
+          const day = String(slide.meta || slide.date || '').toLowerCase();
+          const type = String(slide.subType || slide.type || '').toLowerCase();
+          return title.includes(q) || sub.includes(q) || day.includes(q) || type.includes(q);
+        }
+
+        return true;
+      });
+
+      badge.textContent = `${filtered.length} / ${allSlides.length} Active Slides`;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div class="loading-state" style="color:var(--muted);">No slides match filter criteria</div>';
+        return;
+      }
+
+      grid.innerHTML = filtered.map(slide => {
+        const globalIdx = allSlides.indexOf(slide);
+        const typeColor = slide.accentColor || (slide.type === 'MODULE' ? '#3b82f6' : (slide.type === 'INTRO' ? '#d4af37' : '#f59e0b'));
+        const typeLabel = slide.subType || slide.type || 'SLIDE';
+        const slideUrl = slide.id === 'boot-splash' 
+          ? 'index.html?hideControls=1&noBroadcast=1' 
+          : `index.html?slide=${globalIdx}&hideControls=1&noBroadcast=1`;
+        const inspectUrl = slide.id === 'boot-splash'
+          ? 'index.html'
+          : `index.html?slide=${globalIdx}`;
+
+        const metaLine = [slide.meta || slide.date, slide.time, slide.location, slide.price]
+          .filter(Boolean)
+          .join(' • ') || (slide.subtitle ? slide.subtitle.replace(/<[^>]+>/g, ' ') : 'Live Display Rotation');
+
+        return `
+          <div class="slide-card" data-slide-id="${slide.id}">
+            <div class="slide-card-header">
+              <div class="card-title-wrap">
+                <span class="slide-index-pill">#${globalIdx}</span>
+                <span class="slide-card-title" title="${slide.title || slide.id}">${slide.title || slide.id}</span>
+              </div>
+              <span class="badge" style="background:${typeColor}22; color:${typeColor}; border-color:${typeColor}55;">
+                ${typeLabel}
+              </span>
+            </div>
+
+            <div class="viewport-box">
+              <iframe src="${slideUrl}" loading="lazy"></iframe>
+            </div>
+
+            <div class="slide-card-footer">
+              <div class="footer-meta" title="${metaLine}">${metaLine}</div>
+              <div class="card-actions">
+                <button class="mini-btn" onclick="syncJump('${slide.id}', ${globalIdx})">📡 Broadcast</button>
+                <a href="${inspectUrl}" target="_blank" class="mini-btn">🔍 Inspect</a>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Update scales immediately and after frames begin rendering
+      updateScales();
+      setTimeout(updateScales, 150);
+      setTimeout(updateScales, 500);
+      setTimeout(updateScales, 1200);
+    }
+
+    // 6. Action: Broadcast Jump to Live Screen
+    function syncJump(slideId, idx) {
+      if (bc) {
+        bc.postMessage({
+          type: 'SYNC_JUMP',
+          id: slideId,
+          timestamp: Date.now()
+        });
+      }
+      showHud(`📡 Jumped live displays to Slide #${idx} (${slideId})`);
+    }
+
+    // 7. Filter Controls
+    function setFilter(cat, btn) {
+      currentFilter = cat;
+      document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderGrid();
+    }
+
+    function handleSearch(val) {
+      currentSearch = val;
+      renderGrid();
+    }
+
+    function setCols(cols, btn) {
+      const grid = document.getElementById('preview-grid');
+      grid.classList.remove('cols-2', 'cols-3', 'cols-4');
+      if (cols !== 'auto') {
+        grid.classList.add(`cols-${cols}`);
+      }
+      document.querySelectorAll('.col-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      setTimeout(updateScales, 50);
+    }
+
+    function reloadPreview() {
+      showHud('🔄 Refreshing Slide Data...');
+      loadManifestAndRender();
+    }
+
+    // 8. Standard Keyboard Protocol Controls
+    document.addEventListener('keydown', (e) => {
+      // Input guard
+      const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+      switch(e.key) {
+        case 'a':
+        case 'A':
+          e.preventDefault();
+          window.open('masteradmin.html', '_blank');
+          break;
+        case 'r':
+        case 'R':
+          e.preventDefault();
+          window.open('remote.html', '_blank');
+          break;
+        case ' ':
+          e.preventDefault();
+          if (bc) bc.postMessage({ type: 'TOGGLE_PLAY' });
+          showHud('⏯ Toggled Pause / Play across displays');
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          if (bc) bc.postMessage({ type: 'PREV_SLIDE' });
+          showHud('⏮ Previous Slide Triggered');
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          if (bc) bc.postMessage({ type: 'NEXT_SLIDE' });
+          showHud('⏭ Next Slide Triggered');
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          if (bc) bc.postMessage({ type: 'RESTART_FIRST' });
+          showHud('⬆ Reset to First Slide');
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          if (bc) bc.postMessage({ type: 'SKIP_MODULE' });
+          showHud('⬇ Skipped to Next Module');
+          break;
+        case '0':
+          e.preventDefault();
+          if (bc) bc.postMessage({ type: 'TOGGLE_LOCK' });
+          showHud('🔒 Toggled Freeze / Lock');
+          break;
+        case '1': case '2': case '3': case '4': case '5':
+        case '6': case '7': case '8': case '9':
+          e.preventDefault();
+          const durSec = parseInt(e.key, 10) * 10;
+          if (bc) bc.postMessage({ type: 'SET_DURATION', duration: durSec });
+          showHud(`⏱ Set display duration to ${durSec}s`);
+          break;
+      }
+    });
+
+    // Boot
+    window.addEventListener('DOMContentLoaded', () => {
+      loadManifestAndRender();
+    });
+  </script>
+</body>
+</html>
