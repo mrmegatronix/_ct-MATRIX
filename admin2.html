@@ -103,6 +103,35 @@
             font-size: 0.75rem;
             color: hsl(var(--muted-foreground));
         }
+
+        /* Remote QR Flyout */
+        .remote-container {
+            position: relative;
+            display: inline-block;
+        }
+        .qr-flyout {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background-color: hsl(var(--card));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            z-index: 50;
+        }
+        .remote-container:hover .qr-flyout {
+            display: block;
+        }
+        #qr-img {
+            width: 150px;
+            height: 150px;
+            background: #fff;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -116,7 +145,12 @@
         <div class="header-right">
             <span class="shadcn-badge" style="color: #10b981; border-color: #10b981;">[LIVE] • Sync Online</span>
             <span style="font-family: var(--font-mono); font-weight: bold;">12<span class="blink-colon">:</span>45<span class="blink-colon">:</span>00 NZDT</span>
-            <button class="shadcn-btn">📱 REMOTE CONTROL</button>
+            <div class="remote-container">
+                <button id="btn-remote" class="shadcn-btn">📱 REMOTE CONTROL</button>
+                <div class="qr-flyout">
+                    <img id="qr-img" src="" alt="Remote QR Code">
+                </div>
+            </div>
             <button class="shadcn-btn" style="background-color: hsl(var(--secondary)); color: hsl(var(--secondary-foreground));">👁 PREVIEW</button>
             <button class="shadcn-btn" style="background-color: hsl(var(--secondary)); color: hsl(var(--secondary-foreground));">🔄 SYNC</button>
             <button class="shadcn-btn" style="background-color: hsl(var(--destructive)); color: hsl(var(--destructive-foreground));">🔒 LOCK</button>
@@ -225,5 +259,38 @@
         <div class="mini-preview">SOC [Live]</div>
     </footer>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const btnRemote = document.getElementById("btn-remote");
+            const qrImg = document.getElementById("qr-img");
+            
+            // Construct remote URL based on current host
+            const remoteUrl = new URL("remote.html", window.location.href).href;
+            
+            // Generate QR code src
+            if(qrImg) {
+                qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(remoteUrl)}`;
+            }
+
+            // Direct click opens remote.html in new tab
+            if(btnRemote) {
+                btnRemote.addEventListener("click", () => {
+                    window.open("remote.html", "_blank");
+                });
+            }
+
+            // Global keyboard shortcut 'r' or 'R'
+            document.addEventListener("keydown", (e) => {
+                // Input guard rule
+                const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
+                if (activeTag === "input" || activeTag === "textarea" || activeTag === "select") {
+                    return;
+                }
+                if (e.key === "r" || e.key === "R") {
+                    window.open("remote.html", "_blank");
+                }
+            });
+        });
+    </script>
 </body>
 </html>
