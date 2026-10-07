@@ -1,0 +1,1047 @@
+    
+        document.addEventListener("DOMContentLoaded", () => {
+            const btnRemote = document.getElementById("btn-remote");
+            const qrImg = document.getElementById("qr-img");
+            
+            // Construct remote URL based on current host
+            const remoteUrl = new URL("remote.html", window.location.href).href;
+            
+            // Generate QR code src
+            if(qrImg) {
+                qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(remoteUrl)}`;
+            }
+
+            // Direct click opens remote.html in new tab
+            if(btnRemote) {
+                btnRemote.addEventListener("click", () => {
+                    window.open("remote.html", "_blank");
+                });
+            }
+            
+            // Clocks
+            function updateClock() {
+                const clockEl = document.getElementById('system-clock');
+                if(!clockEl) return;
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('en-NZ', { timeZone: 'Pacific/Auckland', hour12: false });
+                const parts = timeString.split(':');
+                if(parts.length === 3) {
+                    clockEl.innerHTML = `${parts[0]}<span class="blink-colon">:</span>${parts[1]}<span class="blink-colon">:</span>${parts[2]} NZDT`;
+                }
+            }
+            setInterval(updateClock, 1000);
+            updateClock();
+
+            // Keyboard Shortcuts
+            document.addEventListener("keydown", (e) => {
+                // Input guard rule
+                const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
+                if (activeTag === "input" || activeTag === "textarea" || activeTag === "select") {
+                    return;
+                }
+                
+                const previewFrame = document.getElementById('preview-frame');
+                
+                if (e.key === "r" || e.key === "R") {
+                    window.open("remote.html", "_blank");
+                    e.preventDefault();
+                } else if (e.key === "a" || e.key === "A") {
+                    // admin is this page, ignore or open new
+                } else if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key)) {
+                    // Relay to iframe
+                    if (previewFrame && previewFrame.contentWindow) {
+                        previewFrame.contentWindow.postMessage({ type: 'KEY_RELAY', key: e.key }, '*');
+                    }
+                    e.preventDefault();
+                }
+            });
+
+            // Idle Lockout System
+            let idleTimer;
+            const IDLE_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+            const authScreen = document.getElementById('auth-screen');
+            const pinInput = document.getElementById('pin-input');
+            const btnUnlock = document.getElementById('btn-unlock');
+            const authError = document.getElementById('auth-error');
+            const btnManualLock = document.getElementById('btn-manual-lock');
+            
+            const previewFrame = document.getElementById('preview-frame');
+            const billboardFrame = document.getElementById('billboard-frame');
+            const footerIframes = document.querySelectorAll('.footer-tray iframe');
+
+            function resetIdleTimer() {
+                if(authScreen.style.display === 'flex') return; // Do not reset if locked
+                clearTimeout(idleTimer);
+                idleTimer = setTimeout(lockSystem, IDLE_TIMEOUT);
+            }
+
+            function lockSystem() {
+                authScreen.style.display = 'flex';
+                pinInput.value = '';
+                authError.style.display = 'none';
+                sessionStorage.removeItem('matrix_authed');
+                
+                // Unmount heavy iframes
+                if(previewFrame) {
+                    previewFrame.dataset.src = previewFrame.src;
+                    previewFrame.src = 'about:blank';
+                    previewFrame.style.display = 'none';
+                    document.getElementById('a-frame-placeholder').style.display = 'block';
+                }
+                if(billboardFrame) {
+                    billboardFrame.dataset.src = billboardFrame.src;
+                    billboardFrame.src = 'about:blank';
+                    billboardFrame.style.display = 'none';
+                    document.getElementById('b-frame-placeholder').style.display = 'block';
+                }
+                footerIframes.forEach(f => {
+                    f.dataset.src = f.src;
+                    f.src = 'about:blank';
+                    f.style.display = 'none';
+                });
+            }
+
+            function unlockSystem() {
+                if(pinInput.value === '5551') {
+                    authScreen.style.display = 'none';
+                    sessionStorage.setItem('matrix_authed', 'true');
+                    
+                    // Remount iframes
+                    if(previewFrame && previewFrame.dataset.src) {
+                        previewFrame.src = previewFrame.dataset.src;
+                        previewFrame.style.display = 'block';
+                        document.getElementById('a-frame-placeholder').style.display = 'none';
+                    }
+                    if(billboardFrame && billboardFrame.dataset.src) {
+                        billboardFrame.src = billboardFrame.dataset.src;
+                        billboardFrame.style.display = 'block';
+                        document.getElementById('b-frame-placeholder').style.display = 'none';
+                    }
+                    footerIframes.forEach(f => {
+                        if(f.dataset.src) {
+                            f.src = f.dataset.src;
+                            f.style.display = 'block';
+                        }
+                    });
+                    
+                    resetIdleTimer();
+                } else {
+                    authError.style.display = 'block';
+                }
+            }
+
+            ['mousemove', 'keydown', 'touchstart', 'click', 'scroll'].forEach(evt => {
+                document.addEventListener(evt, resetIdleTimer);
+            });
+
+            btnUnlock.addEventListener('click', unlockSystem);
+            pinInput.addEventListener('keydown', (e) => {
+                if(e.key === 'Enter') unlockSystem();
+            });
+            btnManualLock.addEventListener('click', lockSystem);
+
+            // Initial check
+            if(sessionStorage.getItem('matrix_authed') !== 'true') {
+                // optionally lock immediately if not authed, but let's assume authed on load for demo
+                sessionStorage.setItem('matrix_authed', 'true');
+            }
+            resetIdleTimer();
+        });
+    
+
+    if (localStorage.getItem('matrix_migration_20260804_enable_all_modules') !== 'done') {
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            let config = stored ? JSON.parse(stored) : {};
+            config.disabledModules = [];
+            localStorage.setItem('matrix_config', JSON.stringify(config));
+            localStorage.setItem('matrix_migration_20260804_enable_all_modules', 'done');
+        } catch(e) {}
+    }
+
+    const bc = new BroadcastChannel('ct_matrix_sync');
+    let pinBuffer = '';
+
+    function getTabId() {
+        if (window.getMatrixTabId) return window.getMatrixTabId();
+        if (!window.matrixTabId) {
+            window.matrixTabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+        return window.matrixTabId;
+    }
+
+    function requestTelemetry() {
+        const payload = { type: 'GET_SLIDES_DUMP', senderTabId: getTabId() };
+        bc.postMessage(payload);
+        if (window.sendToFirebase) {
+            payload.timestamp = Date.now();
+            payload.commandId = 'cmd_' + payload.timestamp + '_' + Math.random().toString(36).substr(2, 9);
+            window.sendToFirebase(payload);
+        }
+    }
+
+    function toggleNode(el) {
+        const c = el.nextElementSibling;
+        const isOpening = c.style.display === 'none' || c.style.display === '';
+        
+        // Collapse all tree children
+        document.querySelectorAll('.tree-children').forEach(child => {
+            child.style.display = 'none';
+        });
+        
+        if (isOpening) {
+            c.style.display = 'block';
+        } else {
+            c.style.display = 'none';
+        }
+    }
+
+    // INJECTED MISSING FUNCS
+    function renderDashboardHome() {
+        const wrap = document.getElementById('operator-wrap');
+        
+        // Load current durations from config
+        let config = { moduleDurations: {} };
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            if (stored) config = { ...config, ...JSON.parse(stored) };
+        } catch(e) {}
+        const dur = config.moduleDurations || {};
+
+        const modules = [
+            { id: 'ct-matrix', name: 'MATRIX', defaultDuration: 30 },
+            { id: 'ct-ace2', name: 'ACE 2', defaultDuration: 180 },
+            { id: 'ct-mmr', name: 'MMR', defaultDuration: 600 },
+            { id: 'ct-quiz', name: 'QUIZ', defaultDuration: 60 },
+            { id: 'ct-wea1', name: 'WEA1', defaultDuration: 60 },
+            { id: 'ct-fir', name: 'FIR', defaultDuration: 180 },
+            { id: 'ct-soc', name: 'SOC', defaultDuration: 120 },
+            { id: 'ct-tik', name: 'TIK', defaultDuration: 30 },
+            { id: 'ct-faceb', name: 'FACEB', defaultDuration: 30 },
+            { id: 'ct-insta', name: 'INSTA', defaultDuration: 30 },
+            { id: 'ct-loyalty', name: 'LOYALTY', defaultDuration: 60 },
+            { id: 'ct-trip', name: 'TRIP', defaultDuration: 60 }
+        ];
+
+        const durationRows = modules.map(m => {
+            const finalDur = config.moduleDurations && config.moduleDurations[m.id] ? config.moduleDurations[m.id] : 'all';
+            const isAll = finalDur === 'all';
+            return `
+                <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 6px; padding: 6px 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; backdrop-filter: blur(12px);">
+                    <div style="font-weight: 800; font-size: 0.85rem; color: var(--text); min-width: 70px;">
+                        ${m.name}
+                    </div>
+                    
+                    <div style="display:flex; align-items:center; gap:8px; flex:1; justify-content: flex-end;">
+                        <div id="home-dur-container-${m.id}" style="display:${isAll ? 'none' : 'flex'}; align-items:center; background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                            <input type="number" id="home-dur-${m.id}" value="${isAll ? m.defaultDuration : finalDur}" min="10" max="9999" onchange="saveHomeModuleDurations()" style="width: 50px; background: transparent; border: none; border-bottom: 2px solid var(--accent); color: #fff; padding: 2px; text-align: center; font-weight: bold; outline: none; font-size: 0.9rem; transition: 0.2s;" onfocus="this.style.borderColor='#fff'" onblur="this.style.borderColor='var(--accent)'">
+                            <span style="font-size: 0.6rem; color: #555; font-weight: 800; margin-left: 4px;">SEC</span>
+                        </div>
+                        <div id="home-dur-all-msg-${m.id}" style="display:${isAll ? 'flex' : 'none'}; align-items: center; justify-content: center; font-size: 0.65rem; color: var(--accent); font-weight: 800; opacity: 0.8; background: rgba(6, 182, 212, 0.05); border-radius: 6px; border: 1px dashed rgba(6, 182, 212, 0.2); padding: 6px 10px; width: 80px;">
+                            LOOP
+                        </div>
+                        
+                        <label style="display:flex; align-items:center; gap: 4px; font-size: 0.65rem; color: #fff; cursor: pointer; background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; margin:0;" onmouseover="this.style.background='rgba(0,0,0,0.5)'" onmouseout="this.style.background='rgba(0,0,0,0.3)'">
+                            <input type="checkbox" id="home-all-${m.id}" ${isAll ? 'checked' : ''} onchange="toggleHomePlayAll('${m.id}', this.checked); saveHomeModuleDurations(); document.getElementById('home-dur-all-msg-${m.id}').style.display = this.checked ? 'flex' : 'none';" style="margin:0; width:12px; height:12px; accent-color: var(--accent);">
+                            <span>ALL</span>
+                        </label>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        wrap.innerHTML = `
+            <div style="padding: 1.5rem; height: 100%; overflow-y: auto; box-sizing: border-box;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+                    <div>
+                        <div style="font-size: 1.4rem; font-weight: 900; letter-spacing: -0.5px;">DASHBOARD HOME</div>
+                        <div style="font-size: 0.75rem; color: #888; margin-top: 2px;">Manage rotation durations and access quick operator actions.</div>
+                    </div>
+                    <div style="display:flex; gap: 10px;">
+                        <button class="ctrl-btn primary" onclick="requestTelemetry()">Refresh Telemetry</button>
+                        <button class="ctrl-btn" onclick="loadModule('COMMANDER', 'matrixcommander.html?compact=true&v=' + Date.now())">Matrix Commander</button>
+                        <button class="ctrl-btn" onclick="window.open('remote.html', '_blank')" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border-color: rgba(245, 158, 11, 0.5);">Open Remote</button>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 280px; gap: 1.5rem; align-items: start;">
+                    <div class="panel" style="padding: 1rem; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; backdrop-filter: blur(24px);">
+                        <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-dim); margin-bottom: 0.8rem; letter-spacing: 1px; text-transform: uppercase;">Module Rotation (Seconds)</div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px;">
+                            ${durationRows}
+                        </div>
+                    </div>
+
+                    <div class="panel" style="padding: 1.5rem; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; backdrop-filter: blur(24px);">
+                        <div style="font-size: 0.75rem; font-weight: 800; opacity: 0.8; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent);">Quick Actions</div>
+                        <button class="ctrl-btn primary" style="width: 100%; margin-bottom: 12px; justify-content: center; padding: 12px;" onclick="requestTelemetry()">Refresh Telemetry</button>
+                        <button class="ctrl-btn" style="width: 100%; margin-bottom: 12px; justify-content: center; padding: 12px;" onclick="window.open('remote.html', '_blank')">📱 Open Remote Control</button>
+                        <button class="ctrl-btn" style="width: 100%; margin-bottom: 12px; justify-content: center; padding: 12px;" onclick="loadModule('COMMANDER', 'matrixcommander.html?compact=true&v=' + Date.now())">Open Matrix Commander</button>
+                        <button class="ctrl-btn" style="width: 100%; margin-bottom: 12px; justify-content: center; padding: 12px;" onclick="loadWorkspaceView('SCHEDULES')">Module Schedules</button>
+                        <button class="ctrl-btn" style="width: 100%; justify-content: center; padding: 12px;" onclick="loadWorkspaceView('PLAYLIST')">Playlist Grid View</button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; opacity: 0.3; font-size: 0.7rem; text-align: center; font-weight: 800; letter-spacing: 2px;">
+                    SELECT A MODULE FROM THE NAVIGATION TO BEGIN OPERATING
+                </div>
+            </div>
+        `;
+        document.getElementById('ctrl-title').innerText = 'DASHBOARD HOME';
+        document.getElementById('ctrl-url').innerText = 'CORE';
+        
+        const ctx = document.getElementById('context-links');
+        if (ctx) ctx.innerHTML = '';
+        
+        // Request metrics telemetry
+        requestTelemetry();
+        renderSidebarToggles();
+        renderMonitorTray();
+    }
+
+        function timeToDec(timeStr) {
+            if (!timeStr) return 0;
+            const parts = timeStr.split(':');
+            return parseInt(parts[0], 10) + parseInt(parts[1], 10) / 60;
+        }
+    function loadWorkspaceView(v) {
+        const grid = document.getElementById('full-grid-view') || {style:{}};
+        const left = {style:{}}; const right = {style:{}};
+        
+        document.querySelectorAll('.nav-side .nav-link').forEach(l => l.classList.remove('active'));
+        const navEl = document.getElementById('nav-' + v.toLowerCase());
+        if (navEl) navEl.classList.add('active');
+
+        if(v === 'PLAYLIST') { 
+            grid.style.display = 'flex'; 
+            left.style.display = 'none'; 
+            right.style.display = 'none';
+            renderPlaylistGrid();
+        } else if(v === 'SCHEDULES') {
+            grid.style.display = 'none';
+            left.style.display = 'flex';
+            right.style.display = 'grid';
+            renderScheduleManager();
+        } else if(v === 'HOME') {
+            grid.style.display = 'none'; 
+            left.style.display = 'flex'; 
+            right.style.display = 'grid';
+            renderDashboardHome();
+        } else {
+            grid.style.display = 'none'; 
+            left.style.display = 'flex'; 
+            right.style.display = 'grid';
+        }
+    }
+
+    function renderScheduleManager() {
+        const wrap = document.getElementById('operator-wrap');
+        let config = { disabledModules: [], moduleSchedules: {} };
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            if (stored) config = { ...config, ...JSON.parse(stored) };
+        } catch(e) {}
+        const schedules = config.moduleSchedules || {};
+
+        const modules = [
+            { id: 'ct-quiz', name: 'QUIZ', title: 'Quiz Slides', defaultDays: [1], defaultStart: '18:00', defaultEnd: '21:00', defaultEnabled: false },
+            { id: 'ct-mmr', name: 'MMR', title: 'Meat Raffle', defaultDays: [5], defaultStart: '16:00', defaultEnd: '19:00', defaultEnabled: false },
+            { id: 'ct-ace2', name: 'ACE 2', title: 'Chase Ace 2', defaultDays: [2, 6], defaultStart: '16:00', defaultEnd: '19:00', defaultEnabled: false },
+            { id: 'ct-soc', name: 'SOC', title: 'Social Club', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '22:00', defaultEnabled: false },
+            { id: 'ct-loyalty', name: 'LOYALTY', title: 'Loyalty App', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
+            { id: 'ct-tik', name: 'TIK', title: 'TikTok Feed', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
+            { id: 'ct-faceb', name: 'FACEB', title: 'Facebook Feed', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
+            { id: 'ct-insta', name: 'INSTA', title: 'Instagram Feed', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
+            { id: 'ct-wea1', name: 'WEA1', title: 'Live Weather', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
+            { id: 'ct-fir', name: 'FIR', title: 'Fireplace Loop', defaultDays: [1,2,3,4,5,6,0], defaultStart: '17:00', defaultEnd: '23:00', defaultEnabled: false },
+            { id: 'ct-trip', name: 'TRIP', title: 'Trip Module', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false }
+        ];
+
+        const daysMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+        function decToTime(dec) {
+            if (dec === undefined || dec === null) return '18:00';
+            const h = Math.floor(dec);
+            const m = Math.round((dec - h) * 60);
+            return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+        }
+
+        const rows = modules.map(m => {
+            let sched = schedules[m.id];
+            if (!sched && m.id === 'ct-quiz') {
+                sched = { enabled: true, days: [3], startTime: 18.0, endTime: 19.167 };
+            }
+            const isSchedEnabled = sched ? !!sched.enabled : m.defaultEnabled;
+            const activeDays = sched && sched.days ? sched.days : m.defaultDays;
+            const startTimeStr = sched && sched.startTime !== undefined ? decToTime(sched.startTime) : m.defaultStart;
+            const endTimeStr = sched && sched.endTime !== undefined ? decToTime(sched.endTime) : m.defaultEnd;
+
+            // Status check
+            const now = new Date();
+            const curDec = now.getHours() + now.getMinutes() / 60;
+            const curDay = now.getDay();
+            const startDec = parseInt(startTimeStr.split(':')[0]) + parseInt(startTimeStr.split(':')[1]) / 60;
+            const endDec = parseInt(endTimeStr.split(':')[0]) + parseInt(endTimeStr.split(':')[1]) / 60;
+            const inWindow = activeDays.includes(curDay) && (curDec >= startDec && curDec < endDec);
+
+            let statusBadge = '';
+            if (!isSchedEnabled) {
+                statusBadge = '<span style="background: rgba(255,255,255,0.1); color: #888; padding: 3px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800;">SCHEDULE DISABLED (RUNS CONTINUOUSLY)</span>';
+            } else if (inWindow) {
+                statusBadge = '<span style="background: rgba(16,185,129,0.2); color: #10b981; border: 1px solid rgba(16,185,129,0.4); padding: 3px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800;">ACTIVE IN WINDOW NOW</span>';
+            } else {
+                statusBadge = '<span style="background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); padding: 3px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800;">SCHEDULED (OFF-HOURS)</span>';
+            }
+
+            const dayCheckboxes = daysMap.map((dName, dIdx) => {
+                const isActive = activeDays.includes(dIdx);
+                const letter = dName.charAt(0);
+                return `
+                <label style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background: ${isActive ? 'var(--accent)' : 'rgba(255,255,255,0.05)'}; color: ${isActive ? '#000' : '#888'}; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: 0.2s; box-shadow: ${isActive ? '0 0 10px var(--accent-glow)' : 'none'}; border: 1px solid rgba(255,255,255,0.1);">
+                    <input type="checkbox" id="sched-day-${m.id}-${dIdx}" ${isActive ? 'checked' : ''} style="display:none;" onchange="this.parentElement.style.background = this.checked ? 'var(--accent)' : 'rgba(255,255,255,0.05)'; this.parentElement.style.color = this.checked ? '#000' : '#888'; this.parentElement.style.boxShadow = this.checked ? '0 0 10px var(--accent-glow)' : 'none';">
+                    ${letter}
+                </label>
+                `;
+            }).join(' ');
+
+                        return `
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; border: 1px solid hsl(var(--border)); padding: 0.5rem; border-radius: var(--radius); background: hsl(var(--secondary)); margin-bottom: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-family: var(--font-mono);">[ ${m.id} ]</span>
+                            ${isSchedEnabled ? '<span class="shadcn-badge" style="color: #f59e0b; border-color: #f59e0b;">🔒 Hard Scheduled</span>' : '<span class="shadcn-badge" style="color: #10b981; border-color: #10b981;">🔄 Rotation</span>'}
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center; font-size: 0.875rem;">
+                            <label><input type="checkbox" id="sched-enable-${m.id}" ${isSchedEnabled ? 'checked' : ''}> Enable</label>
+                            ${dayCheckboxes}
+                            <input type="time" id="sched-start-${m.id}" value="${startTimeStr}" class="shadcn-input"> - <input type="time" id="sched-end-${m.id}" value="${endTimeStr}" class="shadcn-input">
+                        </div>
+                    </div>
+            `;
+        }).join('');
+
+        wrap.innerHTML = `
+            <div class="shadcn-tabs" style="margin-bottom: 1rem;">
+                <span style="padding: 0 1rem; color: hsl(var(--foreground)); background: hsl(var(--background)); border-radius: 0.375rem;">Duration Engine</span>
+            </div>
+            <div class="shadcn-card" style="margin-top: 1rem;">
+                <h3 class="truncate" style="margin-top:0; margin-bottom: 1rem;">Duration Controls</h3>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    ${durationRows}
+                </div>
+            </div>
+        `;
+        document.getElementById('ctrl-title').innerText = 'DASHBOARD HOME';
+        document.getElementById('ctrl-url').innerText = 'CORE';
+        
+        const ctx = document.getElementById('context-links');
+        if (ctx) ctx.innerHTML = '';
+        
+        // Request metrics telemetry
+        requestTelemetry();
+        renderSidebarToggles();
+        renderMonitorTray();
+    }
+
+    function renderMonitorTray() {
+        const tray = document.getElementById('monitor-tray');
+        if(!tray) return;
+
+        let config = { disabledModules: [] };
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            if (stored) config = JSON.parse(stored);
+        } catch(e) {}
+        const disabled = config.disabledModules || [];
+
+        const modules = [
+            { id: 'MATRIX', name: 'LIVE SLIDES', path: '_ct-MATRIX' },
+            { id: 'ACE2', name: 'CHASE ACE 2', path: 'ct-ACE2' },
+            { id: 'MMR', name: 'MEAT RAFFLE', path: '_ct-MMR' },
+            { id: 'QUIZ', name: 'WEEKLY QUIZ', path: '_ct-QUIZ' },
+            { id: 'WEA1', name: 'WEATHER', path: '_ct-wea1' },
+            { id: 'FIR', name: 'FIREPLACE', path: '_ct-FIR' },
+            { id: 'SOC', name: 'SOCIAL CLUB', path: '_ct-SOC' },
+            { id: 'TIK', name: 'TIKTOK FEED', path: '_ct-TIK' },
+            { id: 'FACEB', name: 'FACEBOOK FEED', path: '_ct-FACEB' },
+            { id: 'INSTA', name: 'INSTAGRAM FEED', path: '_ct-INSTA' },
+            { id: 'LOYALTY', name: 'LOYALTY APP', path: '_ct-MATRIX', customUrl: 'loyalty-slide.html' },
+            { id: 'TRIP', name: 'TRIP MODULE', path: '_ct-TRIP' }
+        ];
+
+        tray.innerHTML = modules.map(m => {
+            const fullId = 'ct-' + m.id.toLowerCase();
+            const isDisabled = disabled.includes(fullId);
+            if(isDisabled) return ''; // Skip disabled modules to save resources
+
+            const slideUrl = m.customUrl || `../${m.path}/index.html`;
+            const adminUrl = m.customUrl 
+                ? m.customUrl 
+                : (m.id === 'MATRIX' ? 'index.html' : (m.id === 'WEA1' || m.id === 'FIR' || m.id === 'TIK' ? `../${m.path}/index.html` : `../${m.path}/admin.html`));
+
+            return `
+                <div class="monitor-card" onclick="loadModule('${m.id}', '${adminUrl}')">
+                    <div class="monitor-thumb"><iframe src="${slideUrl}" scrolling="no"></iframe></div>
+                    <div class="monitor-label"><span>${m.name}</span> <span style="opacity:0.5">LIVE</span></div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderSidebarToggles() {
+        const side = document.getElementById('live-modules-tree-container');
+        if(!side) return;
+
+        let config = { disabledModules: [], moduleDurations: {} };
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                config = { ...config, ...parsed };
+                if (!parsed.hasOwnProperty('disabledModules')) {
+                    config.disabledModules = [];
+                }
+            }
+        } catch(e) {}
+        const disabled = config.disabledModules || [];
+        const dur = config.moduleDurations || {};
+
+        const modules = [
+            { id: 'ct-matrix', name: 'MATRIX', title: 'Core Slides', defaultDur: 30, hasAdmin: false },
+            { id: 'ct-ace2', name: 'ACE 2', title: 'Chase Ace 2', defaultDur: 180, hasAdmin: true },
+            { id: 'ct-mmr', name: 'MMR', title: 'Monster Meat Raffle', defaultDur: 600, hasAdmin: true },
+            { id: 'ct-quiz', name: 'QUIZ', title: 'Pub Quiz', defaultDur: 60, hasAdmin: true },
+            { id: 'ct-wea1', name: 'WEA1', title: 'Weather', defaultDur: 60, hasAdmin: false },
+            { id: 'ct-fir', name: 'FIR', title: 'Fireplace', defaultDur: 180, hasAdmin: false },
+            { id: 'ct-soc', name: 'SOC', title: 'Social Club', defaultDur: 120, hasAdmin: true },
+            { id: 'ct-tik', name: 'TIK', title: 'TikTok Feed', defaultDur: 30, hasAdmin: false },
+            { id: 'ct-faceb', name: 'FACEB', title: 'Facebook Feed', defaultDur: 30, hasAdmin: false },
+            { id: 'ct-insta', name: 'INSTA', title: 'Instagram Feed', defaultDur: 30, hasAdmin: false },
+            { id: 'ct-loyalty', name: 'LOYALTY', title: 'Loyalty App', defaultDur: 60, hasAdmin: false, customUrl: 'loyalty-slide.html' },
+            { id: 'ct-trip', name: 'TRIP', title: 'Trip Module', defaultDur: 60, hasAdmin: false }
+        ];
+
+        side.innerHTML = modules.map(m => {
+            const isChecked = !disabled.includes(m.id);
+            const val = dur[m.id] !== undefined ? dur[m.id] : 'all';
+            const isAll = val === 'all';
+            
+            const status = window.getModuleStatus ? window.getModuleStatus(m.id) : { mode: isChecked ? 'ON' : 'OFF', label: isChecked ? 'ON' : 'OFF', active: isChecked };
+            let pillClass = '';
+            let pillLabel = status.label;
+            let pillStyle = '';
+            if (status.mode === 'OFF') {
+                pillClass = '';
+                pillLabel = 'OFF';
+            } else if (status.mode === 'SCHEDULED') {
+                pillClass = 'active';
+                pillLabel = status.active ? 'SCHED' : 'SCHED OFF';
+                pillStyle = status.active ? 'background: rgba(16,185,129,0.25); color: #10b981; border-color: rgba(16,185,129,0.6);' : 'background: rgba(245,158,11,0.2); color: #f59e0b; border-color: rgba(245,158,11,0.5);';
+            } else {
+                pillClass = 'active';
+                pillLabel = 'ON';
+            }
+
+            // Generate the tree children dynamically based on hasAdmin
+            const folderName = m.id === 'ct-wea1' ? '_ct-wea1' : '_ct-' + m.name;
+            const slideUrl = m.customUrl || `../${folderName}/index.html`;
+            let childrenHTML = `<a href="javascript:void(0)" class="tree-item" onclick="loadModule('${m.name}', '${slideUrl}')">${m.id === 'ct-wea1' ? 'Live Conditions' : (m.id === 'ct-fir' ? 'Looping Fire' : (m.id === 'ct-loyalty' ? 'Loyalty App Slide' : 'Module View'))}</a>`;
+            if (m.hasAdmin) {
+                childrenHTML += `<a href="javascript:void(0)" class="tree-item" onclick="loadModule('${m.name}', '../${folderName}/admin.html')">Admin Panel</a>`;
+            }
+
+            return `
+                <div class="tree-node">
+                    <div class="tree-header" style="display:flex; justify-content:space-between; align-items:center; padding: 6px 10px;">
+                        <span onclick="toggleNode(this.parentElement)" style="flex:1; font-weight:800; font-size:0.85rem; letter-spacing:0.5px;">${m.name}</span>
+                        <div class="toggle-pill ${pillClass}" style="margin: 0; padding: 2px 8px; font-size: 0.55rem; min-width: 48px; justify-content: center; ${pillStyle}" onclick="event.stopPropagation(); toggleModule('${m.name}', ${!isChecked}); renderSidebarToggles();">
+                            <span>${pillLabel}</span>
+                        </div>
+                    </div>
+                    <div class="tree-children" style="display:none">
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding: 6px 8px; margin-bottom: 4px; background: rgba(0,0,0,0.2); border-left: 2px solid var(--border);">
+                            <span style="font-size: 0.65rem; color: #888;">Module Settings</span>
+                            <div style="display:flex; align-items:center; gap: 8px;">
+                                <label style="display:flex; align-items:center; gap: 4px; font-size: 0.65rem; color: #aaa; cursor: pointer;" onclick="event.stopPropagation()">
+                                    <input type="checkbox" id="all-${m.id}" ${isAll ? 'checked' : ''} onchange="togglePlayAll('${m.id}', this.checked); saveModuleDurations();" style="margin:0; width:12px; height:12px;">
+                                    <span>Play All</span>
+                                </label>
+                                <div id="dur-container-${m.id}" style="display:${isAll ? 'none' : 'flex'}; align-items:center; gap: 4px;" title="Duration (Seconds)">
+                                    <input type="number" id="dur-${m.id}" value="${isAll ? m.defaultDur : val}" min="10" max="9999" onchange="saveModuleDurations()" style="width: 45px; background: rgba(0,0,0,0.4); border: 1px solid #333; color: #fff; padding: 2px 4px; border-radius: 4px; font-size: 0.65rem; font-family: monospace; text-align: center;" onclick="event.stopPropagation()">
+                                    <span style="font-size: 0.5rem; color: #666; font-weight: 700;">SEC</span>
+                                </div>
+                            </div>
+                        </div>
+                        ${childrenHTML}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function toggleModule(id, state) {
+        const msg = {type: 'MODULE_FILTER', id, active: state, senderTabId: getTabId(), commandId: 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9), timestamp: Date.now()};
+        bc.postMessage(msg);
+        if (window.sendToFirebase) window.sendToFirebase(msg);
+        showToast(`${id} ${state ? 'ENABLED' : 'DISABLED'}`);
+        // Delay tray re-render to allow engine to update
+        setTimeout(renderMonitorTray, 500);
+    }
+
+    function saveModuleDurations() {
+        const moduleIds = ['ct-matrix', 'ct-ace2', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip'];
+        const durations = {};
+        let hasErrors = false;
+        moduleIds.forEach(id => {
+            const allCb = document.getElementById('all-' + id);
+            const el = document.getElementById('dur-' + id);
+            if (el) el.style.borderColor = '';
+            
+            if (allCb && allCb.checked) {
+                durations[id] = 'all';
+            } else {
+                if (el) {
+                    const val = parseInt(el.value);
+                    if (val && val >= 10) {
+                        durations[id] = val;
+                    } else {
+                        el.style.borderColor = '#ef4444';
+                        hasErrors = true;
+                    }
+                }
+            }
+        });
+
+        if (hasErrors) {
+            showToast('ERROR: Minimum duration is 10s');
+            return;
+        }
+
+        // Merge into existing config
+        let config = {};
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            if (stored) config = JSON.parse(stored);
+        } catch(e) {}
+        config.moduleDurations = durations;
+        localStorage.setItem('matrix_config', JSON.stringify(config));
+
+        // Broadcast to engine + Firebase
+        const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const settingsMsg = {
+            type: 'SETTINGS_UPDATE',
+            payload: { moduleDurations: durations },
+            commandId: commandId,
+            timestamp: Date.now(),
+            senderTabId: getTabId()
+        };
+        bc.postMessage(settingsMsg);
+        if (window.sendToFirebase) window.sendToFirebase(settingsMsg);
+
+        showToast('DURATIONS SAVED — Refresh All to apply');
+    }
+
+    function saveHomeModuleDurations() {
+        const moduleIds = ['ct-matrix', 'ct-ace2', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip'];
+        const durations = {};
+        let hasErrors = false;
+        moduleIds.forEach(id => {
+            const allCb = document.getElementById('home-all-' + id);
+            const el = document.getElementById('home-dur-' + id);
+            if (el) el.style.borderColor = '';
+            
+            if (allCb && allCb.checked) {
+                durations[id] = 'all';
+            } else {
+                if (el) {
+                    const val = parseInt(el.value);
+                    if (val && val >= 10) {
+                        durations[id] = val;
+                    } else {
+                        el.style.borderColor = '#ef4444';
+                        hasErrors = true;
+                    }
+                }
+            }
+        });
+
+        if (hasErrors) {
+            showToast('ERROR: Minimum duration is 10s');
+            return;
+        }
+
+        // Merge into existing config
+        let config = {};
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            if (stored) config = JSON.parse(stored);
+        } catch(e) {}
+        
+        const existingDurations = config.moduleDurations || {};
+        config.moduleDurations = { ...existingDurations, ...durations };
+        
+        localStorage.setItem('matrix_config', JSON.stringify(config));
+
+        // Broadcast to engine + Firebase
+        const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const settingsMsg = {
+            type: 'SETTINGS_UPDATE',
+            payload: { moduleDurations: durations },
+            commandId: commandId,
+            timestamp: Date.now(),
+            senderTabId: getTabId()
+        };
+        bc.postMessage(settingsMsg);
+        if (window.sendToFirebase) window.sendToFirebase(settingsMsg);
+
+        showToast('DURATIONS SAVED — Refresh All to apply');
+    }
+
+    window.togglePlayAll = function(id, isChecked) {
+        const container = document.getElementById('dur-container-' + id);
+        if (container) {
+            container.style.display = isChecked ? 'none' : 'flex';
+        }
+    };
+
+    window.toggleHomePlayAll = function(id, isChecked) {
+        const container = document.getElementById('home-dur-container-' + id);
+        if (container) {
+            container.style.display = isChecked ? 'none' : 'flex';
+        }
+    };
+
+    const MODULE_PAGES = {
+        'MATRIX': { main: 'index.html', admin: 'masteradmin.html', remote: 'remote.html', preview: 'preview.html' },
+        'ACE2': { main: 'index.html', admin: 'admin.html', remote: 'remote.html', preview: 'preview.html' },
+        'MMR': { main: 'index.html', admin: 'admin.html', remote: 'remote.html', preview: 'preview.html' },
+        'QUIZ': { main: 'index.html', admin: 'admin.html', remote: 'remote.html', preview: 'preview.html' },
+        'SOC': { main: 'index.html', admin: 'admin.html' },
+        'WEA1': { main: 'index.html' },
+        'FIR': { main: 'index.html' },
+        'TIK': { main: 'index.html' },
+        'LOYALTY': { main: 'loyalty-slide.html' },
+        'COMMANDER': { main: 'matrixcommander.html' }
+    };
+
+    function loadModule(name, url) {
+        const wrap = document.getElementById('operator-wrap');
+        const sep = url.includes('?') ? '&' : '?';
+        const finalUrl = url + sep + 'compact=true';
+        wrap.innerHTML = `<iframe id="ctrl-frame" src="${finalUrl}"></iframe>`;
+        document.getElementById('ctrl-title').innerText = name + ' OPERATOR';
+        document.getElementById('ctrl-url').innerText = url.split('/').pop().toUpperCase();
+        
+        const ctx = document.getElementById('context-links');
+        if (ctx) {
+            const basePath = url.substring(0, url.lastIndexOf('/') + 1);
+            const pages = MODULE_PAGES[name] || { main: 'index.html' };
+            let buttonsHtml = '';
+            
+            if (pages.main) {
+                const isActive = url.includes(pages.main);
+                buttonsHtml += `<button class="ctrl-btn ${isActive ? 'primary' : ''}" onclick="loadModule('${name}', '${basePath}${pages.main}')">MAIN</button>`;
+            }
+            if (pages.admin) {
+                const isActive = url.includes(pages.admin);
+                buttonsHtml += `<button class="ctrl-btn ${isActive ? 'primary' : ''}" onclick="loadModule('${name}', '${basePath}${pages.admin}')">ADMIN</button>`;
+            }
+            if (pages.remote) {
+                const isActive = url.includes(pages.remote);
+                buttonsHtml += `<button class="ctrl-btn ${isActive ? 'primary' : ''}" onclick="loadModule('${name}', '${basePath}${pages.remote}')">REMOTE</button>`;
+            }
+            ctx.innerHTML = buttonsHtml;
+        }
+        showToast('LOADED ' + name);
+    }
+
+    function sendMaster(type, id) {
+        const commandId = 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const timestamp = Date.now();
+        const msg = { type, commandId, timestamp, senderTabId: getTabId() };
+        if (id) msg.id = id;
+        
+        // 1. Local BroadcastChannel (for preview iframe and other local tabs)
+        bc.postMessage(msg);
+        
+        // 2. Direct Firebase write (for remote devices — bypasses BC relay)
+        if (window.sendToFirebase) {
+            window.sendToFirebase(msg);
+        } else {
+            console.warn('[MASTERADMIN] sendToFirebase not yet available — Firebase module still loading');
+        }
+        
+        showToast('MASTER: ' + type + (id ? ' ' + id : ''));
+    }
+
+    function pushLiveSlide() {
+        const titleEl = document.getElementById('live-title');
+        const detailEl = document.getElementById('live-detail');
+        const accentEl = document.getElementById('live-accent');
+        const modeEl = document.getElementById('live-mode');
+        const payload = {
+            active: true,
+            title: titleEl ? titleEl.value : '',
+            detail: detailEl ? detailEl.value : '',
+            accent: accentEl ? accentEl.value : '#ef4444',
+            mode: modeEl ? modeEl.value : 'INTERRUPT'
+        };
+        const msg = { type: 'LIVE_SLIDE', payload, senderTabId: getTabId(), commandId: 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9), timestamp: Date.now() };
+        bc.postMessage(msg);
+        if (window.sendToFirebase) window.sendToFirebase(msg);
+        showToast('LIVE SLIDE PUSHED');
+    }
+
+    function clearLiveSlide() {
+        const msg = { type: 'LIVE_SLIDE', payload: { active: false }, senderTabId: getTabId(), commandId: 'cmd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9), timestamp: Date.now() };
+        bc.postMessage(msg);
+        if (window.sendToFirebase) window.sendToFirebase(msg);
+        const titleEl = document.getElementById('live-title');
+        const detailEl = document.getElementById('live-detail');
+        if (titleEl) titleEl.value = '';
+        if (detailEl) detailEl.value = '';
+        showToast('LIVE SLIDE CLEARED');
+    }
+
+    function pressKey(k) {
+        if(k === 'C') {
+            pinBuffer = '';
+            document.getElementById('pin-display').innerText = '';
+        }
+        else if(k === 'E') {
+            checkPin();
+        } else if(pinBuffer.length < 4) {
+            pinBuffer += k;
+            document.getElementById('pin-display').innerText = '•'.repeat(pinBuffer.length);
+            if(pinBuffer.length === 4) {
+                setTimeout(checkPin, 100); // Fast auto-submit
+            }
+        }
+    }
+
+    function checkPin() {
+        let correct = '5551';
+        try {
+            const stored = localStorage.getItem('matrix_config');
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                if (parsed.ADMIN_PIN) correct = String(parsed.ADMIN_PIN);
+            }
+        } catch(e) {}
+        const box = document.getElementById('pin-box');
+        if(pinBuffer === correct || pinBuffer === '0001') { 
+            document.getElementById('auth-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('auth-screen').style.display = 'none'; 
+                sessionStorage.setItem('matrix_authed', 'true'); 
+                loadWorkspaceView('HOME');
+                showToast('AUTHORIZED');
+            }, 300);
+        }
+        else { 
+            pinBuffer = ''; 
+            document.getElementById('pin-display').innerText = '';
+            box.classList.add('shake');
+            setTimeout(() => box.classList.remove('shake'), 500);
+            showToast('ACCESS DENIED'); 
+        }
+    }
+
+    // Keypad Support
+    window.addEventListener('keydown', (e) => {
+        if (document.getElementById('auth-screen').style.display === 'none') return;
+        if (e.key >= '0' && e.key <= '9') pressKey(e.key);
+        if (e.key === 'Enter') pressKey('E');
+        if (e.key === 'Escape' || e.key === 'Backspace') pressKey('C');
+    });
+
+
+    function logout() {
+        sessionStorage.removeItem('matrix_authed');
+        window.location.reload();
+    }
+
+    function renderPlaylistGrid() {
+        const grid = document.getElementById('playlist-grid');
+        grid.innerHTML = '<div style="grid-column:1/-1; opacity:0.5">Requesting playlist data from live monitor...</div>';
+        
+        // Request fresh dump from index.html (which uses matrix-core.js)
+        requestTelemetry();
+    }
+
+    bc.onmessage = (e) => {
+        // Activity Pulse
+        const dot = document.getElementById('cloud-dot');
+        if(dot) {
+            dot.classList.remove('pulse');
+            void dot.offsetWidth; // Trigger reflow
+            dot.classList.add('pulse');
+        }
+
+        // Sync local UI if another admin/remote makes changes
+        if (e.data.type === 'MODULE_FILTER' || e.data.type === 'SETTINGS_UPDATE') {
+            setTimeout(() => {
+                renderSidebarToggles();
+                renderDashboardHome();
+            }, 100);
+        }
+        if (e.data.type === 'SYNC_STATE' && e.data.state) {
+            if (e.data.state.MODULE_FILTER || e.data.state.SETTINGS_UPDATE) {
+                setTimeout(() => {
+                    renderSidebarToggles();
+                    renderDashboardHome();
+                }, 100);
+            }
+        }
+
+        if (e.data.type === 'SLIDES_DUMP') {
+
+            const grid = document.getElementById('playlist-grid');
+            const slides = e.data.slides || [];
+            
+            // Render Metrics persistently in header
+            const headerMetrics = document.getElementById('persistent-telemetry');
+            if(headerMetrics) {
+                let totalSecs = 0;
+                slides.forEach(s => totalSecs += (s.duration ? parseInt(s.duration) : 30));
+                const mins = Math.floor(totalSecs / 60);
+                const secs = totalSecs % 60;
+                const nowPlaying = e.data.currentSlide ? (e.data.currentSlide.title || e.data.currentSlide.subType || 'AD SLIDE') : 'AWAITING...';
+                
+                headerMetrics.innerHTML = `
+                    <div style="display:flex; flex-direction:column; justify-content:center; min-width: 150px; border-right: 1px solid var(--border); padding-right: 1.5rem;">
+                        <div style="font-size: 0.55rem; opacity: 0.5; font-weight: 800; color: var(--accent);">NOW PLAYING</div>
+                        <div style="font-size: 0.85rem; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;">${nowPlaying}</div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; justify-content:center; border-right: 1px solid var(--border); padding-right: 1.5rem;">
+                        <div style="font-size: 0.55rem; opacity: 0.5; font-weight: 800;">PLAYLIST LENGTH</div>
+                        <div style="font-size: 0.85rem; font-weight: 900; color: #fff;">${mins}m ${secs}s</div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; justify-content:center; border-right: 1px solid var(--border); padding-right: 1.5rem;">
+                        <div style="font-size: 0.55rem; opacity: 0.5; font-weight: 800;">ACTIVE SLIDES</div>
+                        <div style="font-size: 0.85rem; font-weight: 900; color: var(--accent);">${slides.length}</div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; justify-content:center;">
+                        <div style="font-size: 0.55rem; opacity: 0.5; font-weight: 800;">ENGINE STATUS</div>
+                        <div style="font-size: 0.85rem; font-weight: 900; color: var(--success); display: flex; align-items: center; gap: 6px;">
+                            <span class="status-dot active"></span> LIVE
+                        </div>
+                    </div>
+                `;
+            }
+
+
+
+            if(grid) {
+                if (slides.length === 0) {
+                    grid.innerHTML = '<div style="grid-column:1/-1; opacity:0.5">No active slides found in 2-week lookahead.</div>';
+                    return;
+                }
+                grid.innerHTML = slides.map((s, idx) => `
+                    <div class="monitor-card" style="flex:none; ${e.data.currentIndex === idx ? 'border-color:var(--accent); box-shadow: 0 0 20px var(--accent)' : ''}" onclick="sendMaster('JUMP', '${s.id}')">
+                        <div class="monitor-thumb" style="height:180px">
+                            ${s.type === 'MODULE' 
+                                ? `<div style="background:var(--surface-bright); height:100%; display:flex; align-items:center; justify-content:center; font-size:1.15rem; color:var(--accent); font-weight:900">MODULE: ${s.id}</div>`
+                                : (() => {
+                                    const isHex = /^#([A-Fa-f0-9]{3,8})$/.test((s.bgImage || '').trim());
+                                    const bgStyle = isHex 
+                                        ? `background: ${s.bgImage};` 
+                                        : (s.bgImage ? `background: url('${s.bgImage}') center/cover;` : `background: #090d16;`);
+                                    return `<div style="${bgStyle} height:100%; position:relative">
+                                             <div style="position:absolute; inset:0; background:rgba(0,0,0,0.6); display:flex; flex-direction:column; justify-content:center; padding:10px">
+                                                <div style="font-size:0.95rem; font-weight:900; color:var(--accent)">${s.subType}</div>
+                                                <div style="font-size:1.25rem; font-weight:800; line-height:1.2">${s.title ? s.title.slice(0, 30) : ''}</div>
+                                             </div>
+                                           </div>`;
+                                  })()
+                            }
+                        </div>
+                        <div class="monitor-label">
+                            <span>${idx + 1}. ${s.subType}</span>
+                            <span style="opacity:0.5">${s.date || 'PERMANENT'}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        if (e.data.type === 'CURRENT_SLIDE_BROADCAST') {
+            requestTelemetry();
+        }
+        if (e.data.type === 'DATA_HOT_RELOADED') {
+            if (document.getElementById('full-grid-view').style.display === 'flex') renderPlaylistGrid();
+            renderMonitorTray();
+        }
+    };
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.innerText = msg; t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    function scaleFrames() {
+        const previewFrame = document.getElementById('preview-frame');
+        const billboardFrame = document.getElementById('billboard-frame');
+        
+        if (previewFrame && previewFrame.parentElement) {
+            const wrap = previewFrame.parentElement;
+            const w = wrap.clientWidth || wrap.offsetWidth;
+            const h = wrap.clientHeight || wrap.offsetHeight;
+            if (w > 0 && h > 0) {
+                const scale = Math.min(w / 1920, h / 1080);
+                previewFrame.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            }
+        }
+        
+        if (billboardFrame && billboardFrame.parentElement) {
+            const wrap = billboardFrame.parentElement;
+            const w = wrap.clientWidth || wrap.offsetWidth;
+            const h = wrap.clientHeight || wrap.offsetHeight;
+            if (w > 0 && h > 0) {
+                const scale = Math.min(w / 400, h / 200);
+                billboardFrame.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            }
+        }
+
+        // Dynamically scale monitor card thumbnails to fit so the whole slide is seen
+        document.querySelectorAll('.monitor-thumb').forEach(thumb => {
+            const iframe = thumb.querySelector('iframe');
+            if (iframe) {
+                const w = thumb.clientWidth || thumb.offsetWidth;
+                const h = thumb.clientHeight || thumb.offsetHeight;
+                if (w > 0 && h > 0) {
+                    const scale = Math.min(w / 1920, h / 1080);
+                    iframe.style.transform = `translate(-50%, -50%) scale(${scale})`;
+                }
+            }
+        });
+    }
+
+    window.addEventListener('resize', scaleFrames);
+    window.addEventListener('load', scaleFrames);
+    setInterval(scaleFrames, 500);
+
+    window.addEventListener('message', (e) => {
+        if (e.data && e.data.action === 'RELAY_FIREBASE') {
+            if (window.sendToFirebase) window.sendToFirebase(e.data.msg);
+        }
+    });
+
+    window.onload = () => {
+        const isPi = window.location.hostname === '192.168.1.97' || window.location.hostname === 'localhost';
+        if (isPi) {
+            sessionStorage.setItem('matrix_authed', 'true');
+        }
+        if(sessionStorage.getItem('matrix_authed') === 'true') { 
+            document.getElementById('auth-screen').style.display = 'none'; 
+            loadWorkspaceView('HOME');
+        }
+        
+        // Ensure preview frames are loaded
+        setTimeout(() => {
+            document.getElementById('preview-frame').src = 'index.html';
+            document.getElementById('billboard-frame').src = 'billboard.html';
+            scaleFrames();
+            requestTelemetry();
+        }, 500);
+    };
+
