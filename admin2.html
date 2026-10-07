@@ -76,6 +76,8 @@
             justify-content: center;
             color: hsl(var(--muted-foreground));
             font-family: var(--font-mono);
+            overflow: hidden;
+            position: relative;
         }
         .a-frame { height: 225px; } /* 16:9 scaled */
         .b-frame { height: 100px; } /* header feed */
@@ -102,6 +104,8 @@
             justify-content: center;
             font-size: 0.75rem;
             color: hsl(var(--muted-foreground));
+            position: relative;
+            overflow: hidden;
         }
 
         /* Remote QR Flyout */
@@ -132,9 +136,35 @@
             padding: 0.5rem;
             border-radius: 4px;
         }
+        
+        #auth-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: hsl(var(--background));
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1rem;
+        }
     </style>
 </head>
 <body>
+
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen">
+        <h2 style="margin:0;">System Locked</h2>
+        <p style="color: hsl(var(--muted-foreground)); margin:0;">Session idled out to save resources.</p>
+        <div style="display: flex; gap: 0.5rem;">
+            <input type="password" id="pin-input" placeholder="PIN" style="background: hsl(var(--input)); color: hsl(var(--foreground)); border: 1px solid hsl(var(--border)); padding: 0.5rem; border-radius: var(--radius); font-size: 1.25rem; width: 150px; text-align: center;" autocomplete="off">
+            <button id="btn-unlock" class="shadcn-btn">Unlock</button>
+        </div>
+        <p id="auth-error" style="color: hsl(var(--destructive)); display: none; margin:0;">Incorrect PIN</p>
+    </div>
 
     <!-- TOP HEADER -->
     <header class="top-header">
@@ -144,7 +174,7 @@
         </div>
         <div class="header-right">
             <span class="shadcn-badge" style="color: #10b981; border-color: #10b981;">[LIVE] • Sync Online</span>
-            <span style="font-family: var(--font-mono); font-weight: bold;">12<span class="blink-colon">:</span>45<span class="blink-colon">:</span>00 NZDT</span>
+            <span id="system-clock" style="font-family: var(--font-mono); font-weight: bold;">00<span class="blink-colon">:</span>00<span class="blink-colon">:</span>00 NZDT</span>
             <div class="remote-container">
                 <button id="btn-remote" class="shadcn-btn">📱 REMOTE CONTROL</button>
                 <div class="qr-flyout">
@@ -153,7 +183,7 @@
             </div>
             <button class="shadcn-btn" style="background-color: hsl(var(--secondary)); color: hsl(var(--secondary-foreground));">👁 PREVIEW</button>
             <button class="shadcn-btn" style="background-color: hsl(var(--secondary)); color: hsl(var(--secondary-foreground));">🔄 SYNC</button>
-            <button class="shadcn-btn" style="background-color: hsl(var(--destructive)); color: hsl(var(--destructive-foreground));">🔒 LOCK</button>
+            <button class="shadcn-btn" id="btn-manual-lock" style="background-color: hsl(var(--destructive)); color: hsl(var(--destructive-foreground));">🔒 LOCK</button>
         </div>
     </header>
 
@@ -191,38 +221,60 @@
 
             <div class="shadcn-card">
                 <h3 class="truncate" style="margin-top:0; margin-bottom: 1rem;">Module Schedule Configuration</h3>
-                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-family: var(--font-mono);">[ ct-ace2 ]</span>
-                        <span class="shadcn-badge" style="color: #f59e0b; border-color: #f59e0b;">🔒 Hard Scheduled: Tue/Sat 16:00-19:00</span>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; border: 1px solid hsl(var(--border)); padding: 0.5rem; border-radius: var(--radius); background: hsl(var(--secondary));">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-family: var(--font-mono);">[ ct-ace2 ]</span>
+                            <span class="shadcn-badge" style="color: #f59e0b; border-color: #f59e0b;">🔒 Hard Scheduled</span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center; font-size: 0.875rem;">
+                            <label><input type="checkbox" checked> Tue</label>
+                            <label><input type="checkbox" checked> Sat</label>
+                            <input type="time" value="16:00" class="shadcn-input"> - <input type="time" value="19:00" class="shadcn-input">
+                        </div>
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-family: var(--font-mono);">[ ct-mmr  ]</span>
-                        <span class="shadcn-badge" style="color: #f59e0b; border-color: #f59e0b;">🔒 Hard Scheduled: Fri 16:00-19:00</span>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; border: 1px solid hsl(var(--border)); padding: 0.5rem; border-radius: var(--radius); background: hsl(var(--secondary));">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-family: var(--font-mono);">[ ct-mmr  ]</span>
+                            <span class="shadcn-badge" style="color: #f59e0b; border-color: #f59e0b;">🔒 Hard Scheduled</span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center; font-size: 0.875rem;">
+                            <label><input type="checkbox" checked> Fri</label>
+                            <input type="time" value="16:00" class="shadcn-input"> - <input type="time" value="19:00" class="shadcn-input">
+                        </div>
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-family: var(--font-mono);">[ ct-quiz ]</span>
-                        <span class="shadcn-badge" style="color: #f59e0b; border-color: #f59e0b;">🔒 Hard Scheduled: Wed 18:00-19:15</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-family: var(--font-mono);">[ ct-wea1 ]</span>
-                        <span class="shadcn-badge" style="color: #10b981; border-color: #10b981;">🔄 Continuous Rotation</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-family: var(--font-mono);">[ ct-soc  ]</span>
-                        <span class="shadcn-badge" style="color: #10b981; border-color: #10b981;">🔄 Continuous Rotation</span>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; border: 1px solid hsl(var(--border)); padding: 0.5rem; border-radius: var(--radius); background: hsl(var(--secondary));">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-family: var(--font-mono);">[ ct-wea1 ]</span>
+                            <span class="shadcn-badge" style="color: #10b981; border-color: #10b981;">🔄 Rotation</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="shadcn-card">
                 <h3 class="truncate" style="margin-top:0; margin-bottom: 1rem;">Duration Controls</h3>
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <span>Default Slide:</span>
-                    <span class="shadcn-badge" style="font-family: var(--font-mono);">30s</span>
-                    <div style="flex:1; height: 8px; background: hsl(var(--muted)); border-radius: 4px; overflow: hidden; display: flex;">
-                        <div style="width: 30%; background: hsl(var(--primary));"></div>
-                        <div style="width: 2px; background: hsl(var(--foreground));"></div>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span style="width: 120px;">Global Slide:</span>
+                        <input type="range" min="5" max="120" value="30" class="shadcn-slider" oninput="this.nextElementSibling.innerText = this.value + 's'">
+                        <span class="shadcn-badge" style="font-family: var(--font-mono); width: 50px;">30s</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span style="width: 120px;">Global Module:</span>
+                        <input type="range" min="30" max="900" value="60" class="shadcn-slider" oninput="this.nextElementSibling.innerText = this.value + 's'">
+                        <span class="shadcn-badge" style="font-family: var(--font-mono); width: 50px;">60s</span>
+                    </div>
+                    
+                    <hr style="border-color: hsl(var(--border));">
+                    <h4 style="margin:0; font-size: 0.875rem;">Per-Module Override</h4>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span style="font-family: var(--font-mono); width: 120px;">[ ct-ace2 ]</span>
+                        <input type="range" min="30" max="900" value="120" class="shadcn-slider" oninput="this.nextElementSibling.innerText = this.value + 's'">
+                        <span class="shadcn-badge" style="font-family: var(--font-mono); width: 50px;">120s</span>
+                        <label style="font-size: 0.875rem; display: flex; align-items: center; gap: 0.25rem;"><input type="checkbox" checked> Play All</label>
                     </div>
                 </div>
             </div>
@@ -230,20 +282,35 @@
 
         <!-- LIVE MONITORS (A & B Frames) -->
         <aside class="live-monitors">
-            <div class="monitor-frame a-frame">A-FRAME: Live 1080p Engine View<br/>(16:9 Scaled index.html)</div>
+            <div class="monitor-frame a-frame" id="a-frame-container">
+                <iframe id="preview-frame" src="index.html" style="width:100%; height:100%; border:none; background:#000;" tabindex="-1"></iframe>
+                <div id="a-frame-placeholder" style="display:none;">A-FRAME SUSPENDED</div>
+            </div>
             <div style="display: flex; gap: 0.5rem; justify-content: center;">
                 <button class="shadcn-btn" style="background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground));">⏮ PREV</button>
                 <button class="shadcn-btn" style="background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground));">⏯ PLAY/PAUSE</button>
                 <button class="shadcn-btn" style="background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground));">⏭ NEXT</button>
             </div>
-            <div class="monitor-frame b-frame">B-FRAME: Live Billboard Header Feed<br/>(400x200 Scaled billboard.html)</div>
+            <div class="monitor-frame b-frame" id="b-frame-container">
+                <iframe id="billboard-frame" src="billboard.html" style="width:100%; height:100%; border:none; background:#000;" tabindex="-1"></iframe>
+                <div id="b-frame-placeholder" style="display:none;">B-FRAME SUSPENDED</div>
+            </div>
             
             <div style="margin-top: auto;">
-                <h3 class="truncate" style="font-size: 0.875rem; color: hsl(var(--muted-foreground)); margin-bottom: 0.5rem;">Fleet Status</h3>
-                <ul style="list-style-type: none; padding: 0; margin: 0; font-size: 0.875rem; display: flex; flex-direction: column; gap: 0.25rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <h3 class="truncate" style="font-size: 0.875rem; color: hsl(var(--muted-foreground)); margin:0;">Fleet Status</h3>
+                </div>
+                <ul id="fleet-marquee-stubs" style="list-style-type: none; padding: 0; margin: 0; font-size: 0.875rem; display: flex; flex-direction: column; gap: 0.25rem;">
                     <li class="truncate">• Screen 1 (Main Bar TV): <span style="color: #10b981;">Active (0ms)</span></li>
                     <li class="truncate">• Screen 2 (Entrance Kiosk): <span style="color: #10b981;">Active (4ms)</span></li>
                 </ul>
+                <div style="margin-top: 1rem;">
+                    <h3 class="truncate" style="font-size: 0.875rem; color: hsl(var(--muted-foreground)); margin-top:0; margin-bottom: 0.5rem;">Emergency Marquee</h3>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" placeholder="Enter marquee text..." style="flex:1; background: hsl(var(--input)); color: hsl(var(--foreground)); border: 1px solid hsl(var(--border)); padding: 0.5rem; border-radius: var(--radius); font-size: 0.875rem;">
+                        <button class="shadcn-btn" style="background-color: hsl(var(--destructive)); color: hsl(var(--destructive-foreground)); padding: 0.5rem;">Broadcast</button>
+                    </div>
+                </div>
             </div>
         </aside>
 
@@ -251,12 +318,12 @@
 
     <!-- FOOTER TRAY -->
     <footer class="footer-tray">
-        <div class="mini-preview">ACE2 [Live]</div>
-        <div class="mini-preview">MMR [Standby]</div>
+        <div class="mini-preview"><iframe src="modules/ct-ace2/index.html" style="width:100%; height:100%; border:none;" tabindex="-1"></iframe></div>
+        <div class="mini-preview"><iframe src="modules/ct-mmr/index.html" style="width:100%; height:100%; border:none;" tabindex="-1"></iframe></div>
         <div class="mini-preview" style="opacity: 0.5;">QUIZ [Off]</div>
-        <div class="mini-preview">WEA1 [Live]</div>
-        <div class="mini-preview">FIR [Live]</div>
-        <div class="mini-preview">SOC [Live]</div>
+        <div class="mini-preview"><iframe src="modules/ct-wea1/index.html" style="width:100%; height:100%; border:none;" tabindex="-1"></iframe></div>
+        <div class="mini-preview"><iframe src="modules/ct-fir/index.html" style="width:100%; height:100%; border:none;" tabindex="-1"></iframe></div>
+        <div class="mini-preview"><iframe src="modules/ct-soc/index.html" style="width:100%; height:100%; border:none;" tabindex="-1"></iframe></div>
     </footer>
 
     <script>
@@ -278,18 +345,135 @@
                     window.open("remote.html", "_blank");
                 });
             }
+            
+            // Clocks
+            function updateClock() {
+                const clockEl = document.getElementById('system-clock');
+                if(!clockEl) return;
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('en-NZ', { timeZone: 'Pacific/Auckland', hour12: false });
+                const parts = timeString.split(':');
+                if(parts.length === 3) {
+                    clockEl.innerHTML = `${parts[0]}<span class="blink-colon">:</span>${parts[1]}<span class="blink-colon">:</span>${parts[2]} NZDT`;
+                }
+            }
+            setInterval(updateClock, 1000);
+            updateClock();
 
-            // Global keyboard shortcut 'r' or 'R'
+            // Keyboard Shortcuts
             document.addEventListener("keydown", (e) => {
                 // Input guard rule
                 const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
                 if (activeTag === "input" || activeTag === "textarea" || activeTag === "select") {
                     return;
                 }
+                
+                const previewFrame = document.getElementById('preview-frame');
+                
                 if (e.key === "r" || e.key === "R") {
                     window.open("remote.html", "_blank");
+                    e.preventDefault();
+                } else if (e.key === "a" || e.key === "A") {
+                    // admin is this page, ignore or open new
+                } else if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key)) {
+                    // Relay to iframe
+                    if (previewFrame && previewFrame.contentWindow) {
+                        previewFrame.contentWindow.postMessage({ type: 'KEY_RELAY', key: e.key }, '*');
+                    }
+                    e.preventDefault();
                 }
             });
+
+            // Idle Lockout System
+            let idleTimer;
+            const IDLE_TIMEOUT = 10 * 60 * 1000; // 10 minutes
+            const authScreen = document.getElementById('auth-screen');
+            const pinInput = document.getElementById('pin-input');
+            const btnUnlock = document.getElementById('btn-unlock');
+            const authError = document.getElementById('auth-error');
+            const btnManualLock = document.getElementById('btn-manual-lock');
+            
+            const previewFrame = document.getElementById('preview-frame');
+            const billboardFrame = document.getElementById('billboard-frame');
+            const footerIframes = document.querySelectorAll('.footer-tray iframe');
+
+            function resetIdleTimer() {
+                if(authScreen.style.display === 'flex') return; // Do not reset if locked
+                clearTimeout(idleTimer);
+                idleTimer = setTimeout(lockSystem, IDLE_TIMEOUT);
+            }
+
+            function lockSystem() {
+                authScreen.style.display = 'flex';
+                pinInput.value = '';
+                authError.style.display = 'none';
+                sessionStorage.removeItem('matrix_authed');
+                
+                // Unmount heavy iframes
+                if(previewFrame) {
+                    previewFrame.dataset.src = previewFrame.src;
+                    previewFrame.src = 'about:blank';
+                    previewFrame.style.display = 'none';
+                    document.getElementById('a-frame-placeholder').style.display = 'block';
+                }
+                if(billboardFrame) {
+                    billboardFrame.dataset.src = billboardFrame.src;
+                    billboardFrame.src = 'about:blank';
+                    billboardFrame.style.display = 'none';
+                    document.getElementById('b-frame-placeholder').style.display = 'block';
+                }
+                footerIframes.forEach(f => {
+                    f.dataset.src = f.src;
+                    f.src = 'about:blank';
+                    f.style.display = 'none';
+                });
+            }
+
+            function unlockSystem() {
+                if(pinInput.value === '5551') {
+                    authScreen.style.display = 'none';
+                    sessionStorage.setItem('matrix_authed', 'true');
+                    
+                    // Remount iframes
+                    if(previewFrame && previewFrame.dataset.src) {
+                        previewFrame.src = previewFrame.dataset.src;
+                        previewFrame.style.display = 'block';
+                        document.getElementById('a-frame-placeholder').style.display = 'none';
+                    }
+                    if(billboardFrame && billboardFrame.dataset.src) {
+                        billboardFrame.src = billboardFrame.dataset.src;
+                        billboardFrame.style.display = 'block';
+                        document.getElementById('b-frame-placeholder').style.display = 'none';
+                    }
+                    footerIframes.forEach(f => {
+                        if(f.dataset.src) {
+                            f.src = f.dataset.src;
+                            f.style.display = 'block';
+                        }
+                    });
+                    
+                    resetIdleTimer();
+                } else {
+                    authError.style.display = 'block';
+                }
+            }
+
+            ['mousemove', 'keydown', 'touchstart', 'click', 'scroll'].forEach(evt => {
+                document.addEventListener(evt, resetIdleTimer);
+            });
+
+            btnUnlock.addEventListener('click', unlockSystem);
+            pinInput.addEventListener('keydown', (e) => {
+                if(e.key === 'Enter') unlockSystem();
+            });
+            btnManualLock.addEventListener('click', lockSystem);
+
+            // Initial check
+            if(sessionStorage.getItem('matrix_authed') !== 'true') {
+                // optionally lock immediately if not authed, but let's assume authed on load for demo
+                sessionStorage.setItem('matrix_authed', 'true');
+            }
+            resetIdleTimer();
         });
     </script>
 </body>

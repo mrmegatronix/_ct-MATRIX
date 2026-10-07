@@ -126,3 +126,18 @@ body {
 @keyframes blink {
   50% { opacity: 0; }
 }
+
+.shadcn-input {
+  background: hsl(var(--input));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+.shadcn-slider {
+  flex: 1;
+  accent-color: hsl(var(--primary));
+}
