@@ -151,7 +151,27 @@
             flex-direction: column;
             gap: 1rem;
         }
-    </style>
+    
+    #toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(100px);
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 700;
+        z-index: 10000;
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        opacity: 0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    #toast.show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+</style>
 </head>
 <body>
 
@@ -209,7 +229,7 @@
 
         <!-- OPERATOR WORKSPACE (C-Frame) -->
         <main class="workspace">
-            <div id="full-grid-view" style="display: none; width: 100%; height: 100%;"></div>
+            <div id="full-grid-view" style="display: none; width: 100%; height: 100%;"><div id="playlist-grid" style="padding:2rem; display:grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; overflow-y:auto; background: hsl(var(--background)); width: 100%; height: 100%;"></div></div>
             <div id="workspace-left" style="display: none;"></div>
             <div id="workspace-right" style="display: none;"></div>
             <div id="operator-wrap" style="width: 100%; height: 100%;">
@@ -259,7 +279,7 @@
     </div>
 
     <!-- FOOTER TRAY -->
-    <footer class="footer-tray">
+    <footer class="footer-tray" id="monitor-tray">
         <div class="mini-preview"><iframe src="modules/ct-ace2/index.html" style="width:100%; height:100%; border:none;" tabindex="-1"></iframe></div>
         <div class="mini-preview"><iframe src="modules/ct-mmr/index.html" style="width:100%; height:100%; border:none;" tabindex="-1"></iframe></div>
         <div class="mini-preview" style="opacity: 0.5;">QUIZ [Off]</div>
@@ -522,6 +542,23 @@
         }).join('');
         
         wrap.innerHTML = `
+                <div style="margin-top: 2rem; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 1.5rem;">
+                    <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem; color: var(--accent);">BROADCAST LIVE ALERT</div>
+                    <div style="display:flex; flex-direction: column; gap: 0.75rem;">
+                        <input id="live-title" type="text" placeholder="MAIN TITLE" class="shadcn-input">
+                        <textarea id="live-detail" placeholder="Detail message..." class="shadcn-input" rows="2"></textarea>
+                        <div style="display:flex; gap: 1rem;">
+                            <input id="live-accent" type="color" value="#ef4444" style="height: 38px; width: 60px; border: none; border-radius: 4px; cursor: pointer;">
+                            <select id="live-mode" class="shadcn-input" style="width: auto;">
+                                <option value="INTERRUPT">INTERRUPT IMMEDIATELY</option>
+                                <option value="NEXT">QUEUE NEXT</option>
+                            </select>
+                            <button class="shadcn-btn primary" onclick="pushLiveSlide()" style="flex:1;">PUSH ALERT</button>
+                            <button class="shadcn-btn" onclick="clearLiveSlide()" style="flex:1;">CLEAR ALERT</button>
+                        </div>
+                    </div>
+                </div>
+
             <div style="padding: 1.5rem; height: 100%; overflow-y: auto; box-sizing: border-box;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
                     <div>
@@ -691,6 +728,23 @@
         }).join('');
 
         wrap.innerHTML = `
+                <div style="margin-top: 2rem; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 1.5rem;">
+                    <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem; color: var(--accent);">BROADCAST LIVE ALERT</div>
+                    <div style="display:flex; flex-direction: column; gap: 0.75rem;">
+                        <input id="live-title" type="text" placeholder="MAIN TITLE" class="shadcn-input">
+                        <textarea id="live-detail" placeholder="Detail message..." class="shadcn-input" rows="2"></textarea>
+                        <div style="display:flex; gap: 1rem;">
+                            <input id="live-accent" type="color" value="#ef4444" style="height: 38px; width: 60px; border: none; border-radius: 4px; cursor: pointer;">
+                            <select id="live-mode" class="shadcn-input" style="width: auto;">
+                                <option value="INTERRUPT">INTERRUPT IMMEDIATELY</option>
+                                <option value="NEXT">QUEUE NEXT</option>
+                            </select>
+                            <button class="shadcn-btn primary" onclick="pushLiveSlide()" style="flex:1;">PUSH ALERT</button>
+                            <button class="shadcn-btn" onclick="clearLiveSlide()" style="flex:1;">CLEAR ALERT</button>
+                        </div>
+                    </div>
+                </div>
+
             <div class="shadcn-tabs" style="margin-bottom: 1rem;">
                 <span style="padding: 0 1rem; color: hsl(var(--foreground)); background: hsl(var(--background)); border-radius: 0.375rem;">Duration Engine</span>
             </div>
@@ -998,7 +1052,24 @@
         const wrap = document.getElementById('operator-wrap');
         const sep = url.includes('?') ? '&' : '?';
         const finalUrl = url + sep + 'compact=true';
-        wrap.innerHTML = `<iframe id="ctrl-frame" src="${finalUrl}"></iframe>`;
+        wrap.innerHTML = `
+                <div style="margin-top: 2rem; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 1.5rem;">
+                    <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem; color: var(--accent);">BROADCAST LIVE ALERT</div>
+                    <div style="display:flex; flex-direction: column; gap: 0.75rem;">
+                        <input id="live-title" type="text" placeholder="MAIN TITLE" class="shadcn-input">
+                        <textarea id="live-detail" placeholder="Detail message..." class="shadcn-input" rows="2"></textarea>
+                        <div style="display:flex; gap: 1rem;">
+                            <input id="live-accent" type="color" value="#ef4444" style="height: 38px; width: 60px; border: none; border-radius: 4px; cursor: pointer;">
+                            <select id="live-mode" class="shadcn-input" style="width: auto;">
+                                <option value="INTERRUPT">INTERRUPT IMMEDIATELY</option>
+                                <option value="NEXT">QUEUE NEXT</option>
+                            </select>
+                            <button class="shadcn-btn primary" onclick="pushLiveSlide()" style="flex:1;">PUSH ALERT</button>
+                            <button class="shadcn-btn" onclick="clearLiveSlide()" style="flex:1;">CLEAR ALERT</button>
+                        </div>
+                    </div>
+                </div>
+<iframe id="ctrl-frame" style="width:100%; height:100%; border:none;" src="${finalUrl}"></iframe>`;
         //document.getElementById('ctrl-title').innerText = name + ' OPERATOR';
         //document.getElementById('ctrl-url').innerText = url.split('/').pop().toUpperCase();
         
@@ -1245,6 +1316,7 @@
 
     function showToast(msg) {
         const t = document.getElementById('toast');
+        if(!t) return;
         t.innerText = msg; t.classList.add('show');
         setTimeout(() => t.classList.remove('show'), 2000);
     }
@@ -1385,5 +1457,6 @@
     console.log('[MASTERADMIN] ✅ Direct Firebase integration loaded. Client:', getClientIdForFirebase());
 </script>
 <script type="module" src="firebase-bridge.js"></script>
+    <div id="toast"></div>
 </body>
 </html>
