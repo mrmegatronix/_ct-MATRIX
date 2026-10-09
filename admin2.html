@@ -475,14 +475,18 @@
         return window.matrixTabId;
     }
 
+    let _telemetryTimeout = null;
     function requestTelemetry() {
-        const payload = { type: 'GET_SLIDES_DUMP', senderTabId: getTabId() };
-        bc.postMessage(payload);
-        if (window.sendToFirebase) {
-            payload.timestamp = Date.now();
-            payload.commandId = 'cmd_' + payload.timestamp + '_' + Math.random().toString(36).substr(2, 9);
-            window.sendToFirebase(payload);
-        }
+        if(_telemetryTimeout) clearTimeout(_telemetryTimeout);
+        _telemetryTimeout = setTimeout(() => {
+            const payload = { type: 'GET_SLIDES_DUMP', senderTabId: getTabId() };
+            bc.postMessage(payload);
+            if (window.sendToFirebase) {
+                payload.timestamp = Date.now();
+                payload.commandId = 'cmd_' + payload.timestamp + '_' + Math.random().toString(36).substr(2, 9);
+                window.sendToFirebase(payload);
+            }
+        }, 1000);
     }
 
     function toggleNode(el) {
@@ -565,7 +569,7 @@
                     <div style="display:flex; gap: 10px;">
                         <button class="ctrl-btn primary" onclick="requestTelemetry()">Refresh Telemetry</button>
                         <button class="ctrl-btn" onclick="loadModule('COMMANDER', 'matrixcommander.html?compact=true&v=' + Date.now())">Matrix Commander</button>
-                        <button class="ctrl-btn" onclick="window.open('remote.html', '_blank')" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border-color: rgba(245, 158, 11, 0.5);">Open Remote</button>
+                        <button class="ctrl-btn" onclick="window.open('remote.html', '_blank')" style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; border-color: rgba(59, 130, 246, 0.5);">Open Remote</button>
                     </div>
                 </div>
 
@@ -718,7 +722,7 @@
             } else if (inWindow) {
                 statusBadge = '<span style="background: rgba(16,185,129,0.2); color: #10b981; border: 1px solid rgba(16,185,129,0.4); padding: 3px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800;">ACTIVE IN WINDOW NOW</span>';
             } else {
-                statusBadge = '<span style="background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); padding: 3px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800;">SCHEDULED (OFF-HOURS)</span>';
+                statusBadge = '<span style="background: rgba(245,158,11,0.2); color: #3b82f6; border: 1px solid rgba(245,158,11,0.4); padding: 3px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800;">SCHEDULED (OFF-HOURS)</span>';
             }
 
             const dayCheckboxes = daysMap.map((dName, dIdx) => {
@@ -736,7 +740,7 @@
                     <div style="display: flex; flex-direction: column; gap: 0.5rem; border: 1px solid hsl(var(--border)); padding: 0.5rem; border-radius: var(--radius); background: hsl(var(--secondary)); margin-bottom: 0.75rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-family: var(--font-mono);">[ ${m.id} ]</span>
-                            ${isSchedEnabled ? '<span class="shadcn-badge" style="color: #f59e0b; border-color: #f59e0b;">🔒 Hard Scheduled</span>' : '<span class="shadcn-badge" style="color: #10b981; border-color: #10b981;">🔄 Rotation</span>'}
+                            ${isSchedEnabled ? '<span class="shadcn-badge" style="color: #3b82f6; border-color: #3b82f6;">🔒 Hard Scheduled</span>' : '<span class="shadcn-badge" style="color: #10b981; border-color: #10b981;">🔄 Rotation</span>'}
                         </div>
                         <div style="display: flex; gap: 0.5rem; align-items: center; font-size: 0.875rem;">
                             <label><input type="checkbox" id="sched-enable-${m.id}" ${isSchedEnabled ? 'checked' : ''}> Enable</label>
@@ -810,10 +814,10 @@
             const slideUrl = m.customUrl || `../${m.path}/index.html`;
             const adminUrl = m.customUrl 
                 ? m.customUrl 
-                : (m.id === 'MATRIX' ? 'index.html' : (m.id === 'WEA1' || m.id === 'FIR' || m.id === 'TIK' ? `../${m.path}/index.html` : `../${m.path}/admin.html`));
+                : (m.id === 'MATRIX' ? 'index.html' : (m.id === 'WEA1' || m.id === 'FIR' || m.id === 'TIK' || m.id === 'FACEB' || m.id === 'INSTA' || m.id === 'TRIP' || m.id === 'LOYALTY' ? `../${m.path}/index.html` : `../${m.path}/admin.html`));
 
             return `
-                <div class="monitor-card" onclick="loadModule('${m.id}', '${adminUrl}')">
+                <div class="monitor-card" onclick="loadModule('${m.name}', '${adminUrl}')">
                     <div class="monitor-thumb"><iframe src="${slideUrl}" scrolling="no"></iframe></div>
                     <div class="monitor-label"><span>${m.name}</span> <span style="opacity:0.5">LIVE</span></div>
                 </div>
@@ -869,7 +873,7 @@
             } else if (status.mode === 'SCHEDULED') {
                 pillClass = 'active';
                 pillLabel = status.active ? 'SCHED' : 'SCHED OFF';
-                pillStyle = status.active ? 'background: rgba(16,185,129,0.25); color: #10b981; border-color: rgba(16,185,129,0.6);' : 'background: rgba(245,158,11,0.2); color: #f59e0b; border-color: rgba(245,158,11,0.5);';
+                pillStyle = status.active ? 'background: rgba(16,185,129,0.25); color: #10b981; border-color: rgba(16,185,129,0.6);' : 'background: rgba(245,158,11,0.2); color: #3b82f6; border-color: rgba(245,158,11,0.5);';
             } else {
                 pillClass = 'active';
                 pillLabel = 'ON';
@@ -1053,6 +1057,9 @@
         'WEA1': { main: 'index.html' },
         'FIR': { main: 'index.html' },
         'TIK': { main: 'index.html' },
+        'FACEB': { main: 'index.html' },
+        'INSTA': { main: 'index.html' },
+        'TRIP': { main: 'index.html' },
         'LOYALTY': { main: 'loyalty-slide.html' },
         'COMMANDER': { main: 'matrixcommander.html' }
     };
@@ -1078,8 +1085,9 @@
                 basePath = '';
             }
             
-            // Normalize name since MODULE_PAGES uses ACE2 not ACE 2
-            const modKey = name.replace(" ", "");
+            // Find module definition to get the correct ID for MODULE_PAGES
+            const mDefForPages = modulesData.find(m => m.name === name);
+            const modKey = mDefForPages ? mDefForPages.id.replace("ct-", "").toUpperCase() : name.replace(" ", "");
             const pages = MODULE_PAGES[modKey] || { main: 'index.html', admin: 'admin.html', remote: 'remote.html' };
             let buttonsHtml = '';
             

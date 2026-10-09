@@ -1,22 +1,22 @@
 :root {
-  --background: 222.2 84% 4.9%;        /* #020817 - Deepest background */
+  --background: 0 0% 0%; /* Pure Black */        /* #020817 - Deepest background */
   --foreground: 210 40% 98%;          /* #f8fafc - Primary text */
-  --card: 222.2 84% 6.5%;             /* #030c1d - Card container */
+  --card: 0 0% 3%;             /* #030c1d - Card container */
   --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 6.5%;
+  --popover: 0 0% 3%;
   --popover-foreground: 210 40% 98%;
-  --primary: 43 96% 56%;              /* #f59e0b / #d4af37 Gold Accent */
-  --primary-foreground: 26 83% 14%;
-  --secondary: 217.2 32.6% 12%;       /* #131d2e - Secondary containers */
+  --primary: 217 91% 60%; /* Blue */              /* #f59e0b / #d4af37 Gold Accent */
+  --primary-foreground: 0 0% 100%; /* White */
+  --secondary: 0 0% 8%;       /* #131d2e - Secondary containers */
   --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;         /* #1e293b - Muted backgrounds */
+  --muted: 0 0% 12%;         /* #1e293b - Muted backgrounds */
   --muted-foreground: 215 20.2% 65.1%;/* #94a3b8 - Dim text */
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
+  --accent: 217 91% 60%; /* Blue */
+  --accent-foreground: 0 0% 100%; /* White */
   --destructive: 0 62.8% 30.6%;       /* #7f1d1d - Danger / Exit */
   --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;        /* #1e293b - Subtle container borders */
-  --input: 217.2 32.6% 17.5%;
+  --border: 217 91% 20%; /* Dark Blue border */        /* #1e293b - Subtle container borders */
+  --input: 217 91% 15%; /* Dark Blue input bg */
   --ring: 43 96% 56%;                 /* Focus rings */
   --radius: 0.625rem;                 /* 10px rounded corners */
   --font-sans: 'Inter', -apple-system, sans-serif;
