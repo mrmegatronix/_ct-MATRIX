@@ -181,7 +181,7 @@
         <p style="color: hsl(var(--muted-foreground)); margin:0;">Session idled out to save resources.</p>
         <div style="display: flex; gap: 0.5rem;">
             <input type="password" id="pin-input" placeholder="PIN" style="background: hsl(var(--input)); color: hsl(var(--foreground)); border: 1px solid hsl(var(--border)); padding: 0.5rem; border-radius: var(--radius); font-size: 1.25rem; width: 150px; text-align: center;" autocomplete="off">
-            <button id="btn-unlock" class="shadcn-btn">Unlock</button>
+            <button id="btn-unlock" class="shadcn-btn" style="padding: 6px 12px; font-size: 0.8rem;"">Unlock</button>
         </div>
         <p id="auth-error" style="color: hsl(var(--destructive)); display: none; margin:0;">Incorrect PIN</p>
     </div>
@@ -196,14 +196,14 @@
             <span class="shadcn-badge" style="color: #10b981; border-color: #10b981;">[LIVE] • Sync Online</span>
             <span id="system-clock" style="font-family: var(--font-mono); font-weight: bold;">00<span class="blink-colon">:</span>00<span class="blink-colon">:</span>00 NZDT</span>
             <div class="remote-container">
-                <button id="btn-remote" class="shadcn-btn">📱 REMOTE CONTROL</button>
+                <button id="btn-remote" class="shadcn-btn" style="padding: 6px 12px; font-size: 0.8rem;"">📱 REMOTE CONTROL</button>
                 <div class="qr-flyout">
                     <img id="qr-img" src="" alt="Remote QR Code">
                 </div>
             </div>
-            <button class="shadcn-btn" style="background-color: hsl(var(--secondary)); color: hsl(var(--secondary-foreground));">👁 PREVIEW</button>
-            <button class="shadcn-btn" style="background-color: hsl(var(--secondary)); color: hsl(var(--secondary-foreground));">🔄 SYNC</button>
-            <button class="shadcn-btn" id="btn-manual-lock" style="background-color: hsl(var(--destructive)); color: hsl(var(--destructive-foreground));">🔒 LOCK</button>
+            <button class="shadcn-btn" style="padding: 6px 12px; font-size: 0.8rem;"" style="background-color: hsl(var(--secondary)); color: hsl(var(--secondary-foreground));">👁 PREVIEW</button>
+            <button class="shadcn-btn" style="padding: 6px 12px; font-size: 0.8rem;"" style="background-color: hsl(var(--secondary)); color: hsl(var(--secondary-foreground));">🔄 SYNC</button>
+            <button class="shadcn-btn" style="padding: 6px 12px; font-size: 0.8rem;"" id="btn-manual-lock" style="background-color: hsl(var(--destructive)); color: hsl(var(--destructive-foreground));">🔒 LOCK</button>
         </div>
     </header>
 
@@ -232,13 +232,27 @@
             <div id="full-grid-view" style="display: none; width: 100%; height: 100%;"><div id="playlist-grid" style="padding:2rem; display:grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; overflow-y:auto; background: hsl(var(--background)); width: 100%; height: 100%;"></div></div>
             <div id="workspace-left" style="display: none;"></div>
             <div id="workspace-right" style="display: none;"></div>
-            <div id="operator-wrap" style="width: 100%; height: 100%;">
-                <div class="shadcn-tabs">
-                    <span style="padding: 0 1rem; font-weight: 500;">Schedule Manager</span>
-                    <span style="padding: 0 1rem; color: hsl(var(--foreground)); background: hsl(var(--background)); border-radius: 0.375rem;">Duration Engine</span>
-                    <span style="padding: 0 1rem; font-weight: 500;">Live Playlist</span>
+            
+            <div style="display:flex; flex-direction: column; width: 100%; height: 100%;">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding: 10px; background: hsl(var(--card)); border-bottom: 1px solid hsl(var(--border));">
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        <div>
+                            <div id="ctrl-title" style="font-weight: 800; font-size: 1.1rem; color: var(--accent);">DASHBOARD HOME</div>
+                            <div id="ctrl-url" style="opacity: 0.5; font-size: 0.7rem; font-family: monospace;">READY</div>
+                        </div>
+                        <div id="context-links" style="display:flex; gap: 8px;"></div>
+                    </div>
+                    <div id="module-toggles-top" style="display:flex; gap: 8px; align-items:center;"></div>
                 </div>
-                <div style="padding: 2rem;">Loading Workspace...</div>
+                
+                <div id="operator-wrap" style="flex: 1; width: 100%; height: 100%;">
+                    <div class="shadcn-tabs">
+                        <span style="padding: 0 1rem; font-weight: 500;">Schedule Manager</span>
+                        <span style="padding: 0 1rem; color: hsl(var(--foreground)); background: hsl(var(--background)); border-radius: 0.375rem;">Duration Engine</span>
+                        <span style="padding: 0 1rem; font-weight: 500;">Live Playlist</span>
+                    </div>
+                    <div style="padding: 2rem;">Loading Workspace...</div>
+                </div>
             </div>
         </main>
 
@@ -249,9 +263,9 @@
                 <div id="a-frame-placeholder" style="display:none;">A-FRAME SUSPENDED</div>
             </div>
             <div style="display: flex; gap: 0.5rem; justify-content: center;">
-                <button class="shadcn-btn" style="background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground));">⏮ PREV</button>
-                <button class="shadcn-btn" style="background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground));">⏯ PLAY/PAUSE</button>
-                <button class="shadcn-btn" style="background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground));">⏭ NEXT</button>
+                <button class="shadcn-btn" style="padding: 6px 12px; font-size: 0.8rem;"" style="background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground));">⏮ PREV</button>
+                <button class="shadcn-btn" style="padding: 6px 12px; font-size: 0.8rem;"" style="background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground));">⏯ PLAY/PAUSE</button>
+                <button class="shadcn-btn" style="padding: 6px 12px; font-size: 0.8rem;"" style="background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground));">⏭ NEXT</button>
             </div>
             <div class="monitor-frame b-frame" id="b-frame-container">
                 <iframe id="billboard-frame" src="billboard.html" style="width:100%; height:100%; border:none; background:#000;" tabindex="-1"></iframe>
@@ -270,7 +284,7 @@
                     <h3 class="truncate" style="font-size: 0.875rem; color: hsl(var(--muted-foreground)); margin-top:0; margin-bottom: 0.5rem;">Emergency Marquee</h3>
                     <div style="display: flex; gap: 0.5rem;">
                         <input type="text" placeholder="Enter marquee text..." style="flex:1; background: hsl(var(--input)); color: hsl(var(--foreground)); border: 1px solid hsl(var(--border)); padding: 0.5rem; border-radius: var(--radius); font-size: 0.875rem;">
-                        <button class="shadcn-btn" style="background-color: hsl(var(--destructive)); color: hsl(var(--destructive-foreground)); padding: 0.5rem;">Broadcast</button>
+                        <button class="shadcn-btn" style="padding: 6px 12px; font-size: 0.8rem;"" style="background-color: hsl(var(--destructive)); color: hsl(var(--destructive-foreground)); padding: 0.5rem;">Broadcast</button>
                     </div>
                 </div>
             </div>
@@ -280,12 +294,12 @@
 
     <!-- FOOTER TRAY -->
     <footer class="footer-tray" id="monitor-tray">
-        <div class="mini-preview"><iframe src="modules/ct-ace2/index.html" style="width:100%; height:100%; border:none;" tabindex="-1"></iframe></div>
-        <div class="mini-preview"><iframe src="modules/ct-mmr/index.html" style="width:100%; height:100%; border:none;" tabindex="-1"></iframe></div>
+        <div class="mini-preview"><iframe src="../ct-ACE2/index.html" style="width:100%; height:100%; border:none;" tabindex="-1"></iframe></div>
+        <div class="mini-preview"><iframe src="../_ct-MMR/index.html" style="width:100%; height:100%; border:none;" tabindex="-1"></iframe></div>
         <div class="mini-preview" style="opacity: 0.5;">QUIZ [Off]</div>
-        <div class="mini-preview"><iframe src="modules/ct-wea1/index.html" style="width:100%; height:100%; border:none;" tabindex="-1"></iframe></div>
-        <div class="mini-preview"><iframe src="modules/ct-fir/index.html" style="width:100%; height:100%; border:none;" tabindex="-1"></iframe></div>
-        <div class="mini-preview"><iframe src="modules/ct-soc/index.html" style="width:100%; height:100%; border:none;" tabindex="-1"></iframe></div>
+        <div class="mini-preview"><iframe src="../_ct-wea1/index.html" style="width:100%; height:100%; border:none;" tabindex="-1"></iframe></div>
+        <div class="mini-preview"><iframe src="../_ct-FIR/index.html" style="width:100%; height:100%; border:none;" tabindex="-1"></iframe></div>
+        <div class="mini-preview"><iframe src="../_ct-SOC/index.html" style="width:100%; height:100%; border:none;" tabindex="-1"></iframe></div>
     </footer>
 
     <script>
@@ -542,23 +556,6 @@
         }).join('');
         
         wrap.innerHTML = `
-                <div style="margin-top: 2rem; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 1.5rem;">
-                    <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem; color: var(--accent);">BROADCAST LIVE ALERT</div>
-                    <div style="display:flex; flex-direction: column; gap: 0.75rem;">
-                        <input id="live-title" type="text" placeholder="MAIN TITLE" class="shadcn-input">
-                        <textarea id="live-detail" placeholder="Detail message..." class="shadcn-input" rows="2"></textarea>
-                        <div style="display:flex; gap: 1rem;">
-                            <input id="live-accent" type="color" value="#ef4444" style="height: 38px; width: 60px; border: none; border-radius: 4px; cursor: pointer;">
-                            <select id="live-mode" class="shadcn-input" style="width: auto;">
-                                <option value="INTERRUPT">INTERRUPT IMMEDIATELY</option>
-                                <option value="NEXT">QUEUE NEXT</option>
-                            </select>
-                            <button class="shadcn-btn primary" onclick="pushLiveSlide()" style="flex:1;">PUSH ALERT</button>
-                            <button class="shadcn-btn" onclick="clearLiveSlide()" style="flex:1;">CLEAR ALERT</button>
-                        </div>
-                    </div>
-                </div>
-
             <div style="padding: 1.5rem; height: 100%; overflow-y: auto; box-sizing: border-box;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
                     <div>
@@ -593,13 +590,36 @@
                 <div style="margin-top: 2rem; opacity: 0.3; font-size: 0.7rem; text-align: center; font-weight: 800; letter-spacing: 2px;">
                     SELECT A MODULE FROM THE NAVIGATION TO BEGIN OPERATING
                 </div>
+                <div style="margin-top: 2rem; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 1.5rem;">
+                    <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem; color: var(--accent);">BROADCAST LIVE ALERT</div>
+                    <div style="display:flex; flex-direction: column; gap: 0.75rem;">
+                        <input id="live-title" type="text" placeholder="MAIN TITLE" class="shadcn-input">
+                        <textarea id="live-detail" placeholder="Detail message..." class="shadcn-input" rows="2"></textarea>
+                        <div style="display:flex; gap: 1rem;">
+                            <input id="live-accent" type="color" value="#ef4444" style="height: 38px; width: 60px; border: none; border-radius: 4px; cursor: pointer;">
+                            <select id="live-mode" class="shadcn-input" style="width: auto;">
+                                <option value="INTERRUPT">INTERRUPT IMMEDIATELY</option>
+                                <option value="NEXT">QUEUE NEXT</option>
+                            </select>
+                            <button class="shadcn-btn" style="padding: 6px 12px; font-size: 0.8rem;" primary" onclick="pushLiveSlide()" style="flex:1;">PUSH ALERT</button>
+                            <button class="shadcn-btn" style="padding: 6px 12px; font-size: 0.8rem;"" onclick="clearLiveSlide()" style="flex:1;">CLEAR ALERT</button>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         `;
-        //document.getElementById('ctrl-title').innerText = 'DASHBOARD HOME';
-        //document.getElementById('ctrl-url').innerText = 'CORE';
+        document.getElementById('ctrl-title').innerText = 'DASHBOARD HOME';
+        document.getElementById('ctrl-url').innerText = 'CORE';
         
         const ctx = document.getElementById('context-links');
         if (ctx) ctx.innerHTML = '';
+        const togglesTop = document.getElementById('module-toggles-top');
+        if (togglesTop) togglesTop.innerHTML = '';
+        const titleEl = document.getElementById('ctrl-title');
+        const urlEl = document.getElementById('ctrl-url');
+        if (titleEl) titleEl.innerText = 'DASHBOARD HOME';
+        if (urlEl) urlEl.innerText = 'READY';
         
         // Request metrics telemetry
         requestTelemetry();
@@ -728,23 +748,6 @@
         }).join('');
 
         wrap.innerHTML = `
-                <div style="margin-top: 2rem; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 1.5rem;">
-                    <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem; color: var(--accent);">BROADCAST LIVE ALERT</div>
-                    <div style="display:flex; flex-direction: column; gap: 0.75rem;">
-                        <input id="live-title" type="text" placeholder="MAIN TITLE" class="shadcn-input">
-                        <textarea id="live-detail" placeholder="Detail message..." class="shadcn-input" rows="2"></textarea>
-                        <div style="display:flex; gap: 1rem;">
-                            <input id="live-accent" type="color" value="#ef4444" style="height: 38px; width: 60px; border: none; border-radius: 4px; cursor: pointer;">
-                            <select id="live-mode" class="shadcn-input" style="width: auto;">
-                                <option value="INTERRUPT">INTERRUPT IMMEDIATELY</option>
-                                <option value="NEXT">QUEUE NEXT</option>
-                            </select>
-                            <button class="shadcn-btn primary" onclick="pushLiveSlide()" style="flex:1;">PUSH ALERT</button>
-                            <button class="shadcn-btn" onclick="clearLiveSlide()" style="flex:1;">CLEAR ALERT</button>
-                        </div>
-                    </div>
-                </div>
-
             <div class="shadcn-tabs" style="margin-bottom: 1rem;">
                 <span style="padding: 0 1rem; color: hsl(var(--foreground)); background: hsl(var(--background)); border-radius: 0.375rem;">Duration Engine</span>
             </div>
@@ -755,11 +758,17 @@
                 </div>
             </div>
         `;
-        //document.getElementById('ctrl-title').innerText = 'DASHBOARD HOME';
-        //document.getElementById('ctrl-url').innerText = 'CORE';
+        document.getElementById('ctrl-title').innerText = 'DASHBOARD HOME';
+        document.getElementById('ctrl-url').innerText = 'CORE';
         
         const ctx = document.getElementById('context-links');
         if (ctx) ctx.innerHTML = '';
+        const togglesTop = document.getElementById('module-toggles-top');
+        if (togglesTop) togglesTop.innerHTML = '';
+        const titleEl = document.getElementById('ctrl-title');
+        const urlEl = document.getElementById('ctrl-url');
+        if (titleEl) titleEl.innerText = 'DASHBOARD HOME';
+        if (urlEl) urlEl.innerText = 'READY';
         
         // Request metrics telemetry
         requestTelemetry();
@@ -831,18 +840,18 @@
         const dur = config.moduleDurations || {};
 
         const modules = [
-            { id: 'ct-matrix', name: 'MATRIX', title: 'Core Slides', defaultDur: 30, hasAdmin: false },
-            { id: 'ct-ace2', name: 'ACE 2', title: 'Chase Ace 2', defaultDur: 180, hasAdmin: true },
-            { id: 'ct-mmr', name: 'MMR', title: 'Monster Meat Raffle', defaultDur: 600, hasAdmin: true },
-            { id: 'ct-quiz', name: 'QUIZ', title: 'Pub Quiz', defaultDur: 60, hasAdmin: true },
-            { id: 'ct-wea1', name: 'WEA1', title: 'Weather', defaultDur: 60, hasAdmin: false },
-            { id: 'ct-fir', name: 'FIR', title: 'Fireplace', defaultDur: 180, hasAdmin: false },
-            { id: 'ct-soc', name: 'SOC', title: 'Social Club', defaultDur: 120, hasAdmin: true },
-            { id: 'ct-tik', name: 'TIK', title: 'TikTok Feed', defaultDur: 30, hasAdmin: false },
-            { id: 'ct-faceb', name: 'FACEB', title: 'Facebook Feed', defaultDur: 30, hasAdmin: false },
-            { id: 'ct-insta', name: 'INSTA', title: 'Instagram Feed', defaultDur: 30, hasAdmin: false },
-            { id: 'ct-loyalty', name: 'LOYALTY', title: 'Loyalty App', defaultDur: 60, hasAdmin: false, customUrl: 'loyalty-slide.html' },
-            { id: 'ct-trip', name: 'TRIP', title: 'Trip Module', defaultDur: 60, hasAdmin: false }
+            { id: 'ct-matrix', name: 'MATRIX', path: '_ct-MATRIX', title: 'Core Slides', defaultDur: 30, hasAdmin: false },
+            { id: 'ct-ace2', name: 'ACE 2', path: 'ct-ACE2', title: 'Chase Ace 2', defaultDur: 180, hasAdmin: true },
+            { id: 'ct-mmr', name: 'MMR', path: '_ct-MMR', title: 'Monster Meat Raffle', defaultDur: 600, hasAdmin: true },
+            { id: 'ct-quiz', name: 'QUIZ', path: '_ct-QUIZ', title: 'Pub Quiz', defaultDur: 60, hasAdmin: true },
+            { id: 'ct-wea1', name: 'WEA1', path: '_ct-wea1', title: 'Weather', defaultDur: 60, hasAdmin: false },
+            { id: 'ct-fir', name: 'FIR', path: '_ct-FIR', title: 'Fireplace', defaultDur: 180, hasAdmin: false },
+            { id: 'ct-soc', name: 'SOC', path: '_ct-SOC', title: 'Social Club', defaultDur: 120, hasAdmin: true },
+            { id: 'ct-tik', name: 'TIK', path: '_ct-TIK', title: 'TikTok Feed', defaultDur: 30, hasAdmin: false },
+            { id: 'ct-faceb', name: 'FACEB', path: '_ct-FACEB', title: 'Facebook Feed', defaultDur: 30, hasAdmin: false },
+            { id: 'ct-insta', name: 'INSTA', path: '_ct-INSTA', title: 'Instagram Feed', defaultDur: 30, hasAdmin: false },
+            { id: 'ct-loyalty', name: 'LOYALTY', path: '_ct-MATRIX', title: 'Loyalty App', defaultDur: 60, hasAdmin: false, customUrl: 'loyalty-slide.html' },
+            { id: 'ct-trip', name: 'TRIP', path: '_ct-TRIP', title: 'Trip Module', defaultDur: 60, hasAdmin: false }
         ];
 
         side.innerHTML = modules.map(m => {
@@ -867,7 +876,7 @@
             }
 
             // Generate the tree children dynamically based on hasAdmin
-            const folderName = m.id === 'ct-wea1' ? '_ct-wea1' : '_ct-' + m.name;
+            const folderName = m.path;
             const slideUrl = m.customUrl || `../${folderName}/index.html`;
             let childrenHTML = `<a href="javascript:void(0)" class="tree-item" onclick="loadModule('${m.name}', '${slideUrl}')">${m.id === 'ct-wea1' ? 'Live Conditions' : (m.id === 'ct-fir' ? 'Looping Fire' : (m.id === 'ct-loyalty' ? 'Loyalty App Slide' : 'Module View'))}</a>`;
             if (m.hasAdmin) {
@@ -1052,47 +1061,78 @@
         const wrap = document.getElementById('operator-wrap');
         const sep = url.includes('?') ? '&' : '?';
         const finalUrl = url + sep + 'compact=true';
-        wrap.innerHTML = `
-                <div style="margin-top: 2rem; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); padding: 1.5rem;">
-                    <div style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem; color: var(--accent);">BROADCAST LIVE ALERT</div>
-                    <div style="display:flex; flex-direction: column; gap: 0.75rem;">
-                        <input id="live-title" type="text" placeholder="MAIN TITLE" class="shadcn-input">
-                        <textarea id="live-detail" placeholder="Detail message..." class="shadcn-input" rows="2"></textarea>
-                        <div style="display:flex; gap: 1rem;">
-                            <input id="live-accent" type="color" value="#ef4444" style="height: 38px; width: 60px; border: none; border-radius: 4px; cursor: pointer;">
-                            <select id="live-mode" class="shadcn-input" style="width: auto;">
-                                <option value="INTERRUPT">INTERRUPT IMMEDIATELY</option>
-                                <option value="NEXT">QUEUE NEXT</option>
-                            </select>
-                            <button class="shadcn-btn primary" onclick="pushLiveSlide()" style="flex:1;">PUSH ALERT</button>
-                            <button class="shadcn-btn" onclick="clearLiveSlide()" style="flex:1;">CLEAR ALERT</button>
-                        </div>
-                    </div>
-                </div>
-<iframe id="ctrl-frame" style="width:100%; height:100%; border:none;" src="${finalUrl}"></iframe>`;
-        //document.getElementById('ctrl-title').innerText = name + ' OPERATOR';
-        //document.getElementById('ctrl-url').innerText = url.split('/').pop().toUpperCase();
+        
+        wrap.innerHTML = `<iframe id="ctrl-frame" style="width:100%; height:100%; border:none;" src="${finalUrl}"></iframe>`;
+        
+        const titleEl = document.getElementById('ctrl-title');
+        const urlEl = document.getElementById('ctrl-url');
+        if (titleEl) titleEl.innerText = name + ' OPERATOR';
+        if (urlEl) urlEl.innerText = url.split('/').pop().toUpperCase();
         
         const ctx = document.getElementById('context-links');
+        const togglesTop = document.getElementById('module-toggles-top');
+        
         if (ctx) {
-            const basePath = url.substring(0, url.lastIndexOf('/') + 1);
-            const pages = MODULE_PAGES[name] || { main: 'index.html' };
+            let basePath = url.substring(0, url.lastIndexOf('/') + 1);
+            if (basePath === '') {
+                basePath = '';
+            }
+            
+            // Normalize name since MODULE_PAGES uses ACE2 not ACE 2
+            const modKey = name.replace(" ", "");
+            const pages = MODULE_PAGES[modKey] || { main: 'index.html', admin: 'admin.html', remote: 'remote.html' };
             let buttonsHtml = '';
             
             if (pages.main) {
                 const isActive = url.includes(pages.main);
-                buttonsHtml += `<button class="ctrl-btn ${isActive ? 'primary' : ''}" onclick="loadModule('${name}', '${basePath}${pages.main}')">MAIN</button>`;
+                buttonsHtml += `<button class="shadcn-btn ${isActive ? 'primary' : ''}" style="padding: 6px 12px; font-size: 0.8rem;" onclick="loadModule('${name}', '${basePath}${pages.main}')">MAIN</button>`;
             }
             if (pages.admin) {
                 const isActive = url.includes(pages.admin);
-                buttonsHtml += `<button class="ctrl-btn ${isActive ? 'primary' : ''}" onclick="loadModule('${name}', '${basePath}${pages.admin}')">ADMIN</button>`;
+                buttonsHtml += `<button class="shadcn-btn ${isActive ? 'primary' : ''}" style="padding: 6px 12px; font-size: 0.8rem;" onclick="loadModule('${name}', '${basePath}${pages.admin}')">ADMIN</button>`;
             }
             if (pages.remote) {
                 const isActive = url.includes(pages.remote);
-                buttonsHtml += `<button class="ctrl-btn ${isActive ? 'primary' : ''}" onclick="loadModule('${name}', '${basePath}${pages.remote}')">REMOTE</button>`;
+                buttonsHtml += `<button class="shadcn-btn ${isActive ? 'primary' : ''}" style="padding: 6px 12px; font-size: 0.8rem;" onclick="loadModule('${name}', '${basePath}${pages.remote}')">REMOTE</button>`;
             }
-            if (ctx) ctx.innerHTML = buttonsHtml;
+            ctx.innerHTML = buttonsHtml;
         }
+        
+        if (togglesTop) {
+            let isLiveMod = false;
+            let modId = '';
+            
+            const modulesData = [
+                { id: 'ct-matrix', name: 'MATRIX' }, { id: 'ct-ace2', name: 'ACE 2' },
+                { id: 'ct-mmr', name: 'MMR' }, { id: 'ct-quiz', name: 'QUIZ' },
+                { id: 'ct-wea1', name: 'WEA1' }, { id: 'ct-fir', name: 'FIR' },
+                { id: 'ct-soc', name: 'SOC' }, { id: 'ct-tik', name: 'TIK' },
+                { id: 'ct-faceb', name: 'FACEB' }, { id: 'ct-insta', name: 'INSTA' },
+                { id: 'ct-loyalty', name: 'LOYALTY' }, { id: 'ct-trip', name: 'TRIP' }
+            ];
+            
+            const mDef = modulesData.find(m => m.name === name);
+            if (mDef && name !== 'MATRIX') {
+                isLiveMod = true;
+                modId = mDef.id;
+                let config = { disabledModules: [] };
+                try {
+                    const stored = localStorage.getItem('matrix_config');
+                    if (stored) config = JSON.parse(stored);
+                } catch(e) {}
+                const disabled = config.disabledModules || [];
+                const isChecked = !disabled.includes(modId);
+                
+                togglesTop.innerHTML = `
+                    <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-dim); margin-right: 4px;">MODULE STATUS:</span>
+                    <button class="shadcn-btn ${isChecked ? 'primary' : ''}" style="padding: 4px 12px;" onclick="toggleModule('${name}', true); loadModule('${name}', '${url}'); renderSidebarToggles(); renderMonitorTray();">ON</button>
+                    <button class="shadcn-btn ${!isChecked ? 'destructive' : ''}" style="padding: 4px 12px;" onclick="toggleModule('${name}', false); loadModule('${name}', '${url}'); renderSidebarToggles(); renderMonitorTray();">OFF</button>
+                `;
+            } else {
+                togglesTop.innerHTML = '';
+            }
+        }
+        
         showToast('LOADED ' + name);
     }
 
