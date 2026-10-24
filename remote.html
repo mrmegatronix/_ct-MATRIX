@@ -110,6 +110,8 @@
     <button class="btn" onclick="jump('ct-insta')"><span class="btn-icon">📸</span><span>INSTA</span></button>
     <button class="btn" onclick="jump('ct-loyalty')"><span class="btn-icon">💳</span><span>LOYALTY</span></button>
     <button class="btn" onclick="jump('ct-trip')"><span class="btn-icon">✈️</span><span>TRIP</span></button>
+    <button class="btn" onclick="jump('ct-west')"><span class="btn-icon">🤠</span><span>WEST</span></button>
+    <button class="btn" onclick="jump('ct-hallo')"><span class="btn-icon">🎃</span><span>HALLO</span></button>
     <button class="btn" onclick="send('NEXT')"><span class="btn-icon">📺</span><span>ADS</span></button>
   </div>
 
@@ -451,6 +453,59 @@
             </div>
          </div>
       </div>
+    <!-- WEST -->
+    <div class="mod-card" id="row-ct-west">
+      <div class="mod-header">
+        <div class="mod-name">🤠 WEST</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="position:relative; width:44px; height:24px; cursor:pointer;">
+             <input type="checkbox" class="mod-switch-cb" id="switch-ct-west" onchange="toggleModule('WEST', this.checked)" style="opacity:0; width:0; height:0; position:absolute;">
+             <div class="mod-switch-bg" style="position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:24px; transition:0.3s; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="mod-switch-knob" style="position:absolute; top:1px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+             </div>
+          </label>
+          <button class="gear-btn" onclick="document.getElementById('settings-ct-west').classList.toggle('open')">⚙️</button>
+        </div>
+      </div>
+      <div class="mod-settings" id="settings-ct-west">
+         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <label style="display:flex; align-items:center; gap: 6px; font-size: 0.75rem; color: #aaa; cursor: pointer;">
+                <input type="checkbox" id="all-ct-west" style="margin: 0; width: 14px; height: 14px; accent-color: var(--accent);" onchange="toggleRemotePlayAll('ct-west', this.checked)">
+                <span>Play All (Loop)</span>
+            </label>
+            <div class="mod-dur-wrapper" id="dur-wrap-ct-west" style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.65rem; color: #666; font-weight: 800;">SEC</span>
+                <input type="number" class="mod-dur" id="dur-ct-west" placeholder="s">
+            </div>
+         </div>
+      </div>
+    </div>
+    <!-- HALLO -->
+    <div class="mod-card" id="row-ct-hallo">
+      <div class="mod-header">
+        <div class="mod-name">🎃 HALLO</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="position:relative; width:44px; height:24px; cursor:pointer;">
+             <input type="checkbox" class="mod-switch-cb" id="switch-ct-hallo" onchange="toggleModule('HALLO', this.checked)" style="opacity:0; width:0; height:0; position:absolute;">
+             <div class="mod-switch-bg" style="position:absolute; inset:0; background:rgba(255,255,255,0.1); border-radius:24px; transition:0.3s; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="mod-switch-knob" style="position:absolute; top:1px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; transition:0.3s; box-shadow:0 1px 3px rgba(0,0,0,0.3);"></div>
+             </div>
+          </label>
+          <button class="gear-btn" onclick="document.getElementById('settings-ct-hallo').classList.toggle('open')">⚙️</button>
+        </div>
+      </div>
+      <div class="mod-settings" id="settings-ct-hallo">
+         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <label style="display:flex; align-items:center; gap: 6px; font-size: 0.75rem; color: #aaa; cursor: pointer;">
+                <input type="checkbox" id="all-ct-hallo" style="margin: 0; width: 14px; height: 14px; accent-color: var(--accent);" onchange="toggleRemotePlayAll('ct-hallo', this.checked)">
+                <span>Play All (Loop)</span>
+            </label>
+            <div class="mod-dur-wrapper" id="dur-wrap-ct-hallo" style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 0.65rem; color: #666; font-weight: 800;">SEC</span>
+                <input type="number" class="mod-dur" id="dur-ct-hallo" placeholder="s">
+            </div>
+         </div>
+      </div>
     </div>
   </div>
 
@@ -491,7 +546,7 @@
     var bc_sub = window.bc_sub || new BroadcastChannel('mom_sync');
 
     // Default durations fallback
-    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-ace2': 180, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-quiz': 60, 'ct-fir': 180, 'ct-soc': 120, 'ct-tik': 30, 'ct-faceb': 30, 'ct-insta': 30, 'ct-loyalty': 60, 'ct-trip': 60 };
+    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-ace2': 180, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-quiz': 60, 'ct-fir': 180, 'ct-soc': 120, 'ct-tik': 30, 'ct-faceb': 30, 'ct-insta': 30, 'ct-loyalty': 60, 'ct-trip': 60, 'ct-west': 30, 'ct-hallo': 30 };
 
     function getClientId() {
       let id = localStorage.getItem('matrix_client_id');
@@ -521,7 +576,7 @@
         }
       } catch(e) {}
       
-      const moduleIds = ['ct-matrix', 'ct-ace2', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip'];
+      const moduleIds = ['ct-matrix', 'ct-ace2', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip', 'ct-west', 'ct-hallo'];
       moduleIds.forEach(id => {
         const row = document.getElementById('row-' + id);
         if (!row) return;
@@ -686,7 +741,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace2', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip'];
+        const moduleIds = ['ct-matrix', 'ct-ace2', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip', 'ct-west', 'ct-hallo'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {

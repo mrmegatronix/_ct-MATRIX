@@ -684,7 +684,9 @@
             { id: 'ct-insta', name: 'INSTA', title: 'Instagram Feed', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
             { id: 'ct-wea1', name: 'WEA1', title: 'Live Weather', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
             { id: 'ct-fir', name: 'FIR', title: 'Fireplace Loop', defaultDays: [1,2,3,4,5,6,0], defaultStart: '17:00', defaultEnd: '23:00', defaultEnabled: false },
-            { id: 'ct-trip', name: 'TRIP', title: 'Trip Module', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false }
+            { id: 'ct-trip', name: 'TRIP', title: 'Trip Module', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
+            { id: 'ct-west', name: 'WEST', title: 'Wild West Karaoke', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false },
+            { id: 'ct-hallo', name: 'HALLO', title: 'Halloween Karaoke', defaultDays: [1,2,3,4,5,6,0], defaultStart: '10:00', defaultEnd: '23:00', defaultEnabled: false }
         ];
 
         const daysMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -792,7 +794,7 @@
     }
 
     window.saveAllModuleSchedules = function() {
-        const moduleIds = ['ct-quiz', 'ct-mmr', 'ct-ace2', 'ct-soc', 'ct-loyalty', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-wea1', 'ct-fir', 'ct-trip'];
+        const moduleIds = ['ct-quiz', 'ct-mmr', 'ct-ace2', 'ct-soc', 'ct-loyalty', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-wea1', 'ct-fir', 'ct-trip', 'ct-west', 'ct-hallo'];
         const schedules = {};
 
         function timeToDec(timeStr) {
@@ -868,7 +870,9 @@
             { id: 'ct-faceb', name: 'FACEB', defaultDuration: 30 },
             { id: 'ct-insta', name: 'INSTA', defaultDuration: 30 },
             { id: 'ct-loyalty', name: 'LOYALTY', defaultDuration: 60 },
-            { id: 'ct-trip', name: 'TRIP', defaultDuration: 60 }
+            { id: 'ct-trip', name: 'TRIP', defaultDuration: 60 },
+            { id: 'ct-west', name: 'WEST', defaultDuration: 30 },
+            { id: 'ct-hallo', name: 'HALLO', defaultDuration: 30 }
         ];
 
         const durationRows = modules.map(m => {
@@ -1022,7 +1026,9 @@
             { id: 'ct-faceb', name: 'FACEB', title: 'Facebook Feed', defaultDur: 30, hasAdmin: false },
             { id: 'ct-insta', name: 'INSTA', title: 'Instagram Feed', defaultDur: 30, hasAdmin: false },
             { id: 'ct-loyalty', name: 'LOYALTY', title: 'Loyalty App', defaultDur: 60, hasAdmin: false, customUrl: 'loyalty-slide.html' },
-            { id: 'ct-trip', name: 'TRIP', title: 'Trip Module', defaultDur: 60, hasAdmin: false }
+            { id: 'ct-trip', name: 'TRIP', title: 'Trip Module', defaultDur: 60, hasAdmin: false },
+            { id: 'ct-west', name: 'WEST', title: 'Wild West Karaoke', defaultDur: 30, hasAdmin: true },
+            { id: 'ct-hallo', name: 'HALLO', title: 'Halloween Karaoke', defaultDur: 30, hasAdmin: false }
         ];
 
         side.innerHTML = modules.map(m => {
@@ -1093,7 +1099,7 @@
     }
 
     function saveModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace2', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip'];
+        const moduleIds = ['ct-matrix', 'ct-ace2', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip', 'ct-west', 'ct-hallo'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {
@@ -1146,7 +1152,7 @@
     }
 
     function saveHomeModuleDurations() {
-        const moduleIds = ['ct-matrix', 'ct-ace2', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip'];
+        const moduleIds = ['ct-matrix', 'ct-ace2', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip', 'ct-west', 'ct-hallo'];
         const durations = {};
         let hasErrors = false;
         moduleIds.forEach(id => {
