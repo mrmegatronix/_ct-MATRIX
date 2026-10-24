@@ -281,9 +281,9 @@ async function initMatrix() {
       const slide = s.slides[s.currentIndex];
       if (!slide) return;
 
-      // Max allowed time: configured duration + 60s buffer, minimum 120s
+      // Max allowed time: configured duration + 15s buffer, minimum 45s
       const configuredDuration = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
-      const maxAllowed = Math.max(configuredDuration + 60000, 120000);
+      const maxAllowed = Math.max(configuredDuration + 15000, 45000);
 
       if (elapsed > maxAllowed) {
         console.warn(`[MATRIX] Stuck-slide watchdog: Slide "${slide.title || slide.id}" stuck for ${Math.round(elapsed/1000)}s (max ${Math.round(maxAllowed/1000)}s). Force advancing.`);
@@ -875,7 +875,7 @@ function buildSlideQueue(data) {
     ace2Priority = 2;
   }
 
-  queue.push({ type: 'MODULE', id: 'ct-mmr', url: resolveModuleUrl('../_ct-MMR/index.html', 'https://mrmegatronix.github.io/_ct-MMR/index.html'), title: "Meat Raffle Display", pinned: true, priority: 5, duration: getModDur('ct-mmr', 600) });
+  queue.push({ type: 'MODULE', id: 'ct-mmr', url: resolveModuleUrl('../_ct-MMR/index.html', 'https://mrmegatronix.github.io/_ct-MMR/index.html'), title: "Meat Raffle Display", pinned: true, priority: 5, duration: getModDur('ct-mmr', 60) });
   queue.push({ type: 'MODULE', id: 'ct-wea1', url: resolveModuleUrl('../_ct-wea1/index.html', 'https://mrmegatronix.github.io/_ct-wea1/index.html'), title: "Christchurch Weather", priority: 80, duration: getModDur('ct-wea1', 90) });
   queue.push({ type: 'MODULE', id: 'ct-ace2', url: resolveModuleUrl('../ct-ACE2/index.html', 'https://mrmegatronix.github.io/ct-ACE2/index.html'), title: "Chase the Ace", pinned: true, priority: ace2Priority, duration: getModDur('ct-ace2', 180) });
   queue.push({ type: 'MODULE', id: 'ct-quiz', url: resolveModuleUrl('../_ct-QUIZ/index.html', 'https://mrmegatronix.github.io/_ct-QUIZ/index.html'), title: "Weekly Pub Quiz", priority: 10, duration: getModDur('ct-quiz', 60) });
@@ -1285,6 +1285,7 @@ window.getModuleStatus = getModuleStatus;
  */
 function nextSlide(skipBroadcast = false) {
   const s = window.MATRIX.STATE;
+  if (!s.slides || !s.slides.length) return;
   let loopCount = 0;
   let nextIdx = s.currentIndex;
   
@@ -1370,6 +1371,10 @@ function togglePause() {
 
 function jumpToProject(id, skipBroadcast = false) {
   const s = window.MATRIX.STATE;
+  if (id === 'next_module') {
+    skipToNextModule();
+    return;
+  }
   const idx = s.slides.findIndex(s => s.id === id);
   if (idx !== -1) {
     s.currentIndex = idx;
@@ -1617,7 +1622,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
   if (currentDOM && currentDOM.dataset.slideId === String(slide.id)) {
       const bar = document.getElementById('progress-bar');
       if (bar) {
-          if (slide.type === 'MODULE' || slide.id === 'ct-fir') {
+          if (slide.id === 'ct-fir') {
               bar.style.display = 'none';
           } else {
               bar.style.display = '';
@@ -1899,7 +1904,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
 
     const bar = document.getElementById('progress-bar');
     if (bar) {
-      if (slide.type === 'MODULE' || slide.id === 'ct-fir') {
+      if (slide.id === 'ct-fir') {
         bar.style.display = 'none';
       } else {
         bar.style.display = '';
@@ -1911,7 +1916,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
       const finalDelay = overrideDelay !== null ? overrideDelay : defaultDelay;
       window.MATRIX.STATE.timer = setTimeout(nextSlide, finalDelay);
       
-      if (bar && slide.type !== 'MODULE' && slide.id !== 'ct-fir') {
+      if (bar && slide.id !== 'ct-fir') {
         bar.style.transition = 'none';
         bar.style.width = '0%';
         requestAnimationFrame(() => {
