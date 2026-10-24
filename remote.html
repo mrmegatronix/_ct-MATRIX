@@ -546,7 +546,7 @@
     var bc_sub = window.bc_sub || new BroadcastChannel('mom_sync');
 
     // Default durations fallback
-    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-ace2': 180, 'ct-mmr': 600, 'ct-wea1': 60, 'ct-quiz': 60, 'ct-fir': 180, 'ct-soc': 120, 'ct-tik': 30, 'ct-faceb': 30, 'ct-insta': 30, 'ct-loyalty': 60, 'ct-trip': 60, 'ct-west': 30, 'ct-hallo': 30 };
+    const DEFAULT_DURS = { 'ct-matrix': 30, 'ct-ace2': 180, 'ct-mmr': 600, 'ct-wea1': 15, 'ct-quiz': 60, 'ct-fir': 180, 'ct-soc': 120, 'ct-tik': 30, 'ct-faceb': 30, 'ct-insta': 30, 'ct-loyalty': 60, 'ct-trip': 60, 'ct-west': 30, 'ct-hallo': 30 };
 
     function getClientId() {
       let id = localStorage.getItem('matrix_client_id');

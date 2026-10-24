@@ -876,7 +876,6 @@ function buildSlideQueue(data) {
   }
 
   queue.push({ type: 'MODULE', id: 'ct-mmr', url: resolveModuleUrl('../_ct-MMR/index.html', 'https://mrmegatronix.github.io/_ct-MMR/index.html'), title: "Meat Raffle Display", pinned: true, priority: 5, duration: getModDur('ct-mmr', 60) });
-  queue.push({ type: 'MODULE', id: 'ct-wea1', url: resolveModuleUrl('../_ct-wea1/index.html', 'https://mrmegatronix.github.io/_ct-wea1/index.html'), title: "Christchurch Weather", priority: 80, duration: getModDur('ct-wea1', 90) });
   queue.push({ type: 'MODULE', id: 'ct-ace2', url: resolveModuleUrl('../ct-ACE2/index.html', 'https://mrmegatronix.github.io/ct-ACE2/index.html'), title: "Chase the Ace", pinned: true, priority: ace2Priority, duration: getModDur('ct-ace2', 180) });
   queue.push({ type: 'MODULE', id: 'ct-quiz', url: resolveModuleUrl('../_ct-QUIZ/index.html', 'https://mrmegatronix.github.io/_ct-QUIZ/index.html'), title: "Weekly Pub Quiz", priority: 10, duration: getModDur('ct-quiz', 60) });
   queue.push({ type: 'MODULE', id: 'ct-fir', url: resolveModuleUrl('../_ct-FIR/index.html', 'https://mrmegatronix.github.io/_ct-FIR/index.html'), title: "Fireplace Ambiance", priority: 80, duration: getModDur('ct-fir', 180) });
@@ -910,6 +909,30 @@ function buildSlideQueue(data) {
     if (priA !== priB) return priA - priB;
     return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0);
   });
+
+  // 6. Insert ct-wea1 after every 10th slide for 15s (unless disabled)
+  if (!disabledModules.includes('ct-wea1')) {
+    const weaDuration = getModDur('ct-wea1', 15);
+    const weaUrl = resolveModuleUrl('../_ct-wea1/index.html', 'https://mrmegatronix.github.io/_ct-wea1/index.html');
+    const queueWithWeather = [];
+    let slideCount = 0;
+    filteredQueue.forEach((slide) => {
+      queueWithWeather.push(slide);
+      slideCount++;
+      if (slideCount === 10) {
+        queueWithWeather.push({
+          type: 'MODULE',
+          id: 'ct-wea1',
+          url: weaUrl,
+          title: "Christchurch Weather",
+          duration: weaDuration,
+          accentColor: '#38bdf8'
+        });
+        slideCount = 0;
+      }
+    });
+    filteredQueue = queueWithWeather;
+  }
 
   window.MATRIX.STATE.slides = filteredQueue;
   console.log(`[MATRIX v2] Queue built with ${filteredQueue.length} slides.`);
@@ -1288,6 +1311,20 @@ window.getModuleStatus = getModuleStatus;
 function nextSlide(skipBroadcast = false) {
   const s = window.MATRIX.STATE;
   if (!s.slides || !s.slides.length) return;
+
+  const currSlide = s.slides[s.currentIndex];
+  if (currSlide) {
+    const isLockedCountdown = s.isLocked ||
+      currSlide.isLocked ||
+      (currSlide.countdownFinish && new Date(currSlide.countdownFinish).getTime() > Date.now()) ||
+      (currSlide.id === 'ct-ace2' && (isTueDrawTime || isSatDrawTime)) ||
+      (currSlide.id === 'ct-mmr' && currSlide.isLocked);
+    if (isLockedCountdown) {
+      console.log('[MATRIX] Countdown/slide locked in. Progression held.');
+      return;
+    }
+  }
+
   let loopCount = 0;
   let nextIdx = s.currentIndex;
   
@@ -1699,6 +1736,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
       if (slide.id === 'ct-trip') moduleColor = '#10b981';
       if (slide.id === 'ct-west') moduleColor = '#d97706';
       if (slide.id === 'ct-hallo') moduleColor = '#ea580c';
+      if (slide.id === 'ct-wea1') moduleColor = '#38bdf8';
       
       document.documentElement.style.setProperty('--theme-color', moduleColor);
       document.documentElement.style.setProperty('--theme-glow', `${moduleColor}60`);
