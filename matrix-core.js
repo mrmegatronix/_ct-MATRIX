@@ -93,8 +93,15 @@ async function initMatrix() {
 
   if (window.MATRIX.STATE.slides.length > 0) {
     window.MATRIX.STATE.isBooting = false;
-    if (window.MATRIX.STATE.currentIndex === -1) {
+    if (window.MATRIX.STATE.currentIndex === -1 || window.MATRIX.STATE.currentIndex >= window.MATRIX.STATE.slides.length) {
+      window.MATRIX.STATE.currentIndex = -1;
       nextSlide();
+    } else {
+      const activeSlide = window.MATRIX.STATE.slides[window.MATRIX.STATE.currentIndex];
+      const currentDOM = document.getElementById('slide-target');
+      if (!currentDOM || currentDOM.dataset.slideId !== String(activeSlide.id) || (!window.MATRIX.STATE.timer && !window.MATRIX.STATE.isPaused && !window.MATRIX.STATE.isLocked)) {
+        renderActiveSlide();
+      }
     }
   } else {
     window.MATRIX.STATE.isBooting = false;
@@ -119,7 +126,7 @@ async function initMatrix() {
       case 'NEXT':
       case 'NAV_NEXT':
       case 'NEXT_SLIDE':
-        window.nextSlide(); break;
+        window.nextSlide(false, true); break;
       case 'PREV':
       case 'NAV_PREV':
       case 'PREV_SLIDE':
@@ -166,7 +173,7 @@ async function initMatrix() {
       case 'SYNC_DATA': window.initMatrix(); break; 
       case 'SYNC_JUMP': 
         if (window.parent && window.parent.IS_MASTER_DASHBOARD) return; // Master ignores incoming syncs to prevent loop
-        window.jumpToProject(e.data.id, true); 
+        window.jumpToProject(e.data.id, true, e.data.slotKey); 
         break;
       case 'REFRESH': window.location.reload(); break;
       case 'LIVE_SLIDE': handleLiveSlide(e.data.payload); break;
@@ -274,12 +281,21 @@ async function initMatrix() {
   if (!window.MATRIX.STATE.stuckSlideWatchdog) {
     window.MATRIX.STATE.stuckSlideWatchdog = setInterval(() => {
       const s = window.MATRIX.STATE;
-      if (s.isPaused || s.isClosedSlideActive || s.slides.length <= 1) return;
+      if (s.isPaused || s.isLocked || s.isClosedSlideActive || s.slides.length <= 1) return;
       if (!s.currentSlideStartTime) return;
 
       const elapsed = Date.now() - s.currentSlideStartTime;
       const slide = s.slides[s.currentIndex];
-      if (!slide) return;
+      if (!slide) {
+        if (elapsed > 45000) {
+          clearTimeout(s.timer);
+          s.timer = null;
+          s.currentIndex = -1;
+          nextSlide();
+        }
+        return;
+      }
+      if (isSlideCountdownLocked(slide)) return;
 
       // Max allowed time: configured duration + 15s buffer, minimum 45s
       const configuredDuration = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
@@ -492,14 +508,7 @@ async function fetchCloudCSVInBackground() {
     const fresh = await fetchCloudCSV();
     if (fresh && fresh.length > 0 && fresh[0].events && fresh[0].events.length > 0) {
       console.log(`[MATRIX] Background sync loaded ${fresh[0].events.length} events. Updating slide queue.`);
-      const currentSlide = window.MATRIX.STATE.slides[window.MATRIX.STATE.currentIndex];
       buildSlideQueue(fresh);
-      if (currentSlide) {
-        const newIdx = window.MATRIX.STATE.slides.findIndex(s => s.id === currentSlide.id);
-        if (newIdx !== -1) {
-          window.MATRIX.STATE.currentIndex = newIdx;
-        }
-      }
     }
   } catch (e) {
     console.warn('[MATRIX] Background CSV sync failed:', e);
@@ -694,6 +703,42 @@ function getDefaultBackground(eventType, title) {
   return '';
 }
 
+function getAceDrawWindow() {
+  const now = new Date();
+  const nzTimeStr = now.toLocaleString("en-US", { timeZone: "Pacific/Auckland" });
+  const nzDate = new Date(nzTimeStr);
+  const nzDay = nzDate.getDay();
+  const nzDecTime = nzDate.getHours() + nzDate.getMinutes() / 60;
+
+  const isTueDrawTime = (nzDay === 2 && nzDecTime >= 17.25 && nzDecTime < 17.75); // 5:15pm - 5:45pm
+  const isTueBuildup = (nzDay === 2 && nzDecTime >= 16.0 && nzDecTime < 17.25);   // 4:00pm - 5:15pm
+  const isSatDrawTime = (nzDay === 6 && nzDecTime >= 18.0 && nzDecTime < 18.75);  // 6:00pm - 6:45pm
+  const isSatBuildup = (nzDay === 6 && nzDecTime >= 16.0 && nzDecTime < 18.0);    // 4:00pm - 6:00pm
+
+  return {
+    isTueDrawTime,
+    isTueBuildup,
+    isSatDrawTime,
+    isSatBuildup,
+    isDrawTime: isTueDrawTime || isSatDrawTime,
+    isBuildup: isTueBuildup || isSatBuildup
+  };
+}
+
+function isSlideCountdownLocked(slide) {
+  if (!slide) return false;
+  const nowMs = Date.now();
+  const cdMs = slide.countdownFinish ? new Date(slide.countdownFinish).getTime() : NaN;
+  const hasActiveCountdown = !isNaN(cdMs) && cdMs > nowMs && (cdMs - nowMs) <= 2 * 3600 * 1000;
+  const { isDrawTime } = getAceDrawWindow();
+  return Boolean(
+    slide.isLocked ||
+    hasActiveCountdown ||
+    (slide.id === 'ct-ace2' && isDrawTime) ||
+    (slide.id === 'ct-mmr' && slide.isLocked)
+  );
+}
+
 /**
  * Queue Construction
  */
@@ -854,24 +899,12 @@ function buildSlideQueue(data) {
   // Tuesday & Saturday Draw & Buildup Priority for ct-ace2:
   // Tuesday: Buildup 4:00 PM - 5:15 PM (pri 2), Draw 5:15 PM - 5:45 PM (pri 1) for 5:30 PM draw
   // Saturday: Buildup 4:00 PM - 6:00 PM (pri 2), Draw 6:00 PM - 6:45 PM (pri 1) for 6:30 PM draw
-  const now = new Date();
-  const nzTimeStr = now.toLocaleString("en-US", { timeZone: "Pacific/Auckland" });
-  const nzDate = new Date(nzTimeStr);
-  const nzDay = nzDate.getDay();
-  const nzHours = nzDate.getHours();
-  const nzMins = nzDate.getMinutes();
-  const nzDecTime = nzHours + nzMins / 60;
-
-  const isTueDrawTime = (nzDay === 2 && nzDecTime >= 17.25 && nzDecTime < 17.75); // 5:15pm - 5:45pm
-  const isTueBuildup = (nzDay === 2 && nzDecTime >= 16.0 && nzDecTime < 17.25);   // 4:00pm - 5:15pm
-
-  const isSatDrawTime = (nzDay === 6 && nzDecTime >= 18.0 && nzDecTime < 18.75);  // 6:00pm - 6:45pm
-  const isSatBuildup = (nzDay === 6 && nzDecTime >= 16.0 && nzDecTime < 18.0);   // 4:00pm - 6:00pm
+  const { isDrawTime, isBuildup } = getAceDrawWindow();
 
   let ace2Priority = 5;
-  if (isTueDrawTime || isSatDrawTime) {
+  if (isDrawTime) {
     ace2Priority = 1;
-  } else if (isTueBuildup || isSatBuildup) {
+  } else if (isBuildup) {
     ace2Priority = 2;
   }
 
@@ -911,18 +944,22 @@ function buildSlideQueue(data) {
   });
 
   // 6. Insert ct-wea1 after every 10th slide for 15s (unless disabled)
-  if (!disabledModules.includes('ct-wea1')) {
+  if (!disabledModules.includes('ct-wea1') && filteredQueue.length > 0) {
     const weaDuration = getModDur('ct-wea1', 15);
     const weaUrl = resolveModuleUrl('../_ct-wea1/index.html', 'https://mrmegatronix.github.io/_ct-wea1/index.html');
     const queueWithWeather = [];
     let slideCount = 0;
+    let weaSlot = 0;
     filteredQueue.forEach((slide) => {
+      slide.slotKey = slide.id;
       queueWithWeather.push(slide);
       slideCount++;
       if (slideCount === 10) {
+        weaSlot++;
         queueWithWeather.push({
           type: 'MODULE',
           id: 'ct-wea1',
+          slotKey: `ct-wea1#${weaSlot}`,
           url: weaUrl,
           title: "Christchurch Weather",
           duration: weaDuration,
@@ -931,10 +968,35 @@ function buildSlideQueue(data) {
         slideCount = 0;
       }
     });
+    if (weaSlot === 0) {
+      queueWithWeather.push({
+        type: 'MODULE',
+        id: 'ct-wea1',
+        slotKey: 'ct-wea1#1',
+        url: weaUrl,
+        title: "Christchurch Weather",
+        duration: weaDuration,
+        accentColor: '#38bdf8'
+      });
+    }
     filteredQueue = queueWithWeather;
+  } else {
+    filteredQueue.forEach((slide) => { slide.slotKey = slide.id; });
   }
 
+  const prevActive = window.MATRIX.STATE.slides[window.MATRIX.STATE.currentIndex];
   window.MATRIX.STATE.slides = filteredQueue;
+  if (prevActive && window.MATRIX.STATE.currentIndex >= 0 && filteredQueue.length > 0) {
+    let preservedIdx = prevActive.slotKey ? filteredQueue.findIndex(sl => sl.slotKey === prevActive.slotKey) : -1;
+    if (preservedIdx === -1) {
+      preservedIdx = filteredQueue.findIndex(sl => sl.id === prevActive.id);
+    }
+    if (preservedIdx !== -1) {
+      window.MATRIX.STATE.currentIndex = preservedIdx;
+    } else if (window.MATRIX.STATE.currentIndex >= filteredQueue.length) {
+      window.MATRIX.STATE.currentIndex = filteredQueue.length - 1;
+    }
+  }
   console.log(`[MATRIX v2] Queue built with ${filteredQueue.length} slides.`);
   
   if (bc) {
@@ -1308,19 +1370,18 @@ window.getModuleStatus = getModuleStatus;
 /**
  * Controller & Engine
  */
-function nextSlide(skipBroadcast = false) {
+function nextSlide(skipBroadcast = false, force = false) {
   const s = window.MATRIX.STATE;
   if (!s.slides || !s.slides.length) return;
 
   const currSlide = s.slides[s.currentIndex];
   if (currSlide) {
-    const isLockedCountdown = s.isLocked ||
-      currSlide.isLocked ||
-      (currSlide.countdownFinish && new Date(currSlide.countdownFinish).getTime() > Date.now()) ||
-      (currSlide.id === 'ct-ace2' && (isTueDrawTime || isSatDrawTime)) ||
-      (currSlide.id === 'ct-mmr' && currSlide.isLocked);
-    if (isLockedCountdown) {
+    if (s.isLocked || (!force && isSlideCountdownLocked(currSlide))) {
       console.log('[MATRIX] Countdown/slide locked in. Progression held.');
+      clearTimeout(s.timer);
+      if (!s.isPaused && !s.isLocked) {
+        s.timer = setTimeout(() => nextSlide(), 15000);
+      }
       return;
     }
   }
@@ -1408,13 +1469,16 @@ function togglePause() {
   }
 }
 
-function jumpToProject(id, skipBroadcast = false) {
+function jumpToProject(id, skipBroadcast = false, slotKey = null) {
   const s = window.MATRIX.STATE;
   if (id === 'next_module') {
     skipToNextModule();
     return;
   }
-  const idx = s.slides.findIndex(s => s.id === id);
+  let idx = slotKey ? s.slides.findIndex(sl => sl.slotKey === slotKey) : -1;
+  if (idx === -1) {
+    idx = s.slides.findIndex(sl => sl.id === id);
+  }
   if (idx !== -1) {
     s.currentIndex = idx;
     renderActiveSlide(skipBroadcast);
@@ -1499,7 +1563,7 @@ function setupSlideshowKeyboardNav() {
         break;
       case 'ArrowRight':
         e.preventDefault();
-        window.nextSlide();
+        window.nextSlide(false, true);
         break;
       case 'ArrowUp':
         e.preventDefault();
@@ -1557,13 +1621,13 @@ function setupSlideshowKeyboardNav() {
           }
           clearTimeout(s.timer);
           const pBar = document.getElementById('progress-bar');
-          if (pBar && curr?.type !== 'MODULE' && curr?.id !== 'ct-fir') {
+          if (pBar && curr?.id !== 'ct-fir') {
             pBar.style.transition = 'none';
             pBar.style.width = '0%';
           }
           if (!s.isPaused && !s.isLocked) {
-            s.timer = setTimeout(window.nextSlide, ms);
-            if (pBar && curr?.type !== 'MODULE' && curr?.id !== 'ct-fir') {
+            s.timer = setTimeout(() => window.nextSlide(), ms);
+            if (pBar && curr?.id !== 'ct-fir') {
               requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                   pBar.style.transition = `width ${ms}ms linear`;
@@ -1582,7 +1646,7 @@ function setupSlideshowKeyboardNav() {
     if (!e.data) return;
     if (e.data.type === 'SKIP_MODULE') skipToNextModule();
     if (e.data.type === 'PREV_SLIDE') window.prevSlide();
-    if (e.data.type === 'NEXT_SLIDE') window.nextSlide();
+    if (e.data.type === 'NEXT_SLIDE') window.nextSlide(false, true);
     if (e.data.type === 'TOGGLE_PAUSE') window.togglePause();
   });
 }
@@ -1641,6 +1705,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
           const syncMsg = {
               type: 'SYNC_JUMP',
               id: slide.id,
+              slotKey: slide.slotKey || slide.id,
               senderTabId: window.matrixTabId || 'iframe',
               timestamp: Date.now(),
               commandId: 'cmd_' + Date.now() + '_sync_' + Math.random().toString(36).substr(2, 5)
