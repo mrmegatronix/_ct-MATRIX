@@ -1343,6 +1343,8 @@ async function runHeadlessBrowserAudit(targets) {
 
         if (pageSpec.isMatrixMainSlideshow) {
           await auditMatrixMainSlideshowStates(cdp, target.name, pageSpec);
+        } else if (pageSpec.isMMRSlideshow) {
+          await auditMMRSlideshowStates(cdp, target.name, pageSpec);
         } else {
           await auditSinglePageState(cdp, target.name, pageSpec, pageSpec.screenshotSlug);
         }
@@ -1387,6 +1389,8 @@ function getPagesForTarget(target) {
     addPage('admin2.html', 'Admin2 Control Panel', { isSignagePage: false, waitMs: 1800 });
     addPage('remote.html', 'Mobile/TV Remote Control', { isSignagePage: false, waitMs: 1800 });
     addPage('navi.html', 'Navigation Hub', { isSignagePage: false, waitMs: 1500 });
+  } else if (target.name === '_ct-MMR') {
+    addPage('index.html', `${target.name} Display`, { isSignagePage: true, isMMRSlideshow: true, waitMs: 2500 });
   } else if (target.name === 'ct-ACE2') {
     if (fs.existsSync(path.join(target.dir, 'dist', 'index.html'))) {
       addPage('dist/index.html', `${target.name} Built Display`, { isSignagePage: true, waitMs: 2500 });
@@ -1458,6 +1462,61 @@ async function auditSinglePageState(cdp, moduleName, pageSpec, screenshotSlug) {
       returnByValue: true
     });
   }
+}
+
+async function auditMMRSlideshowStates(cdp, moduleName, pageSpec) {
+  const countRes = await cdp.send('Runtime.evaluate', {
+    expression: `(() => {
+      const slides = document.querySelectorAll('.slide');
+      return slides.length;
+    })()`,
+    returnByValue: true
+  });
+  const count = countRes?.result?.value || 0;
+  if (count <= 1) {
+    await auditSinglePageState(cdp, moduleName, pageSpec, pageSpec.screenshotSlug);
+    return;
+  }
+  const maxSlides = Math.min(count, 10);
+  for (let i = 0; i < maxSlides; i++) {
+    await cdp.send('Runtime.evaluate', {
+      expression: `(() => {
+        const slides = document.querySelectorAll('.slide');
+        slides.forEach((s, idx) => {
+          if (idx === ${i}) {
+            s.classList.add('active');
+            s.style.opacity = '1';
+            s.style.transform = 'scale(1)';
+            s.style.visibility = 'visible';
+          } else {
+            s.classList.remove('active');
+            s.style.opacity = '0';
+            s.style.transform = 'scale(1.05)';
+          }
+        });
+      })()`,
+      returnByValue: true
+    });
+    await sleep(400);
+    const evalRes = await cdp.send('Runtime.evaluate', {
+      expression: `window.NIKKOS_D_CHECK.runAudit({ viewportWidth: ${pageSpec.width}, viewportHeight: ${pageSpec.height}, isSignagePage: true })`,
+      returnByValue: true
+    });
+    const auditData = evalRes?.result?.value;
+    for (const v of auditData?.violations || []) {
+      addFinding({
+        pillar: v.pillar || 'DESIGN',
+        severity: v.severity || 'WARNING',
+        moduleName,
+        type: v.type,
+        file: pageSpec.relUrl,
+        selector: v.selector,
+        detail: `[Slide ${i + 1}/${count}] ${v.detail}`,
+        fixHint: 'Adjust CSS layout, font-size, overflow, or container dimensions.'
+      });
+    }
+  }
+  await captureScreenshot(cdp, `${pageSpec.screenshotSlug}.png`);
 }
 
 async function auditMatrixMainSlideshowStates(cdp, moduleName, pageSpec) {
