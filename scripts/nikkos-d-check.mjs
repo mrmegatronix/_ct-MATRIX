@@ -2317,6 +2317,7 @@ function writeReports(scorecard, targets) {
   const latestMdPath = path.join(REPORTS_BASE_DIR, 'latest.md');
   const runDashboardPath = path.join(RUN_REPORT_DIR, 'dashboard.html');
   const latestDashboardPath = path.join(REPORTS_BASE_DIR, 'dashboard.html');
+  const rootDashboardPath = path.join(PRIMARY_PROJECT_ROOT, 'd-check-dashboard.html');
 
   let screenshotsList = [];
   try {
@@ -2342,8 +2343,13 @@ function writeReports(scorecard, targets) {
     generateHtmlDashboard(scorecard, ALL_FINDINGS, screenshotsList, `${RUN_TIMESTAMP}/screenshots/`),
     'utf8'
   );
+  fs.writeFileSync(
+    rootDashboardPath,
+    generateHtmlDashboard(scorecard, ALL_FINDINGS, screenshotsList, `nikkos-d-check-reports/${RUN_TIMESTAMP}/screenshots/`),
+    'utf8'
+  );
 
-  return { reportMdPath, reportJsonPath, latestMdPath, runDashboardPath, latestDashboardPath };
+  return { reportMdPath, reportJsonPath, latestMdPath, runDashboardPath, latestDashboardPath, rootDashboardPath };
 }
 
 // ============================================================================
