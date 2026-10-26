@@ -607,10 +607,10 @@
         return window.matrixTabId;
     }
 
-    function requestTelemetry() {
+    function requestTelemetry(localOnly = false) {
         const payload = { type: 'GET_SLIDES_DUMP', senderTabId: getTabId() };
         bc.postMessage(payload);
-        if (window.sendToFirebase) {
+        if (!localOnly && window.sendToFirebase) {
             payload.timestamp = Date.now();
             payload.commandId = 'cmd_' + payload.timestamp + '_' + Math.random().toString(36).substr(2, 9);
             window.sendToFirebase(payload);
@@ -982,7 +982,8 @@
             const isDisabled = disabled.includes(fullId);
             if(isDisabled) return ''; // Skip disabled modules to save resources
 
-            const slideUrl = m.customUrl || `../${m.path}/index.html`;
+            const baseSlideUrl = m.customUrl || `../${m.path}/index.html`;
+            const slideUrl = baseSlideUrl + (baseSlideUrl.includes('?') ? '&' : '?') + 'noBroadcast=1&hideControls=1';
             const adminUrl = m.customUrl 
                 ? m.customUrl 
                 : (m.id === 'MATRIX' ? 'index.html' : (m.id === 'WEA1' || m.id === 'FIR' || m.id === 'TIK' ? `../${m.path}/index.html` : `../${m.path}/admin.html`));
@@ -1064,7 +1065,7 @@
                 <div class="tree-node">
                     <div class="tree-header" style="display:flex; justify-content:space-between; align-items:center; padding: 6px 10px;">
                         <span onclick="toggleNode(this.parentElement)" style="flex:1; font-weight:800; font-size:0.85rem; letter-spacing:0.5px;">${m.name}</span>
-                        <div class="toggle-pill ${pillClass}" style="margin: 0; padding: 2px 8px; font-size: 0.55rem; min-width: 48px; justify-content: center; ${pillStyle}" onclick="event.stopPropagation(); toggleModule('${m.name}', ${!isChecked}); renderSidebarToggles();">
+                        <div class="toggle-pill ${pillClass}" style="margin: 0; padding: 2px 8px; font-size: 0.55rem; min-width: 48px; justify-content: center; ${pillStyle}" onclick="event.stopPropagation(); toggleModule('${m.id}', ${!isChecked}); renderSidebarToggles();">
                             <span>${pillLabel}</span>
                         </div>
                     </div>
@@ -1475,7 +1476,7 @@
             }
         }
         if (e.data.type === 'CURRENT_SLIDE_BROADCAST') {
-            requestTelemetry();
+            requestTelemetry(true);
         }
         if (e.data.type === 'DATA_HOT_RELOADED') {
             if (document.getElementById('full-grid-view').style.display === 'flex') renderPlaylistGrid();
@@ -1547,12 +1548,14 @@
             loadWorkspaceView('HOME');
         }
         
-        // Ensure preview frames are loaded
+        // Ensure preview frames are loaded without aborting an in-flight load
         setTimeout(() => {
-            document.getElementById('preview-frame').src = 'index.html';
-            document.getElementById('billboard-frame').src = 'billboard.html';
+            const pf = document.getElementById('preview-frame');
+            const bf = document.getElementById('billboard-frame');
+            if (pf && !pf.getAttribute('src')) pf.src = 'index.html';
+            if (bf && !bf.getAttribute('src')) bf.src = 'billboard.html';
             scaleFrames();
-            requestTelemetry();
+            requestTelemetry(true);
         }, 500);
     };
 </script>

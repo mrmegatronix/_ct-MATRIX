@@ -520,7 +520,7 @@
       <a href="remote.html" class="nav-link active">📱 Remote</a>
   </nav>
 
-  <script src="matrix-core.js?v=20261026_2105"></script>
+  <script src="matrix-core.js?v=20261027_0030"></script>
   <script>
     if (localStorage.getItem('matrix_migration_20261003_integrate_ace2') !== 'done') {
         try {
@@ -719,10 +719,12 @@
     }
 
     function toggleModule(rawId, state) {
-      const msg = { type: 'MODULE_FILTER', id: rawId, active: state, commandId: 'cmd_' + Date.now(), timestamp: Date.now(), source: getClientId(), senderTabId: getTabId() };
+      const cleanRaw = String(rawId || '').trim().toLowerCase().replace(/\s+/g, '');
+      const fullId = cleanRaw.startsWith('ct-') ? cleanRaw : 'ct-' + cleanRaw;
+      const msg = { type: 'MODULE_FILTER', id: fullId, active: state, commandId: 'cmd_' + Date.now(), timestamp: Date.now(), source: getClientId(), senderTabId: getTabId() };
       bc.postMessage(msg);
       if (window.sendToFirebase) window.sendToFirebase(msg);
-      vibrate(); showStatus(`${rawId} ${state ? 'ON' : 'OFF'}`);
+      vibrate(); showStatus(`${fullId} ${state ? 'ON' : 'OFF'}`);
       
       // Optimistically update local config and UI so it feels instant
       let config = { disabledModules: [] };
@@ -730,7 +732,6 @@
         const stored = localStorage.getItem('matrix_config');
         if (stored) config = { ...config, ...JSON.parse(stored) };
       } catch(e) {}
-      const fullId = rawId.toLowerCase().startsWith('ct-') ? rawId.toLowerCase() : 'ct-' + rawId.toLowerCase();
       if (state) {
           config.disabledModules = config.disabledModules.filter(m => m !== fullId);
       } else {

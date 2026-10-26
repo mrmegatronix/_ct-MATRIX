@@ -39,26 +39,33 @@ var bc = window.bc;
  * Initialization
  */
 async function initMatrix() {
-  if (window.MATRIX.STATE.isBooting) return;
+  if (window.MATRIX.STATE.isBooting) {
+    window.MATRIX.STATE.pendingReinit = true;
+    return;
+  }
   window.MATRIX.STATE.isBooting = true;
   console.log('[MATRIX v2] Booting premium display engine...');
-  
+
+  // Setup Keyboard Navigation & Broadcast Listeners early so cloud state arriving during boot is not missed
+  setupSlideshowKeyboardNav();
+  setupBroadcastListener();
+
   try {
-  loadPersistedState();
-  
-  // 1. Load Data Sources in Parallel
-  const data = await loadAllDataSources();
-  
-  // 2. Build Slide Queue
-  buildSlideQueue(data);
+    loadPersistedState();
+
+    // 1. Load Data Sources in Parallel
+    const data = await loadAllDataSources();
+    window.MATRIX.STATE.lastLoadedData = data;
+
+    // 2. Build Slide Queue
+    buildSlideQueue(data);
   } catch (bootErr) {
     console.error('[MATRIX] Boot error during data load/queue build:', bootErr);
-    // Even if data loading failed, buildSlideQueue with empty data still adds modules
     if (window.MATRIX.STATE.slides.length === 0) {
       try { buildSlideQueue([]); } catch(e) { /* last resort */ }
     }
   }
-  
+
   // 3. Start Rotation or Preview
   const urlParams = new URLSearchParams(window.location.search);
   const previewId = urlParams.get('preview');
@@ -91,10 +98,19 @@ async function initMatrix() {
     }
   }
 
+  window.MATRIX.STATE.isBooting = false;
+
+  if (window.MATRIX.STATE.pendingReinit) {
+    window.MATRIX.STATE.pendingReinit = false;
+    loadPersistedState();
+    buildSlideQueue(window.MATRIX.STATE.lastLoadedData || []);
+  }
+
   if (window.MATRIX.STATE.slides.length > 0) {
-    window.MATRIX.STATE.isBooting = false;
-    if (window.MATRIX.STATE.currentIndex === -1 || window.MATRIX.STATE.currentIndex >= window.MATRIX.STATE.slides.length) {
-      window.MATRIX.STATE.currentIndex = -1;
+    if (window.MATRIX.STATE.currentIndex === -1 || window.MATRIX.STATE.currentIndex >= window.MATRIX.STATE.slides.length || !isSlideActive(window.MATRIX.STATE.slides[window.MATRIX.STATE.currentIndex])) {
+      if (window.MATRIX.STATE.currentIndex >= window.MATRIX.STATE.slides.length) {
+        window.MATRIX.STATE.currentIndex = -1;
+      }
       nextSlide();
     } else {
       const activeSlide = window.MATRIX.STATE.slides[window.MATRIX.STATE.currentIndex];
@@ -104,102 +120,7 @@ async function initMatrix() {
       }
     }
   } else {
-    window.MATRIX.STATE.isBooting = false;
     showStatus('Error: No slides to display');
-  }
-
-  // 3.5 Setup Keyboard Navigation
-  setupSlideshowKeyboardNav();
-  
-  // 4. Global Broadcast Listeners
-  bc.onmessage = (e) => {
-    // Deduplicate action commands using commandId
-    if (e.data.commandId) {
-      if (window.MATRIX.STATE.lastProcessedCommandId === e.data.commandId) {
-        console.log('[MATRIX] Ignoring duplicate BC message:', e.data.type, e.data.commandId);
-        return;
-      }
-      window.MATRIX.STATE.lastProcessedCommandId = e.data.commandId;
-    }
-
-    switch(e.data.type) {
-      case 'NEXT':
-      case 'NAV_NEXT':
-      case 'NEXT_SLIDE':
-        window.nextSlide(false, true); break;
-      case 'PREV':
-      case 'NAV_PREV':
-      case 'PREV_SLIDE':
-        window.prevSlide(); break;
-      case 'TOGGLE':
-      case 'NAV_PAUSE':
-      case 'TOGGLE_PAUSE':
-        window.togglePause(); break;
-      case 'NAV_RESTART':
-        window.restartModuleFirstSlide(); break;
-      case 'NAV_NEXT_MODULE':
-      case 'SKIP_MODULE':
-        window.skipToNextModule(); break;
-      case 'NAV_LOCK_TOGGLE':
-        window.MATRIX.STATE.isLocked = !window.MATRIX.STATE.isLocked;
-        if (window.MATRIX.STATE.isLocked) {
-          clearTimeout(window.MATRIX.STATE.timer);
-          const bar = document.getElementById('progress-bar');
-          if (bar) bar.style.transition = 'none';
-        } else if (!window.MATRIX.STATE.isPaused) {
-          window.nextSlide();
-        }
-        break;
-      case 'SET_DURATION':
-        if (e.data.payload && e.data.payload.duration) {
-          window.MATRIX.CONFIG.SWAP_DELAY = e.data.payload.duration;
-        }
-        break;
-      case 'JUMP': window.jumpToProject(e.data.id); break;
-      case 'PROJECT': window.jumpToProject(e.data.id); break;
-      case 'SETTINGS_UPDATE': updateConfig(e.data.payload); break;
-      case 'SCHEDULE_UPDATE': 
-        if (e.data.moduleSchedules) {
-          window.MATRIX.CONFIG.moduleSchedules = e.data.moduleSchedules;
-          saveConfig();
-          window.initMatrix();
-        }
-        break;
-      case 'CURRENT_SLIDE_BROADCAST':
-        // Telemetry tracking only - do not interrupt autonomous playback loop
-        if (e.data.senderTabId === (window.matrixTabId || 'iframe')) return;
-        window.MATRIX.STATE.remoteSlideTelemetry = e.data;
-        break;
-      case 'SYNC_DATA': window.initMatrix(); break; 
-      case 'SYNC_JUMP': 
-        if (window.parent && window.parent.IS_MASTER_DASHBOARD) return; // Master ignores incoming syncs to prevent loop
-        window.jumpToProject(e.data.id, true, e.data.slotKey); 
-        break;
-      case 'REFRESH': window.location.reload(); break;
-      case 'LIVE_SLIDE': handleLiveSlide(e.data.payload); break;
-      case 'MODULE_FILTER': handleModuleFilter(e.data.id, e.data.active); break;
-      case 'GET_SLIDES_DUMP': 
-        bc.postMessage({ 
-          type: 'SLIDES_DUMP', 
-          slides: window.MATRIX.STATE.slides, 
-          currentIndex: window.MATRIX.STATE.currentIndex,
-          currentSlide: window.MATRIX.STATE.slides[window.MATRIX.STATE.currentIndex],
-          startTime: window.MATRIX.STATE.currentSlideStartTime,
-          delay: window.MATRIX.STATE.currentSlideDelay,
-          lastSync: new Date().toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false }),
-          senderTabId: window.matrixTabId || 'iframe'
-        }); 
-        break;
-      case 'CONFETTI': if (window.triggerConfetti) window.triggerConfetti(); break;
-      case 'SYNC_STATE': handleCloudState(e.data.state); break;
-    }
-  };
-
-  function handleCloudState(state) {
-    console.log('[MATRIX] Cloud State Applied:', state);
-    if (state.LIVE_SLIDE) handleLiveSlide(state.LIVE_SLIDE.payload);
-    if (state.MODULE_FILTER) handleModuleFilter(state.MODULE_FILTER.id, state.MODULE_FILTER.active);
-    if (state.SETTINGS_UPDATE && state.SETTINGS_UPDATE.payload) updateConfig(state.SETTINGS_UPDATE.payload);
   }
 
   applyUISettings();
@@ -210,6 +131,7 @@ async function initMatrix() {
     window.MATRIX.STATE.syncInterval = setInterval(async () => {
       console.log('[MATRIX v2] Failsafe auto-syncing data...');
       const freshData = await loadAllDataSources(true);
+      window.MATRIX.STATE.lastLoadedData = freshData;
       buildSlideQueue(freshData);
     }, 15 * 60 * 1000);
   }
@@ -275,7 +197,7 @@ async function initMatrix() {
 
   // 6. Hard-lock all active slide durations to 30s (override any internal module timers if needed)
   window.MATRIX.CONFIG.SWAP_DELAY = 30000;
-  window.MATRIX.CONFIG.MODULE_DELAY = 60000;
+  window.MATRIX.CONFIG.MODULE_DELAY = 30000;
 
   // 7. Stuck-Slide Safety Watchdog — force advance if a slide has been active too long
   if (!window.MATRIX.STATE.stuckSlideWatchdog) {
@@ -298,16 +220,17 @@ async function initMatrix() {
       if (isSlideCountdownLocked(slide)) return;
 
       // Max allowed time: configured duration + 15s buffer, minimum 45s
-      const configuredDuration = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
+      const durSec = Number(slide.duration);
+      const configuredDuration = (Number.isFinite(durSec) && durSec > 0) ? durSec * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
       const maxAllowed = Math.max(configuredDuration + 15000, 45000);
 
       if (elapsed > maxAllowed) {
         console.warn(`[MATRIX] Stuck-slide watchdog: Slide "${slide.title || slide.id}" stuck for ${Math.round(elapsed/1000)}s (max ${Math.round(maxAllowed/1000)}s). Force advancing.`);
         clearTimeout(s.timer);
         s.timer = null;
-        nextSlide();
+        nextSlide(false, true);
       }
-    }, 15000); // Check every 15 seconds
+    }, 10000); // Check every 10 seconds
   }
 
   // 6. GSheet Watchdog (optional but keeping for consistency)
@@ -333,6 +256,7 @@ async function initMatrix() {
           if (window.MATRIX.STATE.lastModifiedTags['gsheet'] && window.MATRIX.STATE.lastModifiedTags['gsheet'] !== fingerprint) {
               console.log(`[MATRIX Watchdog] Detected changes in GSheet`);
               const freshData = await loadAllDataSources(true);
+              window.MATRIX.STATE.lastLoadedData = freshData;
               buildSlideQueue(freshData);
               if (bc) bc.postMessage({ type: 'DATA_HOT_RELOADED' });
           }
@@ -343,7 +267,7 @@ async function initMatrix() {
       } finally {
         clearTimeout(timeoutId);
       }
-    }, 60000); // Check GSheet every minute instead of every 3 seconds
+    }, 60000);
   }
 
   // 7. Reactive Module Scaling (1080p Force)
@@ -360,6 +284,154 @@ async function initMatrix() {
   resizeModules();
 }
 
+function normalizeModuleId(rawId) {
+  const clean = String(rawId || '').toLowerCase().replace(/\s+/g, '');
+  if (!clean) return '';
+  return clean.startsWith('ct-') ? clean : 'ct-' + clean;
+}
+
+function isMasterPreviewFrame() {
+  try {
+    return !!(window.parent && window.parent !== window && window.parent.IS_MASTER_DASHBOARD && window.frameElement && window.frameElement.id === 'preview-frame');
+  } catch (e) {
+    return false;
+  }
+}
+
+function setupBroadcastListener() {
+  if (window._matrixBcListenerAttached) return;
+  window._matrixBcListenerAttached = true;
+
+  bc.onmessage = (e) => {
+    if (!e || !e.data) return;
+    if (e.data.commandId) {
+      if (window.MATRIX.STATE.lastProcessedCommandId === e.data.commandId) {
+        return;
+      }
+      window.MATRIX.STATE.lastProcessedCommandId = e.data.commandId;
+    }
+
+    switch(e.data.type) {
+      case 'NEXT':
+      case 'NAV_NEXT':
+      case 'NEXT_SLIDE':
+        window.nextSlide(false, true); break;
+      case 'PREV':
+      case 'NAV_PREV':
+      case 'PREV_SLIDE':
+        window.prevSlide(); break;
+      case 'TOGGLE':
+      case 'NAV_PAUSE':
+      case 'TOGGLE_PAUSE':
+        window.togglePause(); break;
+      case 'NAV_RESTART':
+        window.restartModuleFirstSlide(); break;
+      case 'NAV_NEXT_MODULE':
+      case 'SKIP_MODULE':
+        window.skipToNextModule(); break;
+      case 'NAV_LOCK_TOGGLE':
+        window.MATRIX.STATE.isLocked = !window.MATRIX.STATE.isLocked;
+        if (window.MATRIX.STATE.isLocked) {
+          clearTimeout(window.MATRIX.STATE.timer);
+          const bar = document.getElementById('progress-bar');
+          if (bar) bar.style.transition = 'none';
+        } else if (!window.MATRIX.STATE.isPaused) {
+          window.nextSlide();
+        }
+        break;
+      case 'SET_DURATION':
+        if (e.data.payload && e.data.payload.duration) {
+          window.MATRIX.CONFIG.SWAP_DELAY = e.data.payload.duration;
+        }
+        break;
+      case 'JUMP': window.jumpToProject(e.data.id); break;
+      case 'PROJECT': window.jumpToProject(e.data.id); break;
+      case 'SETTINGS_UPDATE': updateConfig(e.data.payload); break;
+      case 'SCHEDULE_UPDATE': 
+        if (e.data.moduleSchedules) {
+          window.MATRIX.CONFIG.moduleSchedules = e.data.moduleSchedules;
+          localStorage.setItem('matrix_config', JSON.stringify(window.MATRIX.CONFIG));
+          window.initMatrix();
+        }
+        break;
+      case 'CURRENT_SLIDE_BROADCAST':
+        if (e.data.senderTabId === (window.matrixTabId || 'iframe')) return;
+        if (e.data.isMaster) {
+          window.MATRIX.STATE.lastMasterBroadcast = Date.now();
+        }
+        window.MATRIX.STATE.remoteSlideTelemetry = e.data;
+        break;
+      case 'SYNC_DATA': window.initMatrix(); break; 
+      case 'SYNC_JUMP': 
+        if (isMasterPreviewFrame()) return;
+        window.jumpToProject(e.data.id, true, e.data.slotKey); 
+        break;
+      case 'REFRESH': window.location.reload(); break;
+      case 'LIVE_SLIDE': handleLiveSlide(e.data.payload); break;
+      case 'MODULE_FILTER': handleModuleFilter(e.data.id, e.data.active); break;
+      case 'GET_SLIDES_DUMP': 
+        bc.postMessage({ 
+          type: 'SLIDES_DUMP', 
+          slides: window.MATRIX.STATE.slides, 
+          currentIndex: window.MATRIX.STATE.currentIndex,
+          currentSlide: window.MATRIX.STATE.slides[window.MATRIX.STATE.currentIndex],
+          startTime: window.MATRIX.STATE.currentSlideStartTime,
+          delay: window.MATRIX.STATE.currentSlideDelay,
+          lastSync: new Date().toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false }),
+          senderTabId: window.matrixTabId || 'iframe'
+        }); 
+        break;
+      case 'CONFETTI': if (window.triggerConfetti) window.triggerConfetti(); break;
+      case 'SYNC_STATE': handleCloudState(e.data.state); break;
+    }
+  };
+}
+
+function handleCloudState(state) {
+  if (!state) return;
+  console.log('[MATRIX] Cloud State Applied:', state);
+
+  // Only invoke handleLiveSlide if a live slide is active OR if a live overlay is currently shown
+  if (state.LIVE_SLIDE && state.LIVE_SLIDE.payload) {
+    const hasOverlay = !!document.getElementById('live-slide-overlay') || !!window.MATRIX.STATE.isClosedSlideActive;
+    if (state.LIVE_SLIDE.payload.active || hasOverlay) {
+      handleLiveSlide(state.LIVE_SLIDE.payload);
+    }
+  }
+
+  let needsRebuild = false;
+  if (state.MODULE_FILTER && state.MODULE_FILTER.id) {
+    if (!window.MATRIX.CONFIG.disabledModules) window.MATRIX.CONFIG.disabledModules = [];
+    const fullId = normalizeModuleId(state.MODULE_FILTER.id);
+    window.MATRIX.CONFIG.disabledModules = window.MATRIX.CONFIG.disabledModules.map(normalizeModuleId).filter(Boolean);
+    if (state.MODULE_FILTER.active) {
+      window.MATRIX.CONFIG.disabledModules = window.MATRIX.CONFIG.disabledModules.filter(m => m !== fullId);
+    } else if (fullId && !window.MATRIX.CONFIG.disabledModules.includes(fullId)) {
+      window.MATRIX.CONFIG.disabledModules.push(fullId);
+    }
+    needsRebuild = true;
+  }
+
+  if (state.SETTINGS_UPDATE && state.SETTINGS_UPDATE.payload) {
+    window.MATRIX.CONFIG = { ...window.MATRIX.CONFIG, ...state.SETTINGS_UPDATE.payload };
+    applyUISettings();
+    if (state.SETTINGS_UPDATE.payload.moduleDurations || state.SETTINGS_UPDATE.payload.disabledModules) {
+      needsRebuild = true;
+    }
+  }
+
+  if (needsRebuild) {
+    localStorage.setItem('matrix_config', JSON.stringify(window.MATRIX.CONFIG));
+    if (window.MATRIX.STATE.isBooting) {
+      window.MATRIX.STATE.pendingReinit = true;
+    } else if (window.MATRIX.STATE.lastLoadedData) {
+      buildSlideQueue(window.MATRIX.STATE.lastLoadedData);
+    } else {
+      window.initMatrix();
+    }
+  }
+}
+
 /**
  * Persistence Logic
  */
@@ -369,7 +441,7 @@ function loadPersistedState() {
       const stored = localStorage.getItem('matrix_config');
       let config = stored ? JSON.parse(stored) : {};
       if (config.disabledModules) {
-        config.disabledModules = config.disabledModules.filter(m => m !== 'ct-ace' && m !== 'ct-ace2');
+        config.disabledModules = config.disabledModules.map(normalizeModuleId).filter(m => m && m !== 'ct-ace' && m !== 'ct-ace2');
       } else {
         config.disabledModules = [];
       }
@@ -392,7 +464,7 @@ function loadPersistedState() {
     if (!window.MATRIX.CONFIG.disabledModules) {
       window.MATRIX.CONFIG.disabledModules = [];
     } else {
-      window.MATRIX.CONFIG.disabledModules = window.MATRIX.CONFIG.disabledModules.filter(m => m !== 'ct-ace');
+      window.MATRIX.CONFIG.disabledModules = [...new Set(window.MATRIX.CONFIG.disabledModules.map(normalizeModuleId).filter(m => m && m !== 'ct-ace'))];
     }
 
     const manual = localStorage.getItem('matrix_manual_slides');
@@ -403,31 +475,43 @@ function loadPersistedState() {
 }
 
 function updateConfig(newConfig) {
+  if (!newConfig) return;
   window.MATRIX.CONFIG = { ...window.MATRIX.CONFIG, ...newConfig };
+  if (window.MATRIX.CONFIG.disabledModules) {
+    window.MATRIX.CONFIG.disabledModules = [...new Set(window.MATRIX.CONFIG.disabledModules.map(normalizeModuleId).filter(Boolean))];
+  }
   localStorage.setItem('matrix_config', JSON.stringify(window.MATRIX.CONFIG));
   applyUISettings();
-  if (newConfig.moduleDurations) {
+  if (newConfig.moduleDurations || newConfig.disabledModules) {
+    if (window.MATRIX.STATE.lastLoadedData && !window.MATRIX.STATE.isBooting) {
+      buildSlideQueue(window.MATRIX.STATE.lastLoadedData);
+    } else {
       window.initMatrix();
+    }
   }
 }
 
 function handleModuleFilter(id, active) {
-    if (!window.MATRIX.CONFIG.disabledModules) window.MATRIX.CONFIG.disabledModules = [];
-    
-    // Normalize ID to match queue IDs (e.g., 'ACE' -> 'ct-ace' or 'ct-ace' -> 'ct-ace')
-    const fullId = id.toLowerCase().startsWith('ct-') ? id.toLowerCase() : 'ct-' + id.toLowerCase();
-    
-    if (active) {
-        window.MATRIX.CONFIG.disabledModules = window.MATRIX.CONFIG.disabledModules.filter(m => m !== fullId);
-    } else {
-        if (!window.MATRIX.CONFIG.disabledModules.includes(fullId)) {
-            window.MATRIX.CONFIG.disabledModules.push(fullId);
-        }
+  if (!window.MATRIX.CONFIG.disabledModules) window.MATRIX.CONFIG.disabledModules = [];
+  window.MATRIX.CONFIG.disabledModules = window.MATRIX.CONFIG.disabledModules.map(normalizeModuleId).filter(Boolean);
+
+  const fullId = normalizeModuleId(id);
+  if (!fullId) return;
+
+  if (active) {
+    window.MATRIX.CONFIG.disabledModules = window.MATRIX.CONFIG.disabledModules.filter(m => m !== fullId);
+  } else {
+    if (!window.MATRIX.CONFIG.disabledModules.includes(fullId)) {
+      window.MATRIX.CONFIG.disabledModules.push(fullId);
     }
-    localStorage.setItem('matrix_config', JSON.stringify(window.MATRIX.CONFIG));
-    
-    // Rebuild queue with new filters
+  }
+  localStorage.setItem('matrix_config', JSON.stringify(window.MATRIX.CONFIG));
+
+  if (window.MATRIX.STATE.lastLoadedData && !window.MATRIX.STATE.isBooting) {
+    buildSlideQueue(window.MATRIX.STATE.lastLoadedData);
+  } else {
     window.initMatrix();
+  }
 }
 
 function applyUISettings() {
@@ -508,6 +592,7 @@ async function fetchCloudCSVInBackground() {
     const fresh = await fetchCloudCSV();
     if (fresh && fresh.length > 0 && fresh[0].events && fresh[0].events.length > 0) {
       console.log(`[MATRIX] Background sync loaded ${fresh[0].events.length} events. Updating slide queue.`);
+      window.MATRIX.STATE.lastLoadedData = fresh;
       buildSlideQueue(fresh);
     }
   } catch (e) {
@@ -745,11 +830,12 @@ function isSlideCountdownLocked(slide) {
 function buildSlideQueue(data) {
   const queue = [];
   
-  const disabledModules = window.MATRIX.CONFIG.disabledModules || [];
+  const disabledModules = (window.MATRIX.CONFIG.disabledModules || []).map(normalizeModuleId);
+  window.MATRIX.CONFIG.disabledModules = disabledModules;
   const matrixDisabled = disabledModules.includes('ct-matrix');
 
   // 1. Add Filtered Events from all sources
-  if (!matrixDisabled) {
+  if (!matrixDisabled && Array.isArray(data)) {
   data.forEach(week => {
     const events = week.events || [];
     events.forEach(ev => {
@@ -883,12 +969,13 @@ function buildSlideQueue(data) {
   // 2. Weekly Specials are now in the Google Sheet — no hardcoded injection needed.
 
   // 3. Project Modules (Base Infrastructure)
-  // Durations are defaults — overridden by CONFIG.moduleDurations if set in admin
+  // Durations are defaults — overridden by CONFIG.moduleDurations if numeric in admin
   const customDurations = window.MATRIX.CONFIG.moduleDurations || {};
   const getModDur = (id, defaultDur) => {
     const val = customDurations[id] !== undefined ? customDurations[id] : 'all';
-    if (val === 'all') return defaultDur;
-    return val || defaultDur;
+    if (val === 'all' || val === null || val === '') return defaultDur;
+    const num = Number(val);
+    return (Number.isFinite(num) && num > 0) ? num : defaultDur;
   };
   const resolveModuleUrl = (relPath, ghUrl) => {
     if (window.location.protocol === 'file:') return relPath;
@@ -902,25 +989,26 @@ function buildSlideQueue(data) {
   const { isDrawTime, isBuildup } = getAceDrawWindow();
 
   let ace2Priority = 5;
+  const ace2DefaultDur = (isDrawTime || isBuildup) ? 90 : 30;
   if (isDrawTime) {
     ace2Priority = 1;
   } else if (isBuildup) {
     ace2Priority = 2;
   }
 
-  queue.push({ type: 'MODULE', id: 'ct-mmr', url: resolveModuleUrl('../_ct-MMR/index.html', 'https://mrmegatronix.github.io/_ct-MMR/index.html'), title: "Meat Raffle Display", pinned: true, priority: 5, duration: getModDur('ct-mmr', 60) });
-  queue.push({ type: 'MODULE', id: 'ct-ace2', url: resolveModuleUrl('../ct-ACE2/index.html', 'https://mrmegatronix.github.io/ct-ACE2/index.html'), title: "Chase the Ace", pinned: true, priority: ace2Priority, duration: getModDur('ct-ace2', 180) });
-  queue.push({ type: 'MODULE', id: 'ct-quiz', url: resolveModuleUrl('../_ct-QUIZ/index.html', 'https://mrmegatronix.github.io/_ct-QUIZ/index.html'), title: "Weekly Pub Quiz", priority: 10, duration: getModDur('ct-quiz', 60) });
-  queue.push({ type: 'MODULE', id: 'ct-fir', url: resolveModuleUrl('../_ct-FIR/index.html', 'https://mrmegatronix.github.io/_ct-FIR/index.html'), title: "Fireplace Ambiance", priority: 80, duration: getModDur('ct-fir', 180) });
+  queue.push({ type: 'MODULE', id: 'ct-mmr', url: resolveModuleUrl('../_ct-MMR/index.html', 'https://mrmegatronix.github.io/_ct-MMR/index.html'), title: "Meat Raffle Display", pinned: true, priority: 5, duration: getModDur('ct-mmr', 30) });
+  queue.push({ type: 'MODULE', id: 'ct-ace2', url: resolveModuleUrl('../ct-ACE2/index.html', 'https://mrmegatronix.github.io/ct-ACE2/index.html'), title: "Chase the Ace", pinned: true, priority: ace2Priority, duration: getModDur('ct-ace2', ace2DefaultDur) });
+  queue.push({ type: 'MODULE', id: 'ct-quiz', url: resolveModuleUrl('../_ct-QUIZ/index.html', 'https://mrmegatronix.github.io/_ct-QUIZ/index.html'), title: "Weekly Pub Quiz", priority: 10, duration: getModDur('ct-quiz', 30) });
+  queue.push({ type: 'MODULE', id: 'ct-fir', url: resolveModuleUrl('../_ct-FIR/index.html', 'https://mrmegatronix.github.io/_ct-FIR/index.html'), title: "Fireplace Ambiance", priority: 80, duration: getModDur('ct-fir', 60) });
   const socUrl = (window.location.protocol === 'file:') ? '../_ct-SOC/index.html' : 'https://ctsc-app.web.app/#/tv';
   const tikUrl = resolveModuleUrl('../_ct-TIK/index.html', 'https://mrmegatronix.github.io/_ct-TIK/');
   const facebUrl = resolveModuleUrl('../_ct-FACEB/index.html', 'https://mrmegatronix.github.io/_ct-FACEB/');
   const instaUrl = resolveModuleUrl('../_ct-INSTA/index.html', 'https://mrmegatronix.github.io/_ct-INSTA/');
-  queue.push({ type: 'MODULE', id: 'ct-soc', url: socUrl, title: "Social Club TV Slides", pinned: true, priority: 8, duration: getModDur('ct-soc', 120) });
+  queue.push({ type: 'MODULE', id: 'ct-soc', url: socUrl, title: "Social Club TV Slides", pinned: true, priority: 8, duration: getModDur('ct-soc', 30) });
   queue.push({ type: 'MODULE', id: 'ct-tik', url: tikUrl, title: "Coasters Tavern TikTok", pinned: true, priority: 7, duration: getModDur('ct-tik', 30) });
   queue.push({ type: 'MODULE', id: 'ct-faceb', url: facebUrl, title: "Coasters Tavern Facebook", pinned: true, priority: 7, duration: getModDur('ct-faceb', 30) });
   queue.push({ type: 'MODULE', id: 'ct-insta', url: instaUrl, title: "Coasters Tavern Instagram", pinned: true, priority: 7, duration: getModDur('ct-insta', 30) });
-  queue.push({ type: 'MODULE', id: 'ct-loyalty', url: 'loyalty-slide.html', title: "Coasters Loyalty App", pinned: true, priority: 6, duration: getModDur('ct-loyalty', 60), accentColor: '#89CFF0' });
+  queue.push({ type: 'MODULE', id: 'ct-loyalty', url: 'loyalty-slide.html', title: "Coasters Loyalty App", pinned: true, priority: 6, duration: getModDur('ct-loyalty', 30), accentColor: '#89CFF0' });
   queue.push({ type: 'MODULE', id: 'ct-west', url: resolveModuleUrl('../_ct-WEST/index.html', 'https://mrmegatronix.github.io/_ct-WEST/index.html'), title: "Wild West Karaoke", priority: 15, duration: getModDur('ct-west', 30), accentColor: '#d97706' });
   queue.push({ type: 'MODULE', id: 'ct-hallo', url: resolveModuleUrl('../_ct-HALLO/index.html', 'https://mrmegatronix.github.io/_ct-HALLO/index.html'), title: "Halloween Karaoke", priority: 15, duration: getModDur('ct-hallo', 30), accentColor: '#ea580c' });
   // queue.push({ type: 'MODULE', id: 'ct-trip', url: '../_ct-TRIP/index.html', title: "Live Bus Tracking", priority: 50, duration: getModDur('ct-trip', 120) });
@@ -930,18 +1018,38 @@ function buildSlideQueue(data) {
   // 4. Apply Module Filters
   let filteredQueue = queue.filter(s => {
     if (s.disabled) return false;
-    if (s.type === 'MODULE' && disabledModules.includes(s.id)) return false;
+    if (s.type === 'MODULE' && disabledModules.includes(normalizeModuleId(s.id))) return false;
     return true;
   });
 
-  // 5. Filter & Sort
-  // Sort by Priority (Ascending) then Pinned (Descending).
+  // 5. Filter, Sort & Interleave Modules with Event Slides
   filteredQueue.sort((a, b) => {
     const priA = a.priority || 50;
     const priB = b.priority || 50;
     if (priA !== priB) return priA - priB;
     return (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0);
   });
+
+  const eventSlides = filteredQueue.filter(s => s.type !== 'MODULE');
+  const moduleSlides = filteredQueue.filter(s => s.type === 'MODULE');
+  if (eventSlides.length > 0 && moduleSlides.length > 0) {
+    const interleaved = [];
+    let eIdx = 0;
+    let mIdx = 0;
+    if ((isDrawTime || isBuildup) && moduleSlides[0] && moduleSlides[0].id === 'ct-ace2') {
+      interleaved.push(moduleSlides[mIdx++]);
+    }
+    const eventsPerMod = Math.max(1, Math.floor(eventSlides.length / Math.max(1, moduleSlides.length - mIdx)));
+    while (eIdx < eventSlides.length || mIdx < moduleSlides.length) {
+      for (let k = 0; k < eventsPerMod && eIdx < eventSlides.length; k++) {
+        interleaved.push(eventSlides[eIdx++]);
+      }
+      if (mIdx < moduleSlides.length) {
+        interleaved.push(moduleSlides[mIdx++]);
+      }
+    }
+    filteredQueue = interleaved;
+  }
 
   // 6. Insert ct-wea1 after every 10th slide for 15s (unless disabled)
   if (!disabledModules.includes('ct-wea1') && filteredQueue.length > 0) {
@@ -985,6 +1093,7 @@ function buildSlideQueue(data) {
   }
 
   const prevActive = window.MATRIX.STATE.slides[window.MATRIX.STATE.currentIndex];
+  const prevSlideId = prevActive ? prevActive.id : null;
   window.MATRIX.STATE.slides = filteredQueue;
   if (prevActive && window.MATRIX.STATE.currentIndex >= 0 && filteredQueue.length > 0) {
     let preservedIdx = prevActive.slotKey ? filteredQueue.findIndex(sl => sl.slotKey === prevActive.slotKey) : -1;
@@ -994,7 +1103,7 @@ function buildSlideQueue(data) {
     if (preservedIdx !== -1) {
       window.MATRIX.STATE.currentIndex = preservedIdx;
     } else if (window.MATRIX.STATE.currentIndex >= filteredQueue.length) {
-      window.MATRIX.STATE.currentIndex = filteredQueue.length - 1;
+      window.MATRIX.STATE.currentIndex = 0;
     }
   }
   console.log(`[MATRIX v2] Queue built with ${filteredQueue.length} slides.`);
@@ -1010,6 +1119,16 @@ function buildSlideQueue(data) {
       lastSync: new Date().toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit', hour12: false }),
       senderTabId: window.matrixTabId || 'iframe'
     });
+  }
+
+  // Ensure active slide updates immediately if current slide changed or timer is missing after boot
+  if (!window.MATRIX.STATE.isBooting && filteredQueue.length > 0) {
+    const newActive = filteredQueue[window.MATRIX.STATE.currentIndex];
+    if (!newActive || !isSlideActive(newActive)) {
+      window.nextSlide();
+    } else if (prevSlideId !== newActive.id || (!window.MATRIX.STATE.timer && !window.MATRIX.STATE.isPaused && !window.MATRIX.STATE.isLocked)) {
+      renderActiveSlide();
+    }
   }
 }
 
@@ -1665,13 +1784,14 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
   const slide = s.slides[s.currentIndex];
   const container = document.getElementById('slide-viewport');
   
-  const delay = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
+  const durSec = Number(slide.duration);
+  const delay = (Number.isFinite(durSec) && durSec > 0) ? durSec * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
   const startTime = Date.now();
 
   window.MATRIX.STATE.currentSlideStartTime = startTime;
   window.MATRIX.STATE.currentSlideDelay = delay;
 
-  const isMaster = window.parent && window.parent.IS_MASTER_DASHBOARD;
+  const isMaster = isMasterPreviewFrame();
   const masterIsActive = window.MATRIX.STATE.lastMasterBroadcast && (Date.now() - window.MATRIX.STATE.lastMasterBroadcast) < 30000;
   
   // If we are a slave TV, and a Master is currently broadcasting, do NOT broadcast our own local changes
@@ -1696,12 +1816,12 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
           commandId: 'cmd_' + Date.now() + '_bc_' + Math.random().toString(36).substr(2, 5)
       };
       bc.postMessage(broadcastMsg);
-      if (window.parent && window.parent.sendToFirebase) {
+      if (isMaster && window.parent && window.parent.sendToFirebase) {
           window.parent.sendToFirebase(broadcastMsg);
       }
 
-      // If this is the master dashboard, blast a SYNC_JUMP so all billboards follow suit
-      if (window.parent && window.parent.IS_MASTER_DASHBOARD) {
+      // If this is the master preview frame, blast a SYNC_JUMP so all billboards follow suit
+      if (isMaster) {
           const syncMsg = {
               type: 'SYNC_JUMP',
               id: slide.id,
@@ -1711,7 +1831,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
               commandId: 'cmd_' + Date.now() + '_sync_' + Math.random().toString(36).substr(2, 5)
           };
           bc.postMessage(syncMsg);
-          if (window.parent.sendToFirebase) {
+          if (window.parent && window.parent.sendToFirebase) {
               window.parent.sendToFirebase(syncMsg);
           }
       }
@@ -1720,6 +1840,7 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
   if (!container || !slide) return;
 
   clearTimeout(window.MATRIX.STATE.timer);
+  clearTimeout(window.MATRIX.STATE.transitionTimer);
 
   // Prevent fade-to-black loop and Master ping bugs by not recreating DOM for the same slide
   const currentDOM = document.getElementById('slide-target');
@@ -1743,14 +1864,14 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
           }
       }
       if (!window.MATRIX.STATE.isPaused && !window.MATRIX.STATE.isLocked) {
-          window.MATRIX.STATE.timer = setTimeout(window.nextSlide, delay);
+          window.MATRIX.STATE.timer = setTimeout(() => window.nextSlide(), delay);
       }
       return;
   }
 
   // 1. Loader transition (disabled)
   const transitionDelay = 0;
-  setTimeout(() => {
+  window.MATRIX.STATE.transitionTimer = setTimeout(() => {
     // Remove old slide
     const existing = document.getElementById('slide-target');
     if (existing) {
@@ -2019,9 +2140,9 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
     }
 
     if (!window.MATRIX.STATE.isPaused && !window.MATRIX.STATE.isLocked) {
-      const defaultDelay = slide.duration ? slide.duration * 1000 : (slide.type === 'MODULE' ? window.MATRIX.CONFIG.MODULE_DELAY : window.MATRIX.CONFIG.SWAP_DELAY);
-      const finalDelay = overrideDelay !== null ? overrideDelay : defaultDelay;
-      window.MATRIX.STATE.timer = setTimeout(nextSlide, finalDelay);
+      const defaultDelay = delay;
+      const finalDelay = (overrideDelay !== null && Number.isFinite(Number(overrideDelay)) && Number(overrideDelay) > 0) ? Number(overrideDelay) : defaultDelay;
+      window.MATRIX.STATE.timer = setTimeout(() => window.nextSlide(), finalDelay);
       
       if (bar && slide.id !== 'ct-fir') {
         bar.style.transition = 'none';
@@ -2275,10 +2396,13 @@ function handleLiveSlide(payload) {
             window.MATRIX.STATE.liveTimer = null;
         }
         const liveOverlay = document.getElementById('live-slide-overlay');
+        const wasLiveActive = Boolean(liveOverlay || window.MATRIX.STATE.isClosedSlideActive);
         if (liveOverlay) liveOverlay.remove();
         window.MATRIX.STATE.isClosedSlideActive = false;
-        window.MATRIX.STATE.isPaused = false;
-        renderActiveSlide(false);
+        if (wasLiveActive) {
+            window.MATRIX.STATE.isPaused = false;
+            renderActiveSlide(false);
+        }
         return;
     }
 

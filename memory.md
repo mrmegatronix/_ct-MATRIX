@@ -1,45 +1,28 @@
-# Agent Memory Bank: _ct-MATRIX
+# Memory Bank: _ct-MATRIX
 
-> Persistent knowledge, architecture, patterns, and decisions synced via `agent-memory-mcp`.
+## System Architecture
+- **Project Name**: `_ct-MATRIX` (Coasters Tavern Advertising & Digital Signage Display Hub)
+- **Tech Stack**: Vanilla HTML5, CSS3, ES6+ JavaScript, Firebase Realtime Database (`ct-mmr-default-rtdb.firebaseio.com`), Google Sheets CSV feed, `BroadcastChannel('ct_matrix_sync')`.
+- **Key Files**:
+  - `index.html`: Main 1080p digital signage display (`#slide-viewport`, `#slide-target`, `#progress-bar`).
+  - `matrix-core.js`: Core state machine (`window.MATRIX`), Google Sheet CSV parser, module queue builder (`buildSlideQueue`), slide renderer (`renderActiveSlide`), rotation timers (`nextSlide`, `prevSlide`, `stuckSlideWatchdog`), keyboard navigation (`setupSlideshowKeyboardNav`), and cross-tab/Firebase sync (`setupBroadcastListener`, `handleCloudState`).
+  - `firebase-bridge.js`: Connects `index.html` and `remote.html` to Firebase RTDB paths `matrix_command` and `matrix_state` and relays updates to `BroadcastChannel('ct_matrix_sync')`.
+  - `masteradmin.html`: Master control dashboard with `#preview-frame`, `#billboard-frame`, `#monitor-tray`, and sidebar module toggles/durations.
+  - `remote.html`: Mobile/remote controller for module toggles, live slide injection, and manual slide jumps.
+  - `preview.html`: Multi-slide preview monitor grid.
+  - `scripts/nikkos-d-check.mjs`: Nikko's D Check project & module scanner + HTML dashboard generator.
 
-## 1. Project Overview & Architecture
-- **Repository**: `_ct-MATRIX`
-- **Type**: PowerShell Script / Automation Tool
-- **Tech Stack**: PowerShell, Python
-- **Entry Points**: index.html, remote.html
-- **Description**: PowerShell Script / Automation Tool for _ct-MATRIX.
+## Key Decisions & Root-Cause Reference
+- **Module ID Normalization (`normalizeModuleId`)**: Admin/Remote UI labels like `"ACE 2"` must always normalize by stripping whitespace (`"ct-ace2"`) before filtering `CONFIG.disabledModules`.
+- **Master Dashboard Preview vs Monitor Tray Iframes (`isMasterPreviewFrame`)**: Only `#preview-frame` inside `masteradmin.html` acts as Master broadcaster. `.monitor-thumb` iframes in `#monitor-tray` must load with `?noBroadcast=1&hideControls=1` so they never emit competing `SYNC_JUMP` or `CURRENT_SLIDE_BROADCAST` events.
+- **Module & Event Interleaving (`buildSlideQueue`)**: Active modules (`ct-mmr`, `ct-ace2`, `ct-quiz`, `ct-fir`, `ct-soc`, `ct-tik`, `ct-faceb`, `ct-insta`, `ct-loyalty`, `ct-west`, `ct-hallo`) are interleaved evenly with Google Sheet event slides (and default to `30s` hold when set to `"all"` outside draw windows) so displays never stall for 10+ minutes on front-loaded modules.
+- **Boot & Sync Resilience (`initMatrix` / `handleCloudState` / `handleLiveSlide`)**:
+  - `setupSlideshowKeyboardNav()` and `setupBroadcastListener()` attach before `await loadAllDataSources()`.
+  - `handleCloudState` ignores `LIVE_SLIDE: { active: false }` unless a live overlay is actually active, preventing `SYNC_STATE` from resetting the active slide timer.
+  - `CURRENT_SLIDE_BROADCAST` in `masteradmin.html` requests local-only telemetry (`requestTelemetry(true)`) so it never overwrites `SYNC_JUMP` in Firebase `matrix_command`.
 
-## 2. Core Operational Conventions & Protocol Rules
-- **Response Constraints**: No conversational prose; use micro-diffs (`-` / `+`), standard git diffs, key-value pairs, or atomic bullet points.
-- **Slideshow & Signage Navigation** (where applicable):
-  - `ArrowLeft`: Previous slide (`prevSlide()`)
-  - `ArrowRight`: Next slide (`nextSlide()`)
-  - `ArrowUp`: Restart module from slide 0
-  - `ArrowDown`: Skip to next module
-  - `Space`: Toggle Pause / Unpause
-  - `a` / `A`: Open Admin page in new tab (`admin.html` or `masteradmin.html`)
-  - `r` / `R`: Open Remote page in new tab (`remote.html`)
-  - `1`-`9`: Set slide display duration (10s to 90s) and restart active timer
-  - `0`: Toggle Lock / Unlock freeze (progression freezes while animations continue)
-  - Input Guard: Disable keyboard shortcuts when focus is in `input`, `textarea`, or `select` elements
-- **UI/UX Requirements**:
-  - **Clocks**: ALL CLOCKS MUST HAVE BLINKING COLONS (`:`).
-  - **Resolution**: Optimised for 1080p viewing (1920x1080).
-  - **Layout & Overflow**: Text must never overflow, clip screen edges, or ugly line wrap (`white-space: nowrap`, `text-overflow: ellipsis`, or scaled font size).
+## Active Context
+- **Current Focus**: Verified automatic slide progression, module interleaving, and Firebase/BroadcastChannel sync across `index.html`, `masteradmin.html`, `remote.html`, and `preview.html`.
 
-## 3. Key Decisions & Technical Patterns
-- Modular component structure suited for automated display and signage loops.
-- Local configuration sync and automated build verification.
-- Fast, low-latency DOM updates and resilient error recovery.
-
-## 4. Active Context & Operational State
-- **Status**: Maintained
-- **Last Sync**: 2026-10-18
-- **Target Deployment**: Local Environment / Signage Display / Kiosk
-
-## 5. Episodic Memory & Change Log
-- **2026-10-18**: Synced feature suggestions and verified repository sync across all workspaces.
-- **2026-09-11**: Initialized persistent `memory.md` bank across repository root.
-
-## 6. Agent References
-- [Agent Guidelines & Protocols](AGENTS.md)
+## Episodic Change Log
+- **[2026-10-27]**: Fixed slide progression stall in `matrix-core.js`, `masteradmin.html`, and `remote.html` (normalized module IDs, isolated master preview iframe from monitor thumbnails, interleaved modules with event slides, capped default module hold to 30s, guarded timers against `SYNC_STATE` resets, and populated `memory.md`).
