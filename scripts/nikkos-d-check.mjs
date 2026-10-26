@@ -1713,11 +1713,609 @@ function generateMarkdownReport(scorecard, targets) {
   return lines.join('\n');
 }
 
+function generateHtmlDashboard(scorecard, findings, screenshotsList = [], screenshotPrefix = 'screenshots/') {
+  const payload = JSON.stringify({ scorecard, findings, screenshots: screenshotsList, screenshotPrefix }).replace(/<\//g, '<\\/');
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nikko's D Check — Interactive Audit Dashboard (${scorecard.timestamp})</title>
+<style>
+  :root {
+    --bg: #080b11;
+    --panel: #101622;
+    --panel-alt: #151d2e;
+    --border: #23304a;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --crit: #ff1744;
+    --warn: #ffab00;
+    --info: #38bdf8;
+    --pass: #00e676;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(circle at top right, #131c31 0%, var(--bg) 65%);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding: 20px 28px;
+  }
+  @keyframes blinkColon {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0.15; }
+  }
+  .clock-colon {
+    display: inline-block;
+    animation: blinkColon 1s infinite;
+    font-weight: 800;
+    color: var(--accent);
+    margin: 0 1px;
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 24px;
+    margin-bottom: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+  }
+  .shield {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0284c7, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 22px;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(56,189,248,0.35);
+  }
+  .brand-text h1 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .brand-text p {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 3px;
+  }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+  }
+  .score-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    padding: 8px 16px;
+    border-radius: 12px;
+  }
+  .score-num {
+    font-size: 26px;
+    font-weight: 900;
+  }
+  .clock-box {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    background: #0a0f18;
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .pillar-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .pillar-card:hover, .pillar-card.active {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(56,189,248,0.18);
+  }
+  .pillar-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .pillar-name {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+  }
+  .status-badge {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .status-PASS { background: rgba(0,230,118,0.15); color: var(--pass); border: 1px solid rgba(0,230,118,0.4); }
+  .status-WARN { background: rgba(255,171,0,0.15); color: var(--warn); border: 1px solid rgba(255,171,0,0.4); }
+  .status-FAIL { background: rgba(255,23,68,0.15); color: var(--crit); border: 1px solid rgba(255,23,68,0.4); }
+  .pillar-score {
+    font-size: 24px;
+    font-weight: 900;
+    margin-bottom: 6px;
+  }
+  .pillar-counts {
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .c-crit { color: var(--crit); font-weight: 700; }
+  .c-warn { color: var(--warn); font-weight: 700; }
+  .c-info { color: var(--info); font-weight: 700; }
+
+  .controls-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 18px;
+    margin-bottom: 14px;
+  }
+  .pill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .filter-btn {
+    background: var(--panel-alt);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--accent);
+    color: #06101e;
+    border-color: var(--accent);
+  }
+  .search-input {
+    background: #0a0f18;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    min-width: 240px;
+  }
+  .tabs-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .tab-btn {
+    background: var(--panel);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, #0284c7, #4f46e5);
+    color: #fff;
+    border-color: transparent;
+  }
+  .table-wrap {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid rgba(35,48,74,0.6);
+    font-size: 13px;
+    vertical-align: top;
+  }
+  th {
+    background: var(--panel-alt);
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+  }
+  tr:hover td {
+    background: rgba(56,189,248,0.04);
+  }
+  .sev-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 5px;
+    white-space: nowrap;
+  }
+  .sev-CRITICAL { background: rgba(255,23,68,0.18); color: var(--crit); border: 1px solid rgba(255,23,68,0.45); }
+  .sev-WARNING { background: rgba(255,171,0,0.18); color: var(--warn); border: 1px solid rgba(255,171,0,0.45); }
+  .sev-INFO { background: rgba(56,189,248,0.18); color: var(--info); border: 1px solid rgba(56,189,248,0.45); }
+  .cell-ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .code-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #cbd5e1;
+  }
+  .fix-hint {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #93c5fd;
+  }
+  .gallery-grid {
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+  .shot-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .shot-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+  }
+  .shot-card img {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+    display: block;
+    background: #05070b;
+  }
+  .shot-label {
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(4,7,14,0.92);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 30px;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img {
+    max-width: 95vw;
+    max-height: 85vh;
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+  }
+  .lightbox-caption {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="shield">D</div>
+      <div class="brand-text">
+        <h1>NIKKO'S D CHECK — 5-PILLAR DIAGNOSTIC DASHBOARD</h1>
+        <p id="meta-subtitle"></p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="score-pill">
+        <div>
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700;">Health Score</div>
+          <div id="overall-counts" style="font-size:11px;white-space:nowrap;"></div>
+        </div>
+        <div class="score-num" id="overall-score"></div>
+      </div>
+      <div class="clock-box" id="live-clock">00<span class="clock-colon">:</span>00<span class="clock-colon">:</span>00</div>
+    </div>
+  </header>
+
+  <section class="pillars-grid" id="pillars-grid"></section>
+
+  <div class="tabs-bar">
+    <button class="tab-btn active" id="tab-findings" onclick="switchTab('findings')">Findings Table (<span id="filtered-count">0</span>)</button>
+    <button class="tab-btn" id="tab-screenshots" onclick="switchTab('screenshots')">1080p Screenshot Gallery (<span id="shot-count">0</span>)</button>
+  </div>
+
+  <section class="controls-bar" id="controls-bar">
+    <div class="pill-group" id="severity-pills"></div>
+    <div class="pill-group" id="module-pills"></div>
+    <input type="text" class="search-input" id="search-box" placeholder="Search file, selector, type, or detail...">
+  </section>
+
+  <main id="findings-view" class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:72px;">ID</th>
+          <th style="width:98px;">Severity</th>
+          <th style="width:94px;">Pillar</th>
+          <th style="width:120px;">Module</th>
+          <th style="width:220px;">Check Type</th>
+          <th style="width:270px;">File / Selector</th>
+          <th>Finding Detail & Recommended Fix</th>
+        </tr>
+      </thead>
+      <tbody id="findings-tbody"></tbody>
+    </table>
+  </main>
+
+  <section id="screenshots-view" class="gallery-grid"></section>
+
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightbox-img" src="" alt="Screenshot preview">
+    <div class="lightbox-caption" id="lightbox-caption"></div>
+  </div>
+
+  <script>
+    const DATA = ${payload};
+    let state = {
+      pillar: 'ALL',
+      severity: 'ALL',
+      module: 'ALL',
+      search: ''
+    };
+
+    function updateClock() {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const el = document.getElementById('live-clock');
+      if (el) {
+        el.innerHTML = pad(now.getHours()) + '<span class="clock-colon">:</span>' + pad(now.getMinutes()) + '<span class="clock-colon">:</span>' + pad(now.getSeconds());
+      }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function initDashboard() {
+      const sc = DATA.scorecard;
+      document.getElementById('meta-subtitle').textContent =
+        'Run: ' + sc.timestamp + '  |  Project: ' + sc.primaryProject + '  |  Boundary Root: ' + sc.allowedRoot + '  |  Mode: ' + sc.mode;
+      document.getElementById('overall-score').textContent = sc.overallScore + '/100';
+      document.getElementById('overall-score').style.color =
+        sc.overallScore >= 80 ? 'var(--pass)' : sc.overallScore >= 50 ? 'var(--warn)' : 'var(--crit)';
+      document.getElementById('overall-counts').innerHTML =
+        '<span class="c-crit">' + sc.totals.critical + ' Crit</span> · <span class="c-warn">' + sc.totals.warning + ' Warn</span> · <span class="c-info">' + sc.totals.info + ' Info</span>';
+
+      renderPillars();
+      renderFilterPills();
+      renderTable();
+      renderScreenshots();
+
+      document.getElementById('search-box').addEventListener('input', e => {
+        state.search = e.target.value.trim().toLowerCase();
+        renderTable();
+      });
+    }
+
+    function renderPillars() {
+      const grid = document.getElementById('pillars-grid');
+      const entries = Object.entries(DATA.scorecard.byPillar);
+      grid.innerHTML = entries.map(([name, st]) => {
+        const isActive = state.pillar === name ? 'active' : '';
+        return '<div class="pillar-card ' + isActive + '" onclick="togglePillar(\\'' + name + '\\')">' +
+          '<div class="pillar-top">' +
+            '<span class="pillar-name">' + name + '</span>' +
+            '<span class="status-badge status-' + st.status + '">' + st.status + '</span>' +
+          '</div>' +
+          '<div class="pillar-score">' + st.score + '<span style="font-size:13px;color:var(--muted);font-weight:600;">/100</span></div>' +
+          '<div class="pillar-counts">' +
+            '<span class="c-crit">' + st.critical + ' Crit</span>' +
+            '<span class="c-warn">' + st.warning + ' Warn</span>' +
+            '<span class="c-info">' + st.info + ' Info</span>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function togglePillar(p) {
+      state.pillar = state.pillar === p ? 'ALL' : p;
+      renderPillars();
+      renderTable();
+    }
+
+    function setSeverity(sev) {
+      state.severity = sev;
+      renderFilterPills();
+      renderTable();
+    }
+
+    function setModule(mod) {
+      state.module = mod;
+      renderFilterPills();
+      renderTable();
+    }
+
+    function renderFilterPills() {
+      const sevEl = document.getElementById('severity-pills');
+      const sevs = ['ALL', 'CRITICAL', 'WARNING', 'INFO'];
+      sevEl.innerHTML = sevs.map(s =>
+        '<button class="filter-btn ' + (state.severity === s ? 'active' : '') + '" onclick="setSeverity(\\'' + s + '\\')">' + s + '</button>'
+      ).join('');
+
+      const modEl = document.getElementById('module-pills');
+      const mods = ['ALL', ...Object.keys(DATA.scorecard.byModule)];
+      modEl.innerHTML = mods.map(m => {
+        const count = m === 'ALL' ? DATA.findings.length : (DATA.scorecard.byModule[m]?.total || 0);
+        return '<button class="filter-btn ' + (state.module === m ? 'active' : '') + '" onclick="setModule(\\'' + m + '\\')">' + m + ' (' + count + ')</button>';
+      }).join('');
+    }
+
+    function escapeHtml(s) {
+      return String(s || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function renderTable() {
+      const order = { CRITICAL: 0, WARNING: 1, INFO: 2 };
+      const filtered = DATA.findings.filter(f => {
+        if (state.pillar !== 'ALL' && f.pillar !== state.pillar) return false;
+        if (state.severity !== 'ALL' && f.severity !== state.severity) return false;
+        if (state.module !== 'ALL' && f.module !== state.module) return false;
+        if (state.search) {
+          const hay = (f.id + ' ' + f.type + ' ' + f.file + ' ' + f.selector + ' ' + f.detail + ' ' + f.module).toLowerCase();
+          if (!hay.includes(state.search)) return false;
+        }
+        return true;
+      }).sort((a, b) => (order[a.severity] ?? 3) - (order[b.severity] ?? 3));
+
+      document.getElementById('filtered-count').textContent = filtered.length;
+      const tbody = document.getElementById('findings-tbody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted);">No findings match the active filters.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(f => {
+        const loc = f.line ? (f.file + ':' + f.line) : (f.file || '-');
+        const sel = f.selector ? '<div class="code-tag cell-ellipsis" style="color:#94a3b8;margin-top:2px;" title="' + escapeHtml(f.selector) + '">' + escapeHtml(f.selector) + '</div>' : '';
+        const hint = f.fixHint ? '<div class="fix-hint">Fix: ' + escapeHtml(f.fixHint) + '</div>' : '';
+        return '<tr>' +
+          '<td class="code-tag">' + escapeHtml(f.id) + '</td>' +
+          '<td><span class="sev-badge sev-' + escapeHtml(f.severity) + '">' + escapeHtml(f.severity) + '</span></td>' +
+          '<td style="font-weight:700;">' + escapeHtml(f.pillar) + '</td>' +
+          '<td class="code-tag cell-ellipsis" title="' + escapeHtml(f.module) + '">' + escapeHtml(f.module) + '</td>' +
+          '<td class="code-tag cell-ellipsis" title="' + escapeHtml(f.type) + '">' + escapeHtml(f.type) + '</td>' +
+          '<td><div class="code-tag cell-ellipsis" title="' + escapeHtml(loc) + '">' + escapeHtml(loc) + '</div>' + sel + '</td>' +
+          '<td><div>' + escapeHtml(f.detail) + '</div>' + hint + '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function renderScreenshots() {
+      const shots = DATA.screenshots || [];
+      document.getElementById('shot-count').textContent = shots.length;
+      const grid = document.getElementById('screenshots-view');
+      grid.innerHTML = shots.map(file => {
+        const src = DATA.screenshotPrefix + file;
+        return '<div class="shot-card" onclick="openLightbox(\\'' + src + '\\', \\'' + file + '\\')">' +
+          '<img src="' + src + '" loading="lazy" alt="' + file + '">' +
+          '<div class="shot-label">' + file + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function switchTab(tab) {
+      const isFindings = tab === 'findings';
+      document.getElementById('tab-findings').classList.toggle('active', isFindings);
+      document.getElementById('tab-screenshots').classList.toggle('active', !isFindings);
+      document.getElementById('findings-view').style.display = isFindings ? 'block' : 'none';
+      document.getElementById('controls-bar').style.display = isFindings ? 'flex' : 'none';
+      document.getElementById('screenshots-view').style.display = isFindings ? 'none' : 'grid';
+    }
+
+    function openLightbox(src, caption) {
+      document.getElementById('lightbox-img').src = src;
+      document.getElementById('lightbox-caption').textContent = caption;
+      document.getElementById('lightbox').classList.add('open');
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('open');
+    }
+
+    initDashboard();
+  </script>
+</body>
+</html>`;
+}
+
 function writeReports(scorecard, targets) {
   const md = generateMarkdownReport(scorecard, targets);
   const reportMdPath = path.join(RUN_REPORT_DIR, 'report.md');
   const reportJsonPath = path.join(RUN_REPORT_DIR, 'report.json');
   const latestMdPath = path.join(REPORTS_BASE_DIR, 'latest.md');
+  const runDashboardPath = path.join(RUN_REPORT_DIR, 'dashboard.html');
+  const latestDashboardPath = path.join(REPORTS_BASE_DIR, 'dashboard.html');
+
+  let screenshotsList = [];
+  try {
+    if (fs.existsSync(SCREENSHOTS_DIR)) {
+      screenshotsList = fs.readdirSync(SCREENSHOTS_DIR).filter(f => f.endsWith('.png')).sort();
+    }
+  } catch (_) {}
 
   fs.writeFileSync(reportMdPath, md, 'utf8');
   fs.writeFileSync(
@@ -1726,8 +2324,18 @@ function writeReports(scorecard, targets) {
     'utf8'
   );
   fs.writeFileSync(latestMdPath, md, 'utf8');
+  fs.writeFileSync(
+    runDashboardPath,
+    generateHtmlDashboard(scorecard, ALL_FINDINGS, screenshotsList, 'screenshots/'),
+    'utf8'
+  );
+  fs.writeFileSync(
+    latestDashboardPath,
+    generateHtmlDashboard(scorecard, ALL_FINDINGS, screenshotsList, `${RUN_TIMESTAMP}/screenshots/`),
+    'utf8'
+  );
 
-  return { reportMdPath, reportJsonPath, latestMdPath };
+  return { reportMdPath, reportJsonPath, latestMdPath, runDashboardPath, latestDashboardPath };
 }
 
 // ============================================================================

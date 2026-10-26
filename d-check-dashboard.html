@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nikko's D Check — Interactive Audit Dashboard (2026-10-26_23-49-33)</title>
+<style>
+  :root {
+    --bg: #080b11;
+    --panel: #101622;
+    --panel-alt: #151d2e;
+    --border: #23304a;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --crit: #ff1744;
+    --warn: #ffab00;
+    --info: #38bdf8;
+    --pass: #00e676;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(circle at top right, #131c31 0%, var(--bg) 65%);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding: 20px 28px;
+  }
+  @keyframes blinkColon {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0.15; }
+  }
+  .clock-colon {
+    display: inline-block;
+    animation: blinkColon 1s infinite;
+    font-weight: 800;
+    color: var(--accent);
+    margin: 0 1px;
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 24px;
+    margin-bottom: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+  }
+  .shield {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0284c7, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 22px;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(56,189,248,0.35);
+  }
+  .brand-text h1 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .brand-text p {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 3px;
+  }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+  }
+  .score-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    padding: 8px 16px;
+    border-radius: 12px;
+  }
+  .score-num {
+    font-size: 26px;
+    font-weight: 900;
+  }
+  .clock-box {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    background: #0a0f18;
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .pillar-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .pillar-card:hover, .pillar-card.active {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(56,189,248,0.18);
+  }
+  .pillar-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .pillar-name {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+  }
+  .status-badge {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .status-PASS { background: rgba(0,230,118,0.15); color: var(--pass); border: 1px solid rgba(0,230,118,0.4); }
+  .status-WARN { background: rgba(255,171,0,0.15); color: var(--warn); border: 1px solid rgba(255,171,0,0.4); }
+  .status-FAIL { background: rgba(255,23,68,0.15); color: var(--crit); border: 1px solid rgba(255,23,68,0.4); }
+  .pillar-score {
+    font-size: 24px;
+    font-weight: 900;
+    margin-bottom: 6px;
+  }
+  .pillar-counts {
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .c-crit { color: var(--crit); font-weight: 700; }
+  .c-warn { color: var(--warn); font-weight: 700; }
+  .c-info { color: var(--info); font-weight: 700; }
+
+  .controls-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 18px;
+    margin-bottom: 14px;
+  }
+  .pill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .filter-btn {
+    background: var(--panel-alt);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--accent);
+    color: #06101e;
+    border-color: var(--accent);
+  }
+  .search-input {
+    background: #0a0f18;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    min-width: 240px;
+  }
+  .tabs-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .tab-btn {
+    background: var(--panel);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, #0284c7, #4f46e5);
+    color: #fff;
+    border-color: transparent;
+  }
+  .table-wrap {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid rgba(35,48,74,0.6);
+    font-size: 13px;
+    vertical-align: top;
+  }
+  th {
+    background: var(--panel-alt);
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+  }
+  tr:hover td {
+    background: rgba(56,189,248,0.04);
+  }
+  .sev-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 5px;
+    white-space: nowrap;
+  }
+  .sev-CRITICAL { background: rgba(255,23,68,0.18); color: var(--crit); border: 1px solid rgba(255,23,68,0.45); }
+  .sev-WARNING { background: rgba(255,171,0,0.18); color: var(--warn); border: 1px solid rgba(255,171,0,0.45); }
+  .sev-INFO { background: rgba(56,189,248,0.18); color: var(--info); border: 1px solid rgba(56,189,248,0.45); }
+  .cell-ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .code-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #cbd5e1;
+  }
+  .fix-hint {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #93c5fd;
+  }
+  .gallery-grid {
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+  .shot-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .shot-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+  }
+  .shot-card img {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+    display: block;
+    background: #05070b;
+  }
+  .shot-label {
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(4,7,14,0.92);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 30px;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img {
+    max-width: 95vw;
+    max-height: 85vh;
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+  }
+  .lightbox-caption {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="shield">D</div>
+      <div class="brand-text">
+        <h1>NIKKO'S D CHECK — 5-PILLAR DIAGNOSTIC DASHBOARD</h1>
+        <p id="meta-subtitle"></p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="score-pill">
+        <div>
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700;">Health Score</div>
+          <div id="overall-counts" style="font-size:11px;white-space:nowrap;"></div>
+        </div>
+        <div class="score-num" id="overall-score"></div>
+      </div>
+      <div class="clock-box" id="live-clock">00<span class="clock-colon">:</span>00<span class="clock-colon">:</span>00</div>
+    </div>
+  </header>
+
+  <section class="pillars-grid" id="pillars-grid"></section>
+
+  <div class="tabs-bar">
+    <button class="tab-btn active" id="tab-findings" onclick="switchTab('findings')">Findings Table (<span id="filtered-count">0</span>)</button>
+    <button class="tab-btn" id="tab-screenshots" onclick="switchTab('screenshots')">1080p Screenshot Gallery (<span id="shot-count">0</span>)</button>
+  </div>
+
+  <section class="controls-bar" id="controls-bar">
+    <div class="pill-group" id="severity-pills"></div>
+    <div class="pill-group" id="module-pills"></div>
+    <input type="text" class="search-input" id="search-box" placeholder="Search file, selector, type, or detail...">
+  </section>
+
+  <main id="findings-view" class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:72px;">ID</th>
+          <th style="width:98px;">Severity</th>
+          <th style="width:94px;">Pillar</th>
+          <th style="width:120px;">Module</th>
+          <th style="width:220px;">Check Type</th>
+          <th style="width:270px;">File / Selector</th>
+          <th>Finding Detail & Recommended Fix</th>
+        </tr>
+      </thead>
+      <tbody id="findings-tbody"></tbody>
+    </table>
+  </main>
+
+  <section id="screenshots-view" class="gallery-grid"></section>
+
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightbox-img" src="" alt="Screenshot preview">
+    <div class="lightbox-caption" id="lightbox-caption"></div>
+  </div>
+
+  <script>
+    const DATA = {"scorecard":{"timestamp":"2026-10-26_23-49-33","allowedRoot":"/run/media/zeus/6TB-1/__GITHUB NUC","primaryProject":"_ct-MATRIX","mode":"FULL (Static + JSDOM + 1080p Headless Chrome)","online":false,"overallScore":28,"totals":{"findings":136,"critical":15,"warning":91,"info":30},"byPillar":{"DESIGN":{"total":79,"critical":4,"warning":75,"info":0,"score":0,"status":"FAIL"},"CODE":{"total":12,"critical":6,"warning":6,"info":0,"score":0,"status":"FAIL"},"RULES":{"total":6,"critical":5,"warning":1,"info":0,"score":6,"status":"FAIL"},"PROBLEMS":{"total":13,"critical":0,"warning":9,"info":4,"score":60,"status":"WARN"},"SECURITY":{"total":26,"critical":0,"warning":0,"info":26,"score":74,"status":"PASS"}},"byModule":{"_ct-MATRIX":{"role":"primary","total":63,"critical":5,"warning":44,"info":14},"ct-ACE2":{"role":"module","total":20,"critical":1,"warning":17,"info":2},"_ct-MMR":{"role":"module","total":6,"critical":2,"warning":1,"info":3},"_ct-wea1":{"role":"module","total":3,"critical":2,"warning":1,"info":0},"_ct-QUIZ":{"role":"module","total":1,"critical":0,"warning":1,"info":0},"_ct-FIR":{"role":"module","total":0,"critical":0,"warning":0,"info":0},"_ct-SOC":{"role":"module","total":7,"critical":2,"warning":3,"info":2},"_ct-TIK":{"role":"module","total":8,"critical":0,"warning":6,"info":2},"_ct-FACEB":{"role":"module","total":7,"critical":0,"warning":5,"info":2},"_ct-INSTA":{"role":"module","total":8,"critical":0,"warning":6,"info":2},"_ct-WEST":{"role":"module","total":10,"critical":1,"warning":7,"info":2},"_ct-HALLO":{"role":"module","total":0,"critical":0,"warning":0,"info":0},"_ct-TRIP":{"role":"module","total":3,"critical":2,"warning":0,"info":1}}},"findings":[{"id":"F-0001","pillar":"PROBLEMS","severity":"INFO","module":"_ct-MATRIX","type":"REPO_ARTIFACT_BLOAT","file":"_ct-MATRIX/_ct-MATRIX-main.zip","line":null,"selector":"","detail":"Temporary test script or archive file (\"_ct-MATRIX-main.zip\") present in repository root/tree.","fixHint":"Remove \"_ct-MATRIX-main.zip\" or add it to .gitignore before pushing."},{"id":"F-0002","pillar":"PROBLEMS","severity":"INFO","module":"_ct-MATRIX","type":"REPO_ARTIFACT_BLOAT","file":"_ct-MATRIX/debug_matrix.js","line":null,"selector":"","detail":"Temporary test script or archive file (\"debug_matrix.js\") present in repository root/tree.","fixHint":"Remove \"debug_matrix.js\" or add it to .gitignore before pushing."},{"id":"F-0003","pillar":"SECURITY","severity":"INFO","module":"_ct-MATRIX","type":"TARGET_BLANK_MISSING_NOOPENER","file":"_ct-MATRIX/extra-slides/loyalty-app.html","line":null,"selector":"","detail":"2 <a target=\"_blank\"> link(s) in loyalty-app.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0004","pillar":"SECURITY","severity":"INFO","module":"_ct-MATRIX","type":"TARGET_BLANK_MISSING_NOOPENER","file":"_ct-MATRIX/files.html","line":null,"selector":"","detail":"4 <a target=\"_blank\"> link(s) in files.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0005","pillar":"SECURITY","severity":"INFO","module":"_ct-MATRIX","type":"TARGET_BLANK_MISSING_NOOPENER","file":"_ct-MATRIX/live-commander.html","line":null,"selector":"","detail":"2 <a target=\"_blank\"> link(s) in live-commander.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0006","pillar":"CODE","severity":"CRITICAL","module":"_ct-MATRIX","type":"INVALID_JSON","file":"_ct-MATRIX/local-images.json","line":null,"selector":"","detail":"Invalid JSON syntax: Unexpected end of JSON input","fixHint":"Fix JSON syntax error."},{"id":"F-0007","pillar":"SECURITY","severity":"INFO","module":"_ct-MATRIX","type":"TARGET_BLANK_MISSING_NOOPENER","file":"_ct-MATRIX/loyalty-slide.html","line":null,"selector":"","detail":"2 <a target=\"_blank\"> link(s) in loyalty-slide.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0008","pillar":"SECURITY","severity":"INFO","module":"_ct-MATRIX","type":"TARGET_BLANK_MISSING_NOOPENER","file":"_ct-MATRIX/masteradmin_DRAFT.html","line":null,"selector":"","detail":"3 <a target=\"_blank\"> link(s) in masteradmin_DRAFT.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0009","pillar":"SECURITY","severity":"INFO","module":"_ct-MATRIX","type":"TARGET_BLANK_MISSING_NOOPENER","file":"_ct-MATRIX/matrixcommander.html","line":null,"selector":"","detail":"2 <a target=\"_blank\"> link(s) in matrixcommander.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0010","pillar":"CODE","severity":"CRITICAL","module":"_ct-MATRIX","type":"JS_SYNTAX_ERROR","file":"_ct-MATRIX/missing_functions.js","line":151,"selector":"","detail":"JavaScript syntax error: Unexpected token '}'","fixHint":"Fix syntax error before deploying."},{"id":"F-0011","pillar":"SECURITY","severity":"INFO","module":"_ct-MATRIX","type":"CDN_SCRIPT_MISSING_SRI","file":"_ct-MATRIX/postermaker.html","line":null,"selector":"","detail":"External script \"https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js\" is loaded without a Subresource Integrity (integrity=\"...\") attribute.","fixHint":"Add integrity and crossorigin=\"anonymous\" attributes where static versions are used."},{"id":"F-0012","pillar":"SECURITY","severity":"INFO","module":"_ct-MATRIX","type":"CDN_SCRIPT_MISSING_SRI","file":"_ct-MATRIX/postermaker.html","line":null,"selector":"","detail":"External script \"https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js\" is loaded without a Subresource Integrity (integrity=\"...\") attribute.","fixHint":"Add integrity and crossorigin=\"anonymous\" attributes where static versions are used."},{"id":"F-0013","pillar":"SECURITY","severity":"INFO","module":"_ct-MATRIX","type":"CDN_SCRIPT_MISSING_SRI","file":"_ct-MATRIX/postermaker.html","line":null,"selector":"","detail":"External script \"https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js\" is loaded without a Subresource Integrity (integrity=\"...\") attribute.","fixHint":"Add integrity and crossorigin=\"anonymous\" attributes where static versions are used."},{"id":"F-0014","pillar":"SECURITY","severity":"INFO","module":"_ct-MATRIX","type":"TARGET_BLANK_MISSING_NOOPENER","file":"_ct-MATRIX/preview.html","line":null,"selector":"","detail":"4 <a target=\"_blank\"> link(s) in preview.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0015","pillar":"PROBLEMS","severity":"INFO","module":"_ct-MATRIX","type":"REPO_ARTIFACT_BLOAT","file":"_ct-MATRIX/test_loop_multiple.cjs","line":null,"selector":"","detail":"Temporary test script or archive file (\"test_loop_multiple.cjs\") present in repository root/tree.","fixHint":"Remove \"test_loop_multiple.cjs\" or add it to .gitignore before pushing."},{"id":"F-0016","pillar":"PROBLEMS","severity":"INFO","module":"_ct-MATRIX","type":"REPO_ARTIFACT_BLOAT","file":"_ct-MATRIX/tmp.js","line":null,"selector":"","detail":"Temporary test script or archive file (\"tmp.js\") present in repository root/tree.","fixHint":"Remove \"tmp.js\" or add it to .gitignore before pushing."},{"id":"F-0017","pillar":"SECURITY","severity":"INFO","module":"ct-ACE2","type":"TARGET_BLANK_MISSING_NOOPENER","file":"ct-ACE2/preview.html","line":null,"selector":"","detail":"10 <a target=\"_blank\"> link(s) in preview.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0018","pillar":"SECURITY","severity":"INFO","module":"ct-ACE2","type":"TARGET_BLANK_MISSING_NOOPENER","file":"ct-ACE2/public/preview.html","line":null,"selector":"","detail":"10 <a target=\"_blank\"> link(s) in preview.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0019","pillar":"SECURITY","severity":"INFO","module":"_ct-MMR","type":"TARGET_BLANK_MISSING_NOOPENER","file":"_ct-MMR/admin.html","line":null,"selector":"","detail":"9 <a target=\"_blank\"> link(s) in admin.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0020","pillar":"SECURITY","severity":"INFO","module":"_ct-MMR","type":"TARGET_BLANK_MISSING_NOOPENER","file":"_ct-MMR/archive.html","line":null,"selector":"","detail":"1 <a target=\"_blank\"> link(s) in archive.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0021","pillar":"SECURITY","severity":"INFO","module":"_ct-MMR","type":"TARGET_BLANK_MISSING_NOOPENER","file":"_ct-MMR/remote.html","line":null,"selector":"","detail":"5 <a target=\"_blank\"> link(s) in remote.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0022","pillar":"CODE","severity":"CRITICAL","module":"_ct-MMR","type":"BROKEN_LOCAL_ASSET_PATH","file":"_ct-MMR/waving_animation.html","line":null,"selector":"","detail":"<img> references missing local path \"file:///home/zeus/.gemini/antigravity/brain/975dc5da-b3d9-43d4-8079-1fc7cce2c96e/joint_wave_frame1_1785375243479.jpg\" (resolved: _ct-MMR/file:/home/zeus/.gemini/antigravity/brain/975dc5da-b3d9-43d4-8079-1fc7cce2c96e/joint_wave_frame1_1785375243479.jpg).","fixHint":"Verify file exists at \"file:///home/zeus/.gemini/antigravity/brain/975dc5da-b3d9-43d4-8079-1fc7cce2c96e/joint_wave_frame1_1785375243479.jpg\" or fix relative path."},{"id":"F-0023","pillar":"CODE","severity":"CRITICAL","module":"_ct-MMR","type":"BROKEN_LOCAL_ASSET_PATH","file":"_ct-MMR/waving_animation.html","line":null,"selector":"","detail":"<img> references missing local path \"file:///home/zeus/.gemini/antigravity/brain/975dc5da-b3d9-43d4-8079-1fc7cce2c96e/joint_wave_frame2_1785375281952.jpg\" (resolved: _ct-MMR/file:/home/zeus/.gemini/antigravity/brain/975dc5da-b3d9-43d4-8079-1fc7cce2c96e/joint_wave_frame2_1785375281952.jpg).","fixHint":"Verify file exists at \"file:///home/zeus/.gemini/antigravity/brain/975dc5da-b3d9-43d4-8079-1fc7cce2c96e/joint_wave_frame2_1785375281952.jpg\" or fix relative path."},{"id":"F-0024","pillar":"CODE","severity":"CRITICAL","module":"_ct-SOC","type":"BROKEN_LOCAL_ASSET_PATH","file":"_ct-SOC/index.html","line":null,"selector":"","detail":"<script> references missing local path \"./js/lucide.min.js\" (resolved: _ct-SOC/js/lucide.min.js).","fixHint":"Verify file exists at \"./js/lucide.min.js\" or fix relative path."},{"id":"F-0025","pillar":"CODE","severity":"CRITICAL","module":"_ct-SOC","type":"BROKEN_LOCAL_ASSET_PATH","file":"_ct-SOC/index.html","line":null,"selector":"","detail":"<script> references missing local path \"./js/html5-qrcode.min.js\" (resolved: _ct-SOC/js/html5-qrcode.min.js).","fixHint":"Verify file exists at \"./js/html5-qrcode.min.js\" or fix relative path."},{"id":"F-0026","pillar":"SECURITY","severity":"INFO","module":"_ct-SOC","type":"TARGET_BLANK_MISSING_NOOPENER","file":"_ct-SOC/index.html","line":null,"selector":"","detail":"1 <a target=\"_blank\"> link(s) in index.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0027","pillar":"SECURITY","severity":"INFO","module":"_ct-SOC","type":"CDN_SCRIPT_MISSING_SRI","file":"_ct-SOC/template-dash/soc-templates.html","line":null,"selector":"","detail":"External script \"https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js\" is loaded without a Subresource Integrity (integrity=\"...\") attribute.","fixHint":"Add integrity and crossorigin=\"anonymous\" attributes where static versions are used."},{"id":"F-0028","pillar":"CODE","severity":"WARNING","module":"_ct-TIK","type":"DUPLICATE_HTML_ID","file":"_ct-TIK/draft.html","line":166,"selector":"","detail":"Duplicate HTML id=\"coasterstavernredwood\" on lines 155 and 166.","fixHint":"Ensure id=\"coasterstavernredwood\" is unique within draft.html."},{"id":"F-0029","pillar":"CODE","severity":"WARNING","module":"_ct-TIK","type":"DUPLICATE_HTML_ID","file":"_ct-TIK/draft.html","line":177,"selector":"","detail":"Duplicate HTML id=\"coasterstavernredwood\" on lines 155 and 177.","fixHint":"Ensure id=\"coasterstavernredwood\" is unique within draft.html."},{"id":"F-0030","pillar":"SECURITY","severity":"INFO","module":"_ct-TIK","type":"CDN_SCRIPT_MISSING_SRI","file":"_ct-TIK/draft.html","line":null,"selector":"","detail":"External script \"https://www.tiktok.com/embed.js\" is loaded without a Subresource Integrity (integrity=\"...\") attribute.","fixHint":"Add integrity and crossorigin=\"anonymous\" attributes where static versions are used."},{"id":"F-0031","pillar":"SECURITY","severity":"INFO","module":"_ct-TIK","type":"TARGET_BLANK_MISSING_NOOPENER","file":"_ct-TIK/draft.html","line":null,"selector":"","detail":"3 <a target=\"_blank\"> link(s) in draft.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0032","pillar":"CODE","severity":"WARNING","module":"_ct-FACEB","type":"DUPLICATE_HTML_ID","file":"_ct-FACEB/draft.html","line":166,"selector":"","detail":"Duplicate HTML id=\"coasterstavernredwood\" on lines 155 and 166.","fixHint":"Ensure id=\"coasterstavernredwood\" is unique within draft.html."},{"id":"F-0033","pillar":"CODE","severity":"WARNING","module":"_ct-FACEB","type":"DUPLICATE_HTML_ID","file":"_ct-FACEB/draft.html","line":177,"selector":"","detail":"Duplicate HTML id=\"coasterstavernredwood\" on lines 155 and 177.","fixHint":"Ensure id=\"coasterstavernredwood\" is unique within draft.html."},{"id":"F-0034","pillar":"SECURITY","severity":"INFO","module":"_ct-FACEB","type":"CDN_SCRIPT_MISSING_SRI","file":"_ct-FACEB/draft.html","line":null,"selector":"","detail":"External script \"https://www.tiktok.com/embed.js\" is loaded without a Subresource Integrity (integrity=\"...\") attribute.","fixHint":"Add integrity and crossorigin=\"anonymous\" attributes where static versions are used."},{"id":"F-0035","pillar":"SECURITY","severity":"INFO","module":"_ct-FACEB","type":"TARGET_BLANK_MISSING_NOOPENER","file":"_ct-FACEB/draft.html","line":null,"selector":"","detail":"3 <a target=\"_blank\"> link(s) in draft.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0036","pillar":"CODE","severity":"WARNING","module":"_ct-INSTA","type":"DUPLICATE_HTML_ID","file":"_ct-INSTA/draft.html","line":166,"selector":"","detail":"Duplicate HTML id=\"coasterstavernredwood\" on lines 155 and 166.","fixHint":"Ensure id=\"coasterstavernredwood\" is unique within draft.html."},{"id":"F-0037","pillar":"CODE","severity":"WARNING","module":"_ct-INSTA","type":"DUPLICATE_HTML_ID","file":"_ct-INSTA/draft.html","line":177,"selector":"","detail":"Duplicate HTML id=\"coasterstavernredwood\" on lines 155 and 177.","fixHint":"Ensure id=\"coasterstavernredwood\" is unique within draft.html."},{"id":"F-0038","pillar":"SECURITY","severity":"INFO","module":"_ct-INSTA","type":"CDN_SCRIPT_MISSING_SRI","file":"_ct-INSTA/draft.html","line":null,"selector":"","detail":"External script \"https://www.tiktok.com/embed.js\" is loaded without a Subresource Integrity (integrity=\"...\") attribute.","fixHint":"Add integrity and crossorigin=\"anonymous\" attributes where static versions are used."},{"id":"F-0039","pillar":"SECURITY","severity":"INFO","module":"_ct-INSTA","type":"TARGET_BLANK_MISSING_NOOPENER","file":"_ct-INSTA/draft.html","line":null,"selector":"","detail":"3 <a target=\"_blank\"> link(s) in draft.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0040","pillar":"SECURITY","severity":"INFO","module":"_ct-WEST","type":"TARGET_BLANK_MISSING_NOOPENER","file":"_ct-WEST/admin.html","line":null,"selector":"","detail":"2 <a target=\"_blank\"> link(s) in admin.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0041","pillar":"SECURITY","severity":"INFO","module":"_ct-WEST","type":"TARGET_BLANK_MISSING_NOOPENER","file":"_ct-WEST/remote.html","line":null,"selector":"","detail":"1 <a target=\"_blank\"> link(s) in remote.html missing rel=\"noopener noreferrer\".","fixHint":"Add rel=\"noopener noreferrer\" to external target=\"_blank\" links."},{"id":"F-0042","pillar":"SECURITY","severity":"INFO","module":"_ct-TRIP","type":"CDN_SCRIPT_MISSING_SRI","file":"_ct-TRIP/index.html","line":null,"selector":"","detail":"External script \"https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js\" is loaded without a Subresource Integrity (integrity=\"...\") attribute.","fixHint":"Add integrity and crossorigin=\"anonymous\" attributes where static versions are used."},{"id":"F-0043","pillar":"RULES","severity":"WARNING","module":"_ct-MATRIX","type":"KEYBOARD_NUMERIC_DURATION_FAILED","file":"_ct-MATRIX/index.html","line":null,"selector":"window","detail":"[Main Display] Numeric key \"2\" did not set slide duration to 20s (observed: undefined).","fixHint":"Check handleKeyboardShortcuts in matrix-core.js."},{"id":"F-0044","pillar":"PROBLEMS","severity":"WARNING","module":"_ct-MATRIX","type":"BROWSER_LOG_ERROR","file":"_ct-MATRIX/masteradmin.html","line":null,"selector":"","detail":"Browser error on _ct-MATRIX/masteradmin.html: Failed to load resource: the server responded with a status of 404 (Not Found) (http://127.0.0.1:46381/_ct-MATRIX/matrix_login_bg_1778957890247.png)","fixHint":""},{"id":"F-0045","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/masteradmin.html","line":null,"selector":"div#workspace-right > div.panel > div.scaled-frame > div","detail":"[Master Admin Panel] Low contrast ratio 3.66:1 (minimum 3.8:1 for 18px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0046","pillar":"PROBLEMS","severity":"WARNING","module":"_ct-MATRIX","type":"BROWSER_LOG_ERROR","file":"_ct-MATRIX/admin2.html","line":null,"selector":"","detail":"Browser error on _ct-MATRIX/admin2.html: Failed to load resource: the server responded with a status of 404 (Not Found) (http://127.0.0.1:46381/_ct-SOC/js/lucide.min.js)","fixHint":""},{"id":"F-0047","pillar":"PROBLEMS","severity":"WARNING","module":"_ct-MATRIX","type":"BROWSER_LOG_ERROR","file":"_ct-MATRIX/admin2.html","line":null,"selector":"","detail":"Browser error on _ct-MATRIX/admin2.html: Failed to load resource: the server responded with a status of 404 (Not Found) (http://127.0.0.1:46381/_ct-SOC/js/html5-qrcode.min.js)","fixHint":""},{"id":"F-0048","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/admin2.html","line":null,"selector":"button#btn-remote","detail":"[Admin2 Control Panel] Low contrast ratio 3.64:1 (minimum 3.8:1 for 13px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0049","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/admin2.html","line":null,"selector":"body > header.top-header > div.header-right > button.shadcn-btn","detail":"[Admin2 Control Panel] Low contrast ratio 3.64:1 (minimum 3.8:1 for 13px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0050","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/admin2.html","line":null,"selector":"body > header.top-header > div.header-right > button.shadcn-btn","detail":"[Admin2 Control Panel] Low contrast ratio 3.64:1 (minimum 3.8:1 for 13px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0051","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/admin2.html","line":null,"selector":"button#btn-manual-lock","detail":"[Admin2 Control Panel] Low contrast ratio 3.64:1 (minimum 3.8:1 for 13px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0052","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/admin2.html","line":null,"selector":"div.main-container > aside.live-monitors > div > button.shadcn-btn","detail":"[Admin2 Control Panel] Low contrast ratio 3.64:1 (minimum 3.8:1 for 13px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0053","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/admin2.html","line":null,"selector":"div.main-container > aside.live-monitors > div > button.shadcn-btn","detail":"[Admin2 Control Panel] Low contrast ratio 3.64:1 (minimum 3.8:1 for 13px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0054","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/admin2.html","line":null,"selector":"div.main-container > aside.live-monitors > div > button.shadcn-btn","detail":"[Admin2 Control Panel] Low contrast ratio 3.64:1 (minimum 3.8:1 for 13px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0055","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/admin2.html","line":null,"selector":"div > div > div > button.shadcn-btn","detail":"[Admin2 Control Panel] Low contrast ratio 3.64:1 (minimum 3.8:1 for 13px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0056","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#row-ct-matrix > div.mod-header > div > button.gear-btn","detail":"[Mobile/TV Remote Control] Low contrast ratio 1.18:1 (minimum 3.8:1 for 18px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0057","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#dur-wrap-ct-matrix > span","detail":"[Mobile/TV Remote Control] Low contrast ratio 3.11:1 (minimum 3.8:1 for 10px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0058","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#row-ct-ace2 > div.mod-header > div > button.gear-btn","detail":"[Mobile/TV Remote Control] Low contrast ratio 1.18:1 (minimum 3.8:1 for 18px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0059","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#dur-wrap-ct-ace2 > span","detail":"[Mobile/TV Remote Control] Low contrast ratio 3.11:1 (minimum 3.8:1 for 10px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0060","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#row-ct-mmr > div.mod-header > div > button.gear-btn","detail":"[Mobile/TV Remote Control] Low contrast ratio 1.18:1 (minimum 3.8:1 for 18px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0061","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#dur-wrap-ct-mmr > span","detail":"[Mobile/TV Remote Control] Low contrast ratio 3.11:1 (minimum 3.8:1 for 10px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0062","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#row-ct-quiz > div.mod-header > div > button.gear-btn","detail":"[Mobile/TV Remote Control] Low contrast ratio 1.18:1 (minimum 3.8:1 for 18px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0063","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#dur-wrap-ct-quiz > span","detail":"[Mobile/TV Remote Control] Low contrast ratio 3.11:1 (minimum 3.8:1 for 10px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0064","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#row-ct-wea1 > div.mod-header > div > button.gear-btn","detail":"[Mobile/TV Remote Control] Low contrast ratio 1.18:1 (minimum 3.8:1 for 18px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0065","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#dur-wrap-ct-wea1 > span","detail":"[Mobile/TV Remote Control] Low contrast ratio 3.11:1 (minimum 3.8:1 for 10px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0066","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#row-ct-fir > div.mod-header > div > button.gear-btn","detail":"[Mobile/TV Remote Control] Low contrast ratio 1.18:1 (minimum 3.8:1 for 18px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0067","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#dur-wrap-ct-fir > span","detail":"[Mobile/TV Remote Control] Low contrast ratio 3.11:1 (minimum 3.8:1 for 10px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0068","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#row-ct-soc > div.mod-header > div > button.gear-btn","detail":"[Mobile/TV Remote Control] Low contrast ratio 1.18:1 (minimum 3.8:1 for 18px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0069","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#dur-wrap-ct-soc > span","detail":"[Mobile/TV Remote Control] Low contrast ratio 3.11:1 (minimum 3.8:1 for 10px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0070","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#row-ct-tik > div.mod-header > div > button.gear-btn","detail":"[Mobile/TV Remote Control] Low contrast ratio 1.18:1 (minimum 3.8:1 for 18px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0071","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#dur-wrap-ct-tik > span","detail":"[Mobile/TV Remote Control] Low contrast ratio 3.11:1 (minimum 3.8:1 for 10px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0072","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#row-ct-faceb > div.mod-header > div > button.gear-btn","detail":"[Mobile/TV Remote Control] Low contrast ratio 1.18:1 (minimum 3.8:1 for 18px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0073","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#dur-wrap-ct-faceb > span","detail":"[Mobile/TV Remote Control] Low contrast ratio 3.11:1 (minimum 3.8:1 for 10px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0074","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#row-ct-insta > div.mod-header > div > button.gear-btn","detail":"[Mobile/TV Remote Control] Low contrast ratio 1.18:1 (minimum 3.8:1 for 18px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0075","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#dur-wrap-ct-insta > span","detail":"[Mobile/TV Remote Control] Low contrast ratio 3.11:1 (minimum 3.8:1 for 10px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0076","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#row-ct-loyalty > div.mod-header > div > button.gear-btn","detail":"[Mobile/TV Remote Control] Low contrast ratio 1.18:1 (minimum 3.8:1 for 18px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0077","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#dur-wrap-ct-loyalty > span","detail":"[Mobile/TV Remote Control] Low contrast ratio 3.11:1 (minimum 3.8:1 for 10px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0078","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#row-ct-trip > div.mod-header > div > button.gear-btn","detail":"[Mobile/TV Remote Control] Low contrast ratio 1.18:1 (minimum 3.8:1 for 18px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0079","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#dur-wrap-ct-trip > span","detail":"[Mobile/TV Remote Control] Low contrast ratio 3.11:1 (minimum 3.8:1 for 10px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0080","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#row-ct-west > div.mod-header > div > button.gear-btn","detail":"[Mobile/TV Remote Control] Low contrast ratio 1.18:1 (minimum 3.8:1 for 18px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0081","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#dur-wrap-ct-west > span","detail":"[Mobile/TV Remote Control] Low contrast ratio 3.11:1 (minimum 3.8:1 for 10px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0082","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#row-ct-hallo > div.mod-header > div > button.gear-btn","detail":"[Mobile/TV Remote Control] Low contrast ratio 1.18:1 (minimum 3.8:1 for 18px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0083","pillar":"DESIGN","severity":"WARNING","module":"_ct-MATRIX","type":"LOW_TEXT_CONTRAST","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#dur-wrap-ct-hallo > span","detail":"[Mobile/TV Remote Control] Low contrast ratio 3.11:1 (minimum 3.8:1 for 10px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0084","pillar":"DESIGN","severity":"CRITICAL","module":"_ct-MATRIX","type":"ELEMENT_COLLISION","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#settings-ct-quiz > div > label > span","detail":"[Mobile/TV Remote Control] Bounding box collision (37x9px overlap) between div#settings-ct-quiz > div > label > span and div#row-ct-wea1 > div.mod-header > div.mod-name.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0085","pillar":"DESIGN","severity":"CRITICAL","module":"_ct-MATRIX","type":"ELEMENT_COLLISION","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#settings-ct-trip > div > label > span","detail":"[Mobile/TV Remote Control] Bounding box collision (54x7px overlap) between div#settings-ct-trip > div > label > span and div#row-ct-west > div.mod-header > div.mod-name.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0086","pillar":"DESIGN","severity":"CRITICAL","module":"_ct-MATRIX","type":"ELEMENT_COLLISION","file":"_ct-MATRIX/remote.html","line":null,"selector":"div#settings-ct-west > div > label > span","detail":"[Mobile/TV Remote Control] Bounding box collision (46x11px overlap) between div#settings-ct-west > div > label > span and div#row-ct-hallo > div.mod-header > div.mod-name.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0087","pillar":"PROBLEMS","severity":"WARNING","module":"_ct-MATRIX","type":"BROWSER_LOG_ERROR","file":"_ct-MATRIX/navi.html","line":null,"selector":"","detail":"Browser error on _ct-MATRIX/navi.html: Failed to load resource: the server responded with a status of 404 (Not Found) (http://127.0.0.1:46381/_ct-MATRIX/matrix_login_bg_1778957890247.png)","fixHint":""},{"id":"F-0088","pillar":"PROBLEMS","severity":"WARNING","module":"_ct-MATRIX","type":"BROWSER_LOG_ERROR","file":"_ct-MATRIX/navi.html","line":null,"selector":"","detail":"Browser error on _ct-MATRIX/navi.html: Failed to load resource: the server responded with a status of 404 (Not Found) (http://127.0.0.1:46381/_ct-SOC/js/lucide.min.js)","fixHint":""},{"id":"F-0089","pillar":"PROBLEMS","severity":"WARNING","module":"_ct-MATRIX","type":"BROWSER_LOG_ERROR","file":"_ct-MATRIX/navi.html","line":null,"selector":"","detail":"Browser error on _ct-MATRIX/navi.html: Failed to load resource: the server responded with a status of 404 (Not Found) (http://127.0.0.1:46381/_ct-SOC/js/html5-qrcode.min.js)","fixHint":""},{"id":"F-0090","pillar":"PROBLEMS","severity":"WARNING","module":"ct-ACE2","type":"BROWSER_LOG_ERROR","file":"ct-ACE2/dist/index.html","line":null,"selector":"","detail":"Browser error on ct-ACE2/dist/index.html: Failed to load resource: the server responded with a status of 404 (Not Found) (http://127.0.0.1:46381/ct-ACE2/dist/scripts/audit-engine.js)","fixHint":""},{"id":"F-0091","pillar":"DESIGN","severity":"WARNING","module":"ct-ACE2","type":"TEXT_INTERNAL_OVERFLOW","file":"ct-ACE2/dist/index.html","line":null,"selector":"div.card-inner > div > div > span","detail":"[ct-ACE2 Built Display] Text scroll size (33x49) exceeds box (33x44) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0092","pillar":"DESIGN","severity":"WARNING","module":"ct-ACE2","type":"TEXT_INTERNAL_OVERFLOW","file":"ct-ACE2/dist/index.html","line":null,"selector":"div.card-3d-wrap > div.card-inner > div.card-spade-center > span","detail":"[ct-ACE2 Built Display] Text scroll size (74x158) exceeds box (74x140) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0093","pillar":"DESIGN","severity":"WARNING","module":"ct-ACE2","type":"TEXT_INTERNAL_OVERFLOW","file":"ct-ACE2/dist/index.html","line":null,"selector":"div.card-inner > div > div > span","detail":"[ct-ACE2 Built Display] Text scroll size (33x49) exceeds box (33x44) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0094","pillar":"DESIGN","severity":"WARNING","module":"ct-ACE2","type":"TEXT_INTERNAL_OVERFLOW","file":"ct-ACE2/dist/index.html","line":null,"selector":"section#slide-0 > div > h1.title-colossal > span.animate-spade-loop","detail":"[ct-ACE2 Built Display] Text scroll size (56x101) exceeds box (56x90) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0095","pillar":"DESIGN","severity":"WARNING","module":"ct-ACE2","type":"TEXT_INTERNAL_OVERFLOW","file":"ct-ACE2/dist/index.html","line":null,"selector":"section#slide-0 > div > h1.title-colossal > span.sheen-text","detail":"[ct-ACE2 Built Display] Text scroll size (522x158) exceeds box (522x140) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0096","pillar":"DESIGN","severity":"WARNING","module":"ct-ACE2","type":"TEXT_INTERNAL_OVERFLOW","file":"ct-ACE2/dist/index.html","line":null,"selector":"section#slide-0 > div > h1.title-colossal > span.animate-spade-loop","detail":"[ct-ACE2 Built Display] Text scroll size (56x101) exceeds box (56x90) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0097","pillar":"DESIGN","severity":"WARNING","module":"ct-ACE2","type":"TEXT_INTERNAL_OVERFLOW","file":"ct-ACE2/dist/index.html","line":null,"selector":"section#slide-0 > div > h1.title-colossal > span.sheen-text","detail":"[ct-ACE2 Built Display] Text scroll size (312x158) exceeds box (312x140) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0098","pillar":"DESIGN","severity":"WARNING","module":"ct-ACE2","type":"TEXT_INTERNAL_OVERFLOW","file":"ct-ACE2/dist/index.html","line":null,"selector":"section#slide-0 > div > h1.title-colossal > span.animate-spade-loop","detail":"[ct-ACE2 Built Display] Text scroll size (56x101) exceeds box (56x90) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0099","pillar":"DESIGN","severity":"WARNING","module":"ct-ACE2","type":"TEXT_INTERNAL_OVERFLOW","file":"ct-ACE2/dist/index.html","line":null,"selector":"section#slide-0 > div > h1.title-colossal > span.sheen-text","detail":"[ct-ACE2 Built Display] Text scroll size (312x158) exceeds box (312x140) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0100","pillar":"DESIGN","severity":"WARNING","module":"ct-ACE2","type":"TEXT_INTERNAL_OVERFLOW","file":"ct-ACE2/dist/index.html","line":null,"selector":"section#slide-0 > div > h1.title-colossal > span.animate-spade-loop","detail":"[ct-ACE2 Built Display] Text scroll size (56x101) exceeds box (56x90) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0101","pillar":"DESIGN","severity":"WARNING","module":"ct-ACE2","type":"TEXT_INTERNAL_OVERFLOW","file":"ct-ACE2/dist/index.html","line":null,"selector":"section#slide-0 > div > p.subtitle-colossal > span.color-cycle-spade","detail":"[ct-ACE2 Built Display] Text scroll size (36x45) exceeds box (36x40) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0102","pillar":"DESIGN","severity":"WARNING","module":"ct-ACE2","type":"TEXT_INTERNAL_OVERFLOW","file":"ct-ACE2/dist/index.html","line":null,"selector":"section#slide-0 > div > p.subtitle-colossal > span.color-cycle-spade","detail":"[ct-ACE2 Built Display] Text scroll size (36x45) exceeds box (36x40) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0103","pillar":"DESIGN","severity":"WARNING","module":"ct-ACE2","type":"TEXT_INTERNAL_OVERFLOW","file":"ct-ACE2/dist/index.html","line":null,"selector":"section#slide-0 > div > p.subtitle-colossal > span.color-cycle-spade","detail":"[ct-ACE2 Built Display] Text scroll size (36x45) exceeds box (36x40) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0104","pillar":"DESIGN","severity":"WARNING","module":"ct-ACE2","type":"TEXT_INTERNAL_OVERFLOW","file":"ct-ACE2/dist/index.html","line":null,"selector":"span#intro-cards-remaining-big","detail":"[ct-ACE2 Built Display] Text scroll size (206x68) exceeds box (206x62) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0105","pillar":"DESIGN","severity":"WARNING","module":"ct-ACE2","type":"TEXT_INTERNAL_OVERFLOW","file":"ct-ACE2/dist/index.html","line":null,"selector":"section#slide-0 > div > div.gold-panel > span.live-jackpot-val","detail":"[ct-ACE2 Built Display] Text scroll size (210x68) exceeds box (210x62) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0106","pillar":"DESIGN","severity":"WARNING","module":"ct-ACE2","type":"TEXT_INTERNAL_OVERFLOW","file":"ct-ACE2/dist/index.html","line":null,"selector":"section#slide-0 > div > div.gold-panel > span.dynamic-draw-date-short","detail":"[ct-ACE2 Built Display] Text scroll size (242x68) exceeds box (242x62) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0107","pillar":"RULES","severity":"CRITICAL","module":"ct-ACE2","type":"NON_BLINKING_CLOCK_COLON","file":"ct-ACE2/dist/index.html","line":null,"selector":"div > div.gold-panel > span > span.dynamic-draw-time-val","detail":"[ct-ACE2 Built Display] Visible clock colon (:) is static or not wrapped in an animated span (Rule: ALL CLOCKS MUST HAVE BLINKING COLONS).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0108","pillar":"DESIGN","severity":"WARNING","module":"_ct-MMR","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-MMR/index.html","line":null,"selector":"div#slides-wrapper > div.slide.active > h1","detail":"[_ct-MMR Display] Text scroll size (682x127) exceeds box (682x119) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0109","pillar":"DESIGN","severity":"WARNING","module":"_ct-wea1","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-wea1/index.html","line":null,"selector":"div#currentTemp","detail":"[_ct-wea1 Display] Text scroll size (435x209) exceeds box (435x175) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0110","pillar":"RULES","severity":"CRITICAL","module":"_ct-wea1","type":"NON_BLINKING_CLOCK_COLON","file":"_ct-wea1/index.html","line":null,"selector":"div#clockTime","detail":"[_ct-wea1 Display] Visible clock colon (:) is static or not wrapped in an animated span (Rule: ALL CLOCKS MUST HAVE BLINKING COLONS).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0111","pillar":"RULES","severity":"CRITICAL","module":"_ct-wea1","type":"NON_BLINKING_CLOCK_COLON","file":"_ct-wea1/index.html","line":null,"selector":"span#lastSyncTime","detail":"[_ct-wea1 Display] Visible clock colon (:) is static or not wrapped in an animated span (Rule: ALL CLOCKS MUST HAVE BLINKING COLONS).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0112","pillar":"DESIGN","severity":"WARNING","module":"_ct-QUIZ","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-QUIZ/index.html","line":null,"selector":"div#slides-wrapper > div.slide.active > div.content > h1","detail":"[_ct-QUIZ Display] Text scroll size (1100x273) exceeds box (1100x264) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0113","pillar":"PROBLEMS","severity":"WARNING","module":"_ct-SOC","type":"BROWSER_LOG_ERROR","file":"_ct-SOC/index.html","line":null,"selector":"","detail":"Browser error on _ct-SOC/index.html: Failed to load resource: the server responded with a status of 404 (Not Found) (http://127.0.0.1:46381/_ct-SOC/js/lucide.min.js)","fixHint":""},{"id":"F-0114","pillar":"PROBLEMS","severity":"WARNING","module":"_ct-SOC","type":"BROWSER_LOG_ERROR","file":"_ct-SOC/index.html","line":null,"selector":"","detail":"Browser error on _ct-SOC/index.html: Failed to load resource: the server responded with a status of 404 (Not Found) (http://127.0.0.1:46381/_ct-SOC/js/html5-qrcode.min.js)","fixHint":""},{"id":"F-0115","pillar":"DESIGN","severity":"WARNING","module":"_ct-SOC","type":"LOW_TEXT_CONTRAST","file":"_ct-SOC/index.html","line":null,"selector":"aside.app-sidebar > nav.sidebar-menu > div.nav-category > span.category-title","detail":"[_ct-SOC Display] Low contrast ratio 3.16:1 (minimum 3.8:1 for 11px text).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0116","pillar":"DESIGN","severity":"WARNING","module":"_ct-TIK","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-TIK/index.html","line":null,"selector":"div.cta-column > div.logo-header > div.logo-title-group > h1","detail":"[_ct-TIK Display] Text scroll size (851x88) exceeds box (851x81) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0117","pillar":"DESIGN","severity":"WARNING","module":"_ct-TIK","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-TIK/index.html","line":null,"selector":"div#counter-likes","detail":"[_ct-TIK Display] Text scroll size (137x94) exceeds box (137x83) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0118","pillar":"DESIGN","severity":"WARNING","module":"_ct-TIK","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-TIK/index.html","line":null,"selector":"div#counter-views","detail":"[_ct-TIK Display] Text scroll size (214x94) exceeds box (214x83) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0119","pillar":"DESIGN","severity":"WARNING","module":"_ct-TIK","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-TIK/index.html","line":null,"selector":"div.cta-column > div.qr-cta-box > div.qr-text-group > h3","detail":"[_ct-TIK Display] Text scroll size (573x74) exceeds box (573x67) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0120","pillar":"DESIGN","severity":"WARNING","module":"_ct-FACEB","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-FACEB/index.html","line":null,"selector":"div.cta-column > div.logo-header > div.logo-title-group > h1","detail":"[_ct-FACEB Display] Text scroll size (991x88) exceeds box (991x81) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0121","pillar":"DESIGN","severity":"WARNING","module":"_ct-FACEB","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-FACEB/index.html","line":null,"selector":"div#counter-likes","detail":"[_ct-FACEB Display] Text scroll size (137x94) exceeds box (137x83) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0122","pillar":"DESIGN","severity":"WARNING","module":"_ct-FACEB","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-FACEB/index.html","line":null,"selector":"div.cta-column > div.qr-cta-box > div.qr-text-group > h3","detail":"[_ct-FACEB Display] Text scroll size (438x74) exceeds box (438x67) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0123","pillar":"DESIGN","severity":"WARNING","module":"_ct-INSTA","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-INSTA/index.html","line":null,"selector":"div.cta-column > div.logo-header > div.logo-title-group > h1","detail":"[_ct-INSTA Display] Text scroll size (1018x88) exceeds box (1018x81) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0124","pillar":"DESIGN","severity":"WARNING","module":"_ct-INSTA","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-INSTA/index.html","line":null,"selector":"div#counter-followers","detail":"[_ct-INSTA Display] Text scroll size (128x94) exceeds box (128x83) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0125","pillar":"DESIGN","severity":"WARNING","module":"_ct-INSTA","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-INSTA/index.html","line":null,"selector":"div#counter-posts","detail":"[_ct-INSTA Display] Text scroll size (98x94) exceeds box (98x83) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0126","pillar":"DESIGN","severity":"WARNING","module":"_ct-INSTA","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-INSTA/index.html","line":null,"selector":"div.cta-column > div.qr-cta-box > div.qr-text-group > h3","detail":"[_ct-INSTA Display] Text scroll size (573x74) exceeds box (573x67) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0127","pillar":"DESIGN","severity":"WARNING","module":"_ct-WEST","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-WEST/index.html","line":null,"selector":"div#cdDays","detail":"[_ct-WEST Display] Text scroll size (85x100) exceeds box (85x86) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0128","pillar":"DESIGN","severity":"WARNING","module":"_ct-WEST","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-WEST/index.html","line":null,"selector":"div#cdHours","detail":"[_ct-WEST Display] Text scroll size (85x100) exceeds box (85x86) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0129","pillar":"DESIGN","severity":"WARNING","module":"_ct-WEST","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-WEST/index.html","line":null,"selector":"div#cdMinutes","detail":"[_ct-WEST Display] Text scroll size (85x100) exceeds box (85x86) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0130","pillar":"DESIGN","severity":"WARNING","module":"_ct-WEST","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-WEST/index.html","line":null,"selector":"div#cdSeconds","detail":"[_ct-WEST Display] Text scroll size (85x100) exceeds box (85x86) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0131","pillar":"DESIGN","severity":"WARNING","module":"_ct-WEST","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-WEST/index.html","line":null,"selector":"div#slideHeadlineTrack > span.promo-headline","detail":"[_ct-WEST Display] Text scroll size (1248x79) exceeds box (1248x72) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0132","pillar":"DESIGN","severity":"WARNING","module":"_ct-WEST","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-WEST/index.html","line":null,"selector":"div#slideHeadlineTrack > span.promo-headline","detail":"[_ct-WEST Display] Text scroll size (115x79) exceeds box (115x72) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0133","pillar":"DESIGN","severity":"WARNING","module":"_ct-WEST","type":"TEXT_INTERNAL_OVERFLOW","file":"_ct-WEST/index.html","line":null,"selector":"div#slideHeadlineTrack > span.promo-headline","detail":"[_ct-WEST Display] Text scroll size (1248x79) exceeds box (1248x72) without ellipsis.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0134","pillar":"DESIGN","severity":"CRITICAL","module":"_ct-WEST","type":"ELEMENT_COLLISION","file":"_ct-WEST/index.html","line":null,"selector":"span#slideBadge","detail":"[_ct-WEST Display] Bounding box collision (290x9px overlap) between span#slideBadge and div#slideHeadlineTrack > span.promo-headline.","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0135","pillar":"RULES","severity":"CRITICAL","module":"_ct-TRIP","type":"NON_BLINKING_CLOCK_COLON","file":"_ct-TRIP/index.html","line":null,"selector":"div#clock","detail":"[_ct-TRIP Display] Visible clock colon (:) is static or not wrapped in an animated span (Rule: ALL CLOCKS MUST HAVE BLINKING COLONS).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."},{"id":"F-0136","pillar":"RULES","severity":"CRITICAL","module":"_ct-TRIP","type":"NON_BLINKING_CLOCK_COLON","file":"_ct-TRIP/index.html","line":null,"selector":"html > body > header.app-header > div.clock-container","detail":"[_ct-TRIP Display] Visible clock colon (:) is static or not wrapped in an animated span (Rule: ALL CLOCKS MUST HAVE BLINKING COLONS).","fixHint":"Adjust CSS layout, font-size, overflow, or container dimensions."}],"screenshots":["_ct-FACEB_index.png","_ct-FIR_index.png","_ct-HALLO_index.png","_ct-INSTA_index.png","_ct-MATRIX_admin2.png","_ct-MATRIX_billboard.png","_ct-MATRIX_masteradmin.png","_ct-MATRIX_navi.png","_ct-MATRIX_remote.png","_ct-MATRIX_slide_00_ct-mmr.png","_ct-MATRIX_slide_01_ct-ace2.png","_ct-MATRIX_slide_02_ct-loyalty.png","_ct-MATRIX_slide_03_ct-tik.png","_ct-MATRIX_slide_04_ct-faceb.png","_ct-MATRIX_slide_05_ct-insta.png","_ct-MATRIX_slide_06_ct-soc.png","_ct-MATRIX_slide_07_ct-quiz.png","_ct-MATRIX_slide_08_ct-west.png","_ct-MATRIX_slide_09_ct-hallo.png","_ct-MMR_index.png","_ct-QUIZ_index.png","_ct-SOC_index.png","_ct-TIK_index.png","_ct-TRIP_index.png","_ct-WEST_index.png","_ct-wea1_index.png","ct-ACE2_index.png"],"screenshotPrefix":"2026-10-26_23-49-33/screenshots/"};
+    let state = {
+      pillar: 'ALL',
+      severity: 'ALL',
+      module: 'ALL',
+      search: ''
+    };
+
+    function updateClock() {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const el = document.getElementById('live-clock');
+      if (el) {
+        el.innerHTML = pad(now.getHours()) + '<span class="clock-colon">:</span>' + pad(now.getMinutes()) + '<span class="clock-colon">:</span>' + pad(now.getSeconds());
+      }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function initDashboard() {
+      const sc = DATA.scorecard;
+      document.getElementById('meta-subtitle').textContent =
+        'Run: ' + sc.timestamp + '  |  Project: ' + sc.primaryProject + '  |  Boundary Root: ' + sc.allowedRoot + '  |  Mode: ' + sc.mode;
+      document.getElementById('overall-score').textContent = sc.overallScore + '/100';
+      document.getElementById('overall-score').style.color =
+        sc.overallScore >= 80 ? 'var(--pass)' : sc.overallScore >= 50 ? 'var(--warn)' : 'var(--crit)';
+      document.getElementById('overall-counts').innerHTML =
+        '<span class="c-crit">' + sc.totals.critical + ' Crit</span> · <span class="c-warn">' + sc.totals.warning + ' Warn</span> · <span class="c-info">' + sc.totals.info + ' Info</span>';
+
+      renderPillars();
+      renderFilterPills();
+      renderTable();
+      renderScreenshots();
+
+      document.getElementById('search-box').addEventListener('input', e => {
+        state.search = e.target.value.trim().toLowerCase();
+        renderTable();
+      });
+    }
+
+    function renderPillars() {
+      const grid = document.getElementById('pillars-grid');
+      const entries = Object.entries(DATA.scorecard.byPillar);
+      grid.innerHTML = entries.map(([name, st]) => {
+        const isActive = state.pillar === name ? 'active' : '';
+        return '<div class="pillar-card ' + isActive + '" onclick="togglePillar(\'' + name + '\')">' +
+          '<div class="pillar-top">' +
+            '<span class="pillar-name">' + name + '</span>' +
+            '<span class="status-badge status-' + st.status + '">' + st.status + '</span>' +
+          '</div>' +
+          '<div class="pillar-score">' + st.score + '<span style="font-size:13px;color:var(--muted);font-weight:600;">/100</span></div>' +
+          '<div class="pillar-counts">' +
+            '<span class="c-crit">' + st.critical + ' Crit</span>' +
+            '<span class="c-warn">' + st.warning + ' Warn</span>' +
+            '<span class="c-info">' + st.info + ' Info</span>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function togglePillar(p) {
+      state.pillar = state.pillar === p ? 'ALL' : p;
+      renderPillars();
+      renderTable();
+    }
+
+    function setSeverity(sev) {
+      state.severity = sev;
+      renderFilterPills();
+      renderTable();
+    }
+
+    function setModule(mod) {
+      state.module = mod;
+      renderFilterPills();
+      renderTable();
+    }
+
+    function renderFilterPills() {
+      const sevEl = document.getElementById('severity-pills');
+      const sevs = ['ALL', 'CRITICAL', 'WARNING', 'INFO'];
+      sevEl.innerHTML = sevs.map(s =>
+        '<button class="filter-btn ' + (state.severity === s ? 'active' : '') + '" onclick="setSeverity(\'' + s + '\')">' + s + '</button>'
+      ).join('');
+
+      const modEl = document.getElementById('module-pills');
+      const mods = ['ALL', ...Object.keys(DATA.scorecard.byModule)];
+      modEl.innerHTML = mods.map(m => {
+        const count = m === 'ALL' ? DATA.findings.length : (DATA.scorecard.byModule[m]?.total || 0);
+        return '<button class="filter-btn ' + (state.module === m ? 'active' : '') + '" onclick="setModule(\'' + m + '\')">' + m + ' (' + count + ')</button>';
+      }).join('');
+    }
+
+    function escapeHtml(s) {
+      return String(s || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function renderTable() {
+      const order = { CRITICAL: 0, WARNING: 1, INFO: 2 };
+      const filtered = DATA.findings.filter(f => {
+        if (state.pillar !== 'ALL' && f.pillar !== state.pillar) return false;
+        if (state.severity !== 'ALL' && f.severity !== state.severity) return false;
+        if (state.module !== 'ALL' && f.module !== state.module) return false;
+        if (state.search) {
+          const hay = (f.id + ' ' + f.type + ' ' + f.file + ' ' + f.selector + ' ' + f.detail + ' ' + f.module).toLowerCase();
+          if (!hay.includes(state.search)) return false;
+        }
+        return true;
+      }).sort((a, b) => (order[a.severity] ?? 3) - (order[b.severity] ?? 3));
+
+      document.getElementById('filtered-count').textContent = filtered.length;
+      const tbody = document.getElementById('findings-tbody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted);">No findings match the active filters.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(f => {
+        const loc = f.line ? (f.file + ':' + f.line) : (f.file || '-');
+        const sel = f.selector ? '<div class="code-tag cell-ellipsis" style="color:#94a3b8;margin-top:2px;" title="' + escapeHtml(f.selector) + '">' + escapeHtml(f.selector) + '</div>' : '';
+        const hint = f.fixHint ? '<div class="fix-hint">Fix: ' + escapeHtml(f.fixHint) + '</div>' : '';
+        return '<tr>' +
+          '<td class="code-tag">' + escapeHtml(f.id) + '</td>' +
+          '<td><span class="sev-badge sev-' + escapeHtml(f.severity) + '">' + escapeHtml(f.severity) + '</span></td>' +
+          '<td style="font-weight:700;">' + escapeHtml(f.pillar) + '</td>' +
+          '<td class="code-tag cell-ellipsis" title="' + escapeHtml(f.module) + '">' + escapeHtml(f.module) + '</td>' +
+          '<td class="code-tag cell-ellipsis" title="' + escapeHtml(f.type) + '">' + escapeHtml(f.type) + '</td>' +
+          '<td><div class="code-tag cell-ellipsis" title="' + escapeHtml(loc) + '">' + escapeHtml(loc) + '</div>' + sel + '</td>' +
+          '<td><div>' + escapeHtml(f.detail) + '</div>' + hint + '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function renderScreenshots() {
+      const shots = DATA.screenshots || [];
+      document.getElementById('shot-count').textContent = shots.length;
+      const grid = document.getElementById('screenshots-view');
+      grid.innerHTML = shots.map(file => {
+        const src = DATA.screenshotPrefix + file;
+        return '<div class="shot-card" onclick="openLightbox(\'' + src + '\', \'' + file + '\')">' +
+          '<img src="' + src + '" loading="lazy" alt="' + file + '">' +
+          '<div class="shot-label">' + file + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function switchTab(tab) {
+      const isFindings = tab === 'findings';
+      document.getElementById('tab-findings').classList.toggle('active', isFindings);
+      document.getElementById('tab-screenshots').classList.toggle('active', !isFindings);
+      document.getElementById('findings-view').style.display = isFindings ? 'block' : 'none';
+      document.getElementById('controls-bar').style.display = isFindings ? 'flex' : 'none';
+      document.getElementById('screenshots-view').style.display = isFindings ? 'none' : 'grid';
+    }
+
+    function openLightbox(src, caption) {
+      document.getElementById('lightbox-img').src = src;
+      document.getElementById('lightbox-caption').textContent = caption;
+      document.getElementById('lightbox').classList.add('open');
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('open');
+    }
+
+    initDashboard();
+  </script>
+</body>
+</html>
