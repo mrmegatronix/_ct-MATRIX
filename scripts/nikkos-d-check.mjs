@@ -1341,10 +1341,8 @@ async function runHeadlessBrowserAudit(targets) {
           awaitPromise: false
         });
 
-        if (pageSpec.isMatrixMainSlideshow) {
-          await auditMatrixMainSlideshowStates(cdp, target.name, pageSpec);
-        } else if (pageSpec.isMMRSlideshow) {
-          await auditMMRSlideshowStates(cdp, target.name, pageSpec);
+        if (pageSpec.isSignagePage) {
+          await auditSignageSlideshowStates(cdp, target.name, pageSpec);
         } else {
           await auditSinglePageState(cdp, target.name, pageSpec, pageSpec.screenshotSlug);
         }
@@ -1464,170 +1462,231 @@ async function auditSinglePageState(cdp, moduleName, pageSpec, screenshotSlug) {
   }
 }
 
-async function auditMMRSlideshowStates(cdp, moduleName, pageSpec) {
-  const countRes = await cdp.send('Runtime.evaluate', {
-    expression: `(() => {
-      const slides = document.querySelectorAll('.slide');
-      return slides.length;
-    })()`,
-    returnByValue: true
-  });
-  const count = countRes?.result?.value || 0;
-  if (count <= 1) {
-    await auditSinglePageState(cdp, moduleName, pageSpec, pageSpec.screenshotSlug);
-    return;
-  }
-  const maxSlides = Math.min(count, 10);
-  for (let i = 0; i < maxSlides; i++) {
-    await cdp.send('Runtime.evaluate', {
+async function auditSignageSlideshowStates(cdp, moduleName, pageSpec) {
+  // 1. Check if page is _ct-MATRIX main slideshow with full queue
+  if (pageSpec.isMatrixMainSlideshow) {
+    const queueRes = await cdp.send('Runtime.evaluate', {
       expression: `(() => {
-        const slides = document.querySelectorAll('.slide');
-        slides.forEach((s, idx) => {
-          if (idx === ${i}) {
-            s.classList.add('active');
-            s.style.opacity = '1';
-            s.style.transform = 'scale(1)';
-            s.style.visibility = 'visible';
-          } else {
-            s.classList.remove('active');
-            s.style.opacity = '0';
-            s.style.transform = 'scale(1.05)';
-          }
+        if (!window.MATRIX || !window.MATRIX.STATE) return [];
+        window.MATRIX.STATE.isPaused = true;
+        if (window.MATRIX.STATE.timer) clearTimeout(window.MATRIX.STATE.timer);
+        return (window.MATRIX.STATE.slides || []).map((s, idx) => ({
+          idx,
+          id: s.id || s.type || ('slide-' + idx),
+          type: s.type || 'unknown',
+          slotKey: s.slotKey || s.id || ('slide-' + idx)
+        }));
+      })()`,
+      returnByValue: true
+    });
+
+    const slides = queueRes?.result?.value || [];
+    if (slides.length > 0) {
+      log(`    [${moduleName}] Stepping through ALL ${slides.length} slides in queue...`);
+
+      // Keyboard contract check
+      const kbRes = await cdp.send('Runtime.evaluate', {
+        expression: `window.NIKKOS_D_CHECK.runKeyboardContractAudit()`,
+        returnByValue: true
+      });
+      for (const kf of kbRes?.result?.value?.findings || []) {
+        addFinding({
+          pillar: kf.pillar || 'RULES',
+          severity: kf.severity || 'WARNING',
+          moduleName,
+          type: kf.type,
+          file: pageSpec.relUrl,
+          selector: kf.selector,
+          detail: `[Main Display] ${kf.detail}`,
+          fixHint: 'Check handleKeyboardShortcuts in matrix-core.js.'
         });
-      })()`,
-      returnByValue: true
-    });
-    await sleep(400);
-    const evalRes = await cdp.send('Runtime.evaluate', {
-      expression: `window.NIKKOS_D_CHECK.runAudit({ viewportWidth: ${pageSpec.width}, viewportHeight: ${pageSpec.height}, isSignagePage: true })`,
-      returnByValue: true
-    });
-    const auditData = evalRes?.result?.value;
-    for (const v of auditData?.violations || []) {
-      addFinding({
-        pillar: v.pillar || 'DESIGN',
-        severity: v.severity || 'WARNING',
-        moduleName,
-        type: v.type,
-        file: pageSpec.relUrl,
-        selector: v.selector,
-        detail: `[Slide ${i + 1}/${count}] ${v.detail}`,
-        fixHint: 'Adjust CSS layout, font-size, overflow, or container dimensions.'
-      });
+      }
+
+      for (const slide of slides) {
+        await cdp.send('Runtime.evaluate', {
+          expression: `(() => {
+            window.MATRIX.STATE.currentIndex = ${slide.idx};
+            if (typeof window.renderActiveSlide === 'function') {
+              window.renderActiveSlide(true);
+            } else if (typeof window.renderSlide === 'function') {
+              window.renderSlide(${slide.idx});
+            }
+          })()`
+        });
+        await sleep(650);
+
+        const evalRes = await cdp.send('Runtime.evaluate', {
+          expression: `window.NIKKOS_D_CHECK.runAudit({ viewportWidth: ${pageSpec.width}, viewportHeight: ${pageSpec.height}, isSignagePage: true })`,
+          returnByValue: true
+        });
+        const violations = evalRes?.result?.value?.violations || [];
+        for (const v of violations) {
+          addFinding({
+            pillar: v.pillar || 'DESIGN',
+            severity: v.severity || 'WARNING',
+            moduleName,
+            type: v.type,
+            file: `${pageSpec.relUrl} [slide #${slide.idx}: ${slide.slotKey}]`,
+            selector: v.selector,
+            detail: `[Slide ${slide.slotKey}] ${v.detail}`,
+            fixHint: 'Adjust slide card layout or typography in matrix-core.js / index.html.'
+          });
+        }
+      }
+
+      const safeSlug = `_ct-MATRIX_main_queue`;
+      await captureScreenshot(cdp, `${safeSlug}.png`);
+      return;
     }
   }
-  await captureScreenshot(cdp, `${pageSpec.screenshotSlug}.png`);
-}
 
-async function auditMatrixMainSlideshowStates(cdp, moduleName, pageSpec) {
-  // Pause automatic slide timer so we can deterministically step through slides
-  const queueRes = await cdp.send('Runtime.evaluate', {
+  // 2. Detect slide/pane structure across sibling modules
+  const detectRes = await cdp.send('Runtime.evaluate', {
     expression: `(() => {
-      if (!window.MATRIX || !window.MATRIX.STATE) return [];
-      window.MATRIX.STATE.isPaused = true;
-      if (window.MATRIX.STATE.timer) clearTimeout(window.MATRIX.STATE.timer);
-      return (window.MATRIX.STATE.slides || []).map((s, idx) => ({
-        idx,
-        id: s.id || s.type || ('slide-' + idx),
-        type: s.type || 'unknown',
-        slotKey: s.slotKey || s.id || ('slide-' + idx)
-      }));
+      // ct-ACE2 panes
+      const acePanes = document.querySelectorAll('.slide-pane');
+      if (acePanes.length > 1) {
+        return { type: 'ace2', count: acePanes.length };
+      }
+      // _ct-WEST slides
+      if (window.appConfig && Array.isArray(window.appConfig.slides) && window.appConfig.slides.length > 1) {
+        return { type: 'west', count: window.appConfig.slides.length };
+      }
+      // _ct-wea1 slides
+      if (typeof window.applySlide === 'function' && document.querySelectorAll('.slide').length > 1) {
+        return { type: 'wea1', count: document.querySelectorAll('.slide').length };
+      }
+      // Generic .slide deck (e.g. _ct-MMR, _ct-QUIZ)
+      const genericSlides = document.querySelectorAll('.slide');
+      if (genericSlides.length > 1) {
+        return { type: 'generic_slides', count: genericSlides.length };
+      }
+      return { type: 'single', count: 1 };
     })()`,
     returnByValue: true
   });
 
-  const slides = queueRes?.result?.value || [];
-  // Audit keyboard navigation contract once on the main display
-  const kbRes = await cdp.send('Runtime.evaluate', {
-    expression: `window.NIKKOS_D_CHECK.runKeyboardContractAudit()`,
-    returnByValue: true
-  });
-  for (const kf of kbRes?.result?.value?.findings || []) {
-    addFinding({
-      pillar: kf.pillar || 'RULES',
-      severity: kf.severity || 'WARNING',
-      moduleName,
-      type: kf.type,
-      file: pageSpec.relUrl,
-      selector: kf.selector,
-      detail: `[Main Display] ${kf.detail}`,
-      fixHint: 'Check handleKeyboardShortcuts in matrix-core.js.'
-    });
-  }
+  const info = detectRes?.result?.value || { type: 'single', count: 1 };
 
-  // Select representative slides (all unique slide types/IDs up to 10 slides)
-  const seenSlideTypes = new Set();
-  const slidesToInspect = [];
-  for (const s of slides) {
-    const key = `${s.type}:${s.id}`;
-    if (!seenSlideTypes.has(key) && slidesToInspect.length < 10) {
-      seenSlideTypes.add(key);
-      slidesToInspect.push(s);
+  if (info.count > 1) {
+    log(`    [${moduleName}] Stepping through ALL ${info.count} slides (${info.type})...`);
+    for (let i = 0; i < info.count; i++) {
+      await cdp.send('Runtime.evaluate', {
+        expression: `(() => {
+          if ('${info.type}' === 'ace2') {
+            const panes = document.querySelectorAll('.slide-pane');
+            panes.forEach((p, idx) => {
+              if (idx === ${i}) {
+                p.classList.add('active');
+                p.style.setProperty('display', 'flex', 'important');
+                p.style.setProperty('opacity', '1', 'important');
+                p.style.setProperty('visibility', 'visible', 'important');
+                p.style.setProperty('transition', 'none', 'important');
+              } else {
+                p.classList.remove('active');
+                p.style.setProperty('display', 'none', 'important');
+                p.style.setProperty('opacity', '0', 'important');
+                p.style.setProperty('visibility', 'hidden', 'important');
+                p.style.setProperty('transition', 'none', 'important');
+              }
+            });
+            if (typeof showSlide === 'function') showSlide(${i});
+            else if (typeof window.showSlide === 'function') window.showSlide(${i});
+          } else if ('${info.type}' === 'west') {
+            if (typeof showSlide === 'function') showSlide(${i}, true);
+            const slides = document.querySelectorAll('.slide, .slide-container');
+            slides.forEach((s, idx) => {
+              if (idx === ${i}) {
+                s.style.setProperty('visibility', 'visible', 'important');
+                s.style.setProperty('transition', 'none', 'important');
+              } else {
+                s.style.setProperty('visibility', 'hidden', 'important');
+                s.style.setProperty('transition', 'none', 'important');
+              }
+            });
+          } else if ('${info.type}' === 'wea1') {
+            if (typeof applySlide === 'function') applySlide(${i + 1});
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach((s, idx) => {
+              if (idx === ${i}) {
+                s.classList.add('active');
+                s.style.setProperty('display', 'flex', 'important');
+                s.style.setProperty('opacity', '1', 'important');
+                s.style.setProperty('visibility', 'visible', 'important');
+                s.style.setProperty('transition', 'none', 'important');
+              } else {
+                s.classList.remove('active');
+                s.style.setProperty('display', 'none', 'important');
+                s.style.setProperty('opacity', '0', 'important');
+                s.style.setProperty('visibility', 'hidden', 'important');
+                s.style.setProperty('transition', 'none', 'important');
+              }
+            });
+          } else if ('${info.type}' === 'generic_slides') {
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach((s, idx) => {
+              if (idx === ${i}) {
+                s.classList.add('active');
+                s.style.setProperty('display', 'flex', 'important');
+                s.style.setProperty('opacity', '1', 'important');
+                s.style.setProperty('visibility', 'visible', 'important');
+                s.style.setProperty('transition', 'none', 'important');
+              } else {
+                s.classList.remove('active');
+                s.style.setProperty('display', 'none', 'important');
+                s.style.setProperty('opacity', '0', 'important');
+                s.style.setProperty('visibility', 'hidden', 'important');
+                s.style.setProperty('transition', 'none', 'important');
+              }
+            });
+          }
+        })()`
+      });
+      await sleep(450);
+
+      const evalRes = await cdp.send('Runtime.evaluate', {
+        expression: `window.NIKKOS_D_CHECK.runAudit({ viewportWidth: ${pageSpec.width}, viewportHeight: ${pageSpec.height}, isSignagePage: true })`,
+        returnByValue: true
+      });
+      const violations = evalRes?.result?.value?.violations || [];
+      for (const v of violations) {
+        addFinding({
+          pillar: v.pillar || 'DESIGN',
+          severity: v.severity || 'WARNING',
+          moduleName,
+          type: v.type,
+          file: pageSpec.relUrl,
+          selector: v.selector,
+          detail: `[Slide ${i + 1}/${info.count}] ${v.detail}`,
+          fixHint: 'Adjust CSS layout, font-size, overflow, or container dimensions.'
+        });
+      }
     }
-  }
 
-  if (slidesToInspect.length === 0) {
-    await auditSinglePageState(cdp, moduleName, pageSpec, '_ct-MATRIX_index');
+    // Keyboard audit
+    const kbRes = await cdp.send('Runtime.evaluate', {
+      expression: `window.NIKKOS_D_CHECK.runKeyboardContractAudit()`,
+      returnByValue: true
+    });
+    for (const kf of kbRes?.result?.value?.findings || []) {
+      addFinding({
+        pillar: kf.pillar || 'RULES',
+        severity: kf.severity || 'WARNING',
+        moduleName,
+        type: kf.type,
+        file: pageSpec.relUrl,
+        selector: kf.selector,
+        detail: `[${pageSpec.label}] ${kf.detail}`,
+        fixHint: 'Ensure keyboard navigation rules and Input Guard are implemented.'
+      });
+    }
+
+    await captureScreenshot(cdp, `${pageSpec.screenshotSlug}.png`);
     return;
   }
 
-  for (const slide of slidesToInspect) {
-    await cdp.send('Runtime.evaluate', {
-      expression: `(() => {
-        window.MATRIX.STATE.currentIndex = ${slide.idx};
-        if (typeof window.renderActiveSlide === 'function') {
-          window.renderActiveSlide(true);
-        } else if (typeof window.renderSlide === 'function') {
-          window.renderSlide(${slide.idx});
-        }
-      })()`,
-      returnByValue: true
-    });
-    await sleep(950);
-    await cdp.send('Runtime.evaluate', {
-      expression: `Promise.race([
-        Promise.all(Array.from(document.images).filter(img => !img.complete).map(img => new Promise(res => { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); }))),
-        new Promise(res => setTimeout(res, 2000))
-      ])`,
-      awaitPromise: true,
-      returnByValue: true
-    });
-
-    const evalRes = await cdp.send('Runtime.evaluate', {
-      expression: `window.NIKKOS_D_CHECK.runAudit({ viewportWidth: 1920, viewportHeight: 1080, isSignagePage: true })`,
-      returnByValue: true
-    });
-    const violations = evalRes?.result?.value?.violations || [];
-    for (const v of violations) {
-      addFinding({
-        pillar: v.pillar || 'DESIGN',
-        severity: v.severity || 'WARNING',
-        moduleName,
-        type: v.type,
-        file: `${pageSpec.relUrl} [slide #${slide.idx}: ${slide.slotKey}]`,
-        selector: v.selector,
-        detail: `[Slide ${slide.slotKey}] ${v.detail}`,
-        fixHint: 'Adjust slide card layout or typography in matrix-core.js / index.html.'
-      });
-    }
-
-    if (violations.length > 0) {
-      await cdp.send('Runtime.evaluate', {
-        expression: `window.NIKKOS_D_CHECK.highlightViolations(${JSON.stringify(violations)})`,
-        returnByValue: true
-      });
-    }
-
-    const safeSlug = `_ct-MATRIX_slide_${String(slide.idx).padStart(2, '0')}_${String(slide.slotKey).replace(/[^A-Za-z0-9_-]/g, '_')}`;
-    await captureScreenshot(cdp, `${safeSlug}.png`);
-
-    if (violations.length > 0) {
-      await cdp.send('Runtime.evaluate', {
-        expression: `window.NIKKOS_D_CHECK.clearHighlights()`,
-        returnByValue: true
-      });
-    }
-  }
+  // Fallback: single page audit for non-slide signage pages
+  await auditSinglePageState(cdp, moduleName, pageSpec, pageSpec.screenshotSlug);
 }
 
 async function captureScreenshot(cdp, fileName) {

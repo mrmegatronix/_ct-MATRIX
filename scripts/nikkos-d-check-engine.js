@@ -173,13 +173,17 @@
 
   function countTextLines(el) {
     try {
+      const cs = window.getComputedStyle(el);
+      if (cs.whiteSpace === 'nowrap' || cs.whiteSpace === 'pre') return 1;
+      const fs = parseFloat(cs.fontSize) || 16;
+      const threshold = Math.max(8, fs * 0.45);
       const range = document.createRange();
       range.selectNodeContents(el);
       const rects = Array.from(range.getClientRects()).filter(r => r.width > 1 && r.height > 2);
       if (rects.length <= 1) return rects.length;
       const lineTops = [];
       for (const r of rects) {
-        if (!lineTops.some(top => Math.abs(top - r.top) < 6)) {
+        if (!lineTops.some(top => Math.abs(top - r.top) < threshold)) {
           lineTops.push(r.top);
         }
       }
@@ -299,7 +303,8 @@
 
       // 2. Horizontal/Vertical Text Clipping or Unintended Scrollbars
       const isSymbolOrPunctuation = txt.trim().length <= 1 || ['♠', '♣', '♥', '♦', ':', '•', '·'].includes(txt.trim()) || el.classList.contains('blink-colon') || el.classList.contains('clock-colon');
-      if (directText && el.children.length === 0 && !isSymbolOrPunctuation) {
+      const isClippingOverflow = (cs.overflowX === 'hidden' || cs.overflowX === 'clip' || cs.overflowY === 'hidden' || cs.overflowY === 'clip' || cs.overflowX === 'scroll' || cs.overflowY === 'scroll' || cs.overflowX === 'auto' || cs.overflowY === 'auto');
+      if (directText && el.children.length === 0 && !isSymbolOrPunctuation && isClippingOverflow) {
         const overX = el.scrollWidth > el.clientWidth + 3 && el.clientWidth > 0;
         const overY = el.scrollHeight > el.clientHeight + 6 && el.clientHeight > 0;
         if (overX || overY) {
