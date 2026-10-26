@@ -54,8 +54,8 @@
     .mod-name { font-size: 0.85rem; font-weight: 900; color: var(--text); }
     .gear-btn { background: transparent; border: none; font-size: 1.1rem; cursor: pointer; padding: 4px; opacity: 0.5; transition: 0.2s; -webkit-tap-highlight-color: transparent; }
     .gear-btn:active { transform: scale(0.9); opacity: 1; }
-    .mod-settings { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
-    .mod-settings.open { max-height: 100px; }
+    .mod-settings { display: none; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+    .mod-settings.open { display: block; max-height: 100px; }
     
     .mod-switch-cb:checked + .mod-switch-bg { background: var(--accent) !important; border-color: var(--accent) !important; box-shadow: 0 0 10px var(--accent-glow); }
     .mod-switch-cb:checked + .mod-switch-bg .mod-switch-knob { transform: translateX(20px); }

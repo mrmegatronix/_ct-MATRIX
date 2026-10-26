@@ -2218,7 +2218,7 @@ function renderHeroQRStation(slide, color, qrData) {
     <div class="hero-qr-card">
       <div class="hero-qr-header">SCAN TO<br>BOOK A TABLE</div>
       <div class="hero-qr-tile">
-        <img class="qr-matrix" src="${qrImgSrc}" alt="QR" style="width:100%;height:100%;">
+        <img class="qr-matrix" src="${qrImgSrc}" alt="QR" style="width:100%;height:100%;" onerror="this.onerror=null;this.src='images/logo.png';">
         <div class="hero-qr-center-logo">
           <img src="images/logo.png" alt="Coasters">
         </div>

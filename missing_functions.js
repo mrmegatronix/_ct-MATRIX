@@ -100,6 +100,10 @@
         renderMonitorTray();
     }
 
+    window.saveSchedules = function() {
+        const moduleIds = ['ct-matrix', 'ct-ace2', 'ct-mmr', 'ct-quiz', 'ct-wea1', 'ct-fir', 'ct-soc', 'ct-tik', 'ct-faceb', 'ct-insta', 'ct-loyalty', 'ct-trip', 'ct-west', 'ct-hallo'];
+        const schedules = {};
+
         function timeToDec(timeStr) {
             if (!timeStr) return 0;
             const parts = timeStr.split(':');

@@ -1525,6 +1525,14 @@ async function auditMatrixMainSlideshowStates(cdp, moduleName, pageSpec) {
       returnByValue: true
     });
     await sleep(950);
+    await cdp.send('Runtime.evaluate', {
+      expression: `Promise.race([
+        Promise.all(Array.from(document.images).filter(img => !img.complete).map(img => new Promise(res => { img.addEventListener('load', res, { once: true }); img.addEventListener('error', res, { once: true }); }))),
+        new Promise(res => setTimeout(res, 2000))
+      ])`,
+      awaitPromise: true,
+      returnByValue: true
+    });
 
     const evalRes = await cdp.send('Runtime.evaluate', {
       expression: `window.NIKKOS_D_CHECK.runAudit({ viewportWidth: 1920, viewportHeight: 1080, isSignagePage: true })`,
