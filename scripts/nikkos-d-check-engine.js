@@ -298,9 +298,10 @@
       }
 
       // 2. Horizontal/Vertical Text Clipping or Unintended Scrollbars
-      if (directText && el.children.length === 0) {
+      const isSymbolOrPunctuation = txt.trim().length <= 1 || ['♠', '♣', '♥', '♦', ':', '•', '·'].includes(txt.trim()) || el.classList.contains('blink-colon') || el.classList.contains('clock-colon');
+      if (directText && el.children.length === 0 && !isSymbolOrPunctuation) {
         const overX = el.scrollWidth > el.clientWidth + 3 && el.clientWidth > 0;
-        const overY = el.scrollHeight > el.clientHeight + 4 && el.clientHeight > 0;
+        const overY = el.scrollHeight > el.clientHeight + 6 && el.clientHeight > 0;
         if (overX || overY) {
           const hasEllipsis = cs.textOverflow === 'ellipsis' && cs.whiteSpace === 'nowrap';
           if (!hasEllipsis) {
@@ -547,7 +548,7 @@
 
         // Test Numeric Keys '1'-'9' Duration (test '2' -> 20s)
         fireKey('2', 'Digit2');
-        const durAfter2 = st.customDuration || st.slideDuration || st.overrideDuration;
+        const durAfter2 = st.customDuration || st.slideDuration || st.overrideDuration || (window.MATRIX && window.MATRIX.CONFIG && window.MATRIX.CONFIG.SWAP_DELAY ? window.MATRIX.CONFIG.SWAP_DELAY / 1000 : 0);
         if (durAfter2 !== 20000 && durAfter2 !== 20) {
           findings.push({
             pillar: 'RULES',

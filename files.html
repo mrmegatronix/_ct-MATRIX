@@ -485,7 +485,7 @@
             <a href="../_ct-LAND/index.html" class="nav-btn" title="Return to CT-LAND Hub">
                 <i data-lucide="compass"></i> CT-LAND Hub
             </a>
-            <a href="https://github.com/mrmegatronix/_ct-MATRIX" target="_blank" class="nav-btn primary" title="Open GitHub Repository">
+            <a href="https://github.com/mrmegatronix/_ct-MATRIX" target="_blank" rel="noopener noreferrer" class="nav-btn primary" title="Open GitHub Repository">
                 <i data-lucide="github"></i> GitHub Repo
             </a>
         </nav>
@@ -701,7 +701,7 @@
                     </div>
                     <div class="file-actions">
                         ${isHtml ? `
-                            <a href="${targetLocalUrl}" target="_blank" class="action-btn-sm primary-act">
+                            <a href="${targetLocalUrl}" target="_blank" rel="noopener noreferrer" class="action-btn-sm primary-act">
                                 <i data-lucide="external-link"></i> Launch
                             </a>
                         ` : isImg ? `
@@ -709,11 +709,11 @@
                                 <i data-lucide="eye"></i> Preview
                             </button>
                         ` : `
-                            <a href="${ghUrl}" target="_blank" class="action-btn-sm">
+                            <a href="${ghUrl}" target="_blank" rel="noopener noreferrer" class="action-btn-sm">
                                 <i data-lucide="file-text"></i> View
                             </a>
                         `}
-                        <a href="${ghUrl}" target="_blank" class="action-btn-sm" title="View on GitHub">
+                        <a href="${ghUrl}" target="_blank" rel="noopener noreferrer" class="action-btn-sm" title="View on GitHub">
                             <i data-lucide="github"></i> Git
                         </a>
                     </div>

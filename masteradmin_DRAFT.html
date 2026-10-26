@@ -403,9 +403,9 @@
         const ctx = document.getElementById('context-links');
         const basePath = url.substring(0, url.lastIndexOf('/') + 1);
         ctx.innerHTML = `
-            <a href="${basePath}index.html" target="_blank" class="ctrl-btn">MAIN</a>
-            <a href="${basePath}admin.html" target="_blank" class="ctrl-btn">ADMIN</a>
-            <a href="${basePath}remote.html" target="_blank" class="ctrl-btn">REMOTE</a>
+            <a href="${basePath}index.html" target="_blank" rel="noopener noreferrer" class="ctrl-btn">MAIN</a>
+            <a href="${basePath}admin.html" target="_blank" rel="noopener noreferrer" class="ctrl-btn">ADMIN</a>
+            <a href="${basePath}remote.html" target="_blank" rel="noopener noreferrer" class="ctrl-btn">REMOTE</a>
         `;
         showToast('LOADED ' + name);
     }

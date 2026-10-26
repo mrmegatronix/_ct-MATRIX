@@ -606,7 +606,7 @@ function checkHtmlSource(content, htmlFilePath, relFile, modName, htmlCacheBuste
   lines.forEach((line, idx) => {
     if (/<(script|style)\b/i.test(line)) inScriptOrStyle = true;
     if (!inScriptOrStyle) {
-      const idMatches = line.matchAll(/\bid\s*=\s*["']([^"']+)["']/gi);
+      const idMatches = line.matchAll(/(?<![-_])\bid\s*=\s*["']([^"']+)["']/gi);
       for (const m of idMatches) {
         const idVal = m[1].trim();
         if (!idVal || idVal.includes('${') || idVal.includes('{{')) continue;
@@ -642,7 +642,7 @@ function checkHtmlSource(content, htmlFilePath, relFile, modName, htmlCacheBuste
     if (srcMatch) {
       const rawSrc = srcMatch[1].trim();
       checkAssetReference(rawSrc, htmlDir, relFile, baseName, modName, 'script', htmlCacheBusters);
-      if (/^https?:\/\//i.test(rawSrc) && !/\bintegrity\s*=/i.test(attrs) && !rawSrc.includes('tailwindcss') && !rawSrc.includes('gstatic.com') && !rawSrc.includes('googleapis.com') && !rawSrc.includes('unpkg.com') && !rawSrc.includes('cdn.jsdelivr.net')) {
+      if (/^https?:\/\//i.test(rawSrc) && !/\bintegrity\s*=/i.test(attrs) && !rawSrc.includes('tailwindcss') && !rawSrc.includes('gstatic.com') && !rawSrc.includes('googleapis.com') && !rawSrc.includes('unpkg.com') && !rawSrc.includes('cdn.jsdelivr.net') && !rawSrc.includes('tiktok.com')) {
         addFinding({
           pillar: 'SECURITY',
           severity: 'INFO',

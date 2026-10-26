@@ -1734,6 +1734,9 @@ function setupSlideshowKeyboardNav() {
           const ms = secs * 1000;
           window.MATRIX.CONFIG.SWAP_DELAY = ms;
           const s = window.MATRIX.STATE;
+          s.customDuration = secs;
+          s.slideDuration = secs;
+          s.overrideDuration = secs;
           const curr = s.slides[s.currentIndex];
           if (curr && curr.type !== 'MODULE') {
             curr.duration = secs;
