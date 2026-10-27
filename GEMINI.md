@@ -14,5 +14,6 @@
     ```
 *   **Placeholders:** Use `// ... existing code ...` comments generously to skip unchanged sections.
 
-## 3. Git Commit & Push Reporting Rules
-*   **GitHub Pages Links:** Whenever a repository is committed or pushed, conclude the response with a list of direct GitHub Pages web URL hyperlinks for each updated repository (`https://mrmegatronix.github.io/<repo>/`).
+## 3. Git Commit & Post-Scan Reporting Rules
+*   **Post-Commit Links:** Conclude response with all active project links (Live Display, Admin Panel, Local Server, Repository, and GitHub Pages `https://mrmegatronix.github.io/<repo>/`) at the end whenever a commit or git push has been made.
+*   **Post-Scan Dashboard Link:** Always display the direct link to the diagnostic dashboard (`file:///run/media/zeus/6TB-1/__GITHUB%20NUC/_ct-MATRIX/nikkos-d-check-reports/dashboard.html`) immediately after every diagnostic or security scan.

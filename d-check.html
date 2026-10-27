@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nikko's D Check — Interactive Audit Dashboard (2026-10-27_15-17-53)</title>
+<style>
+  :root {
+    --bg: #080b11;
+    --panel: #101622;
+    --panel-alt: #151d2e;
+    --border: #23304a;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --crit: #ff1744;
+    --warn: #ffab00;
+    --info: #38bdf8;
+    --pass: #00e676;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(circle at top right, #131c31 0%, var(--bg) 65%);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding: 20px 28px;
+  }
+  @keyframes blinkColon {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0.15; }
+  }
+  .clock-colon {
+    display: inline-block;
+    animation: blinkColon 1s infinite;
+    font-weight: 800;
+    color: var(--accent);
+    margin: 0 1px;
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 24px;
+    margin-bottom: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+  }
+  .shield {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0284c7, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 22px;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(56,189,248,0.35);
+  }
+  .brand-text h1 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .brand-text p {
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 3px;
+  }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+  }
+  .score-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    padding: 8px 16px;
+    border-radius: 12px;
+  }
+  .score-num {
+    font-size: 26px;
+    font-weight: 900;
+  }
+  .clock-box {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    background: #0a0f18;
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .pillar-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .pillar-card:hover, .pillar-card.active {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(56,189,248,0.18);
+  }
+  .pillar-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .pillar-name {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+  }
+  .status-badge {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .status-PASS { background: rgba(0,230,118,0.15); color: var(--pass); border: 1px solid rgba(0,230,118,0.4); }
+  .status-WARN { background: rgba(255,171,0,0.15); color: var(--warn); border: 1px solid rgba(255,171,0,0.4); }
+  .status-FAIL { background: rgba(255,23,68,0.15); color: var(--crit); border: 1px solid rgba(255,23,68,0.4); }
+  .pillar-score {
+    font-size: 24px;
+    font-weight: 900;
+    margin-bottom: 6px;
+  }
+  .pillar-counts {
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .c-crit { color: var(--crit); font-weight: 700; }
+  .c-warn { color: var(--warn); font-weight: 700; }
+  .c-info { color: var(--info); font-weight: 700; }
+
+  .controls-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 18px;
+    margin-bottom: 14px;
+  }
+  .pill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .filter-btn {
+    background: var(--panel-alt);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--accent);
+    color: #06101e;
+    border-color: var(--accent);
+  }
+  .search-input {
+    background: #0a0f18;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    min-width: 240px;
+  }
+  .tabs-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .tab-btn {
+    background: var(--panel);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .tab-btn.active {
+    background: linear-gradient(135deg, #0284c7, #4f46e5);
+    color: #fff;
+    border-color: transparent;
+  }
+  .table-wrap {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid rgba(35,48,74,0.6);
+    font-size: 13px;
+    vertical-align: top;
+  }
+  th {
+    background: var(--panel-alt);
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+  }
+  tr:hover td {
+    background: rgba(56,189,248,0.04);
+  }
+  .sev-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 5px;
+    white-space: nowrap;
+  }
+  .sev-CRITICAL { background: rgba(255,23,68,0.18); color: var(--crit); border: 1px solid rgba(255,23,68,0.45); }
+  .sev-WARNING { background: rgba(255,171,0,0.18); color: var(--warn); border: 1px solid rgba(255,171,0,0.45); }
+  .sev-INFO { background: rgba(56,189,248,0.18); color: var(--info); border: 1px solid rgba(56,189,248,0.45); }
+  .cell-ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .code-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #cbd5e1;
+  }
+  .fix-hint {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #93c5fd;
+  }
+  .gallery-grid {
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+  .shot-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .shot-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+  }
+  .shot-card img {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+    display: block;
+    background: #05070b;
+  }
+  .shot-label {
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(4,7,14,0.92);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 30px;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img {
+    max-width: 95vw;
+    max-height: 85vh;
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+  }
+  .lightbox-caption {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="shield">D</div>
+      <div class="brand-text">
+        <h1>NIKKO'S D CHECK — 5-PILLAR DIAGNOSTIC DASHBOARD</h1>
+        <p id="meta-subtitle"></p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="score-pill">
+        <div>
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:700;">Health Score</div>
+          <div id="overall-counts" style="font-size:11px;white-space:nowrap;"></div>
+        </div>
+        <div class="score-num" id="overall-score"></div>
+      </div>
+      <div class="clock-box" id="live-clock">00<span class="clock-colon">:</span>00<span class="clock-colon">:</span>00</div>
+    </div>
+  </header>
+
+  <section class="pillars-grid" id="pillars-grid"></section>
+
+  <div class="tabs-bar">
+    <button class="tab-btn active" id="tab-findings" onclick="switchTab('findings')">Findings Table (<span id="filtered-count">0</span>)</button>
+    <button class="tab-btn" id="tab-screenshots" onclick="switchTab('screenshots')">1080p Screenshot Gallery (<span id="shot-count">0</span>)</button>
+  </div>
+
+  <section class="controls-bar" id="controls-bar">
+    <div class="pill-group" id="severity-pills"></div>
+    <div class="pill-group" id="module-pills"></div>
+    <input type="text" class="search-input" id="search-box" placeholder="Search file, selector, type, or detail...">
+  </section>
+
+  <main id="findings-view" class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:68px;">ID</th>
+          <th style="width:92px;">Severity</th>
+          <th style="width:90px;">Pillar</th>
+          <th style="width:110px;">Module</th>
+          <th style="width:180px;">Check Type</th>
+          <th style="width:220px;">File / Selector</th>
+          <th style="width:320px;">Finding Detail</th>
+          <th>Suggested Fix</th>
+        </tr>
+      </thead>
+      <tbody id="findings-tbody"></tbody>
+    </table>
+  </main>
+
+  <section id="screenshots-view" class="gallery-grid"></section>
+
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightbox-img" src="" alt="Screenshot preview">
+    <div class="lightbox-caption" id="lightbox-caption"></div>
+  </div>
+
+  <script>
+    const DATA = {"scorecard":{"timestamp":"2026-10-27_15-17-53","allowedRoot":"/run/media/zeus/6TB-1/__GITHUB NUC","primaryProject":"_ct-MATRIX","mode":"FULL (Static + JSDOM + 1080p Headless Chrome)","online":false,"overallScore":80,"totals":{"findings":83,"critical":22,"warning":61,"info":0},"byPillar":{"DESIGN":{"total":0,"critical":0,"warning":0,"info":0,"score":100,"status":"PASS"},"CODE":{"total":0,"critical":0,"warning":0,"info":0,"score":100,"status":"PASS"},"RULES":{"total":0,"critical":0,"warning":0,"info":0,"score":100,"status":"PASS"},"PROBLEMS":{"total":0,"critical":0,"warning":0,"info":0,"score":100,"status":"PASS"},"SECURITY":{"total":83,"critical":22,"warning":61,"info":0,"score":0,"status":"FAIL"}},"byModule":{"_ct-MATRIX":{"role":"primary","total":3,"critical":1,"warning":2,"info":0},"ct-ACE2":{"role":"module","total":0,"critical":0,"warning":0,"info":0},"_ct-MMR":{"role":"module","total":0,"critical":0,"warning":0,"info":0},"_ct-wea1":{"role":"module","total":1,"critical":1,"warning":0,"info":0},"_ct-QUIZ":{"role":"module","total":0,"critical":0,"warning":0,"info":0},"_ct-FIR":{"role":"module","total":0,"critical":0,"warning":0,"info":0},"_ct-SOC":{"role":"module","total":79,"critical":20,"warning":59,"info":0},"_ct-TIK":{"role":"module","total":0,"critical":0,"warning":0,"info":0},"_ct-FACEB":{"role":"module","total":0,"critical":0,"warning":0,"info":0},"_ct-INSTA":{"role":"module","total":0,"critical":0,"warning":0,"info":0},"_ct-WEST":{"role":"module","total":0,"critical":0,"warning":0,"info":0},"_ct-HALLO":{"role":"module","total":0,"critical":0,"warning":0,"info":0},"_ct-TRIP":{"role":"module","total":0,"critical":0,"warning":0,"info":0}}},"findings":[{"id":"F-0001","pillar":"SECURITY","severity":"WARNING","module":"_ct-MATRIX","type":"UNMASKED_PHONE_NUMBER","file":"_ct-MATRIX/d-check-dashboard.html","line":414,"selector":"","detail":"Potentially unmasked phone number (\"021 555 1234\") found on line 414.","fixHint":"Mask patron phone numbers (e.g. 027 *** 1234) or remove PII from frontend assets."},{"id":"F-0002","pillar":"SECURITY","severity":"WARNING","module":"_ct-MATRIX","type":"UNMASKED_PHONE_NUMBER","file":"_ct-MATRIX/d-check.html","line":414,"selector":"","detail":"Potentially unmasked phone number (\"021 555 1234\") found on line 414.","fixHint":"Mask patron phone numbers (e.g. 027 *** 1234) or remove PII from frontend assets."},{"id":"F-0003","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-MATRIX","type":"EXPOSED_SECRET_TOKEN","file":"_ct-MATRIX/firebase-config.js","line":12,"selector":"","detail":"Potential Google Cloud API Key exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0004","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-wea1","type":"OSV_REMOTE_CVE","file":"_ct-wea1/package.json","line":null,"selector":"","detail":"[OSV.dev] Package \"vite@6.2.3\" has 16 advisory/CVE entry: GHSA-356w-63v5-8wf4 (Vite has an `server.fs.deny` bypass with an invalid `request-target`).","fixHint":"Check https://osv.dev/vulnerability/GHSA-356w-63v5-8wf4 and upgrade \"vite\"."},{"id":"F-0005","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"UNMASKED_PHONE_NUMBER","file":"_ct-SOC/generate_templates.cjs","line":162,"selector":"","detail":"Potentially unmasked phone number (\"021 555 1234\") found on line 162.","fixHint":"Mask patron phone numbers (e.g. 027 *** 1234) or remove PII from frontend assets."},{"id":"F-0006","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":274,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0007","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":274,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0008","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":311,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0009","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":311,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0010","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":694,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0011","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":694,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0012","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"HARDCODED_LOGIN_CREDENTIALS","file":"_ct-SOC/js/app.js","line":694,"selector":"","detail":"Potential hardcoded login credential/password detected on line 694.","fixHint":"Remove hardcoded passwords from source code and load via secure auth/environment variables."},{"id":"F-0013","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":695,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0014","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":695,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0015","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"HARDCODED_LOGIN_CREDENTIALS","file":"_ct-SOC/js/app.js","line":695,"selector":"","detail":"Potential hardcoded login credential/password detected on line 695.","fixHint":"Remove hardcoded passwords from source code and load via secure auth/environment variables."},{"id":"F-0016","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":696,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0017","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":696,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0018","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"HARDCODED_LOGIN_CREDENTIALS","file":"_ct-SOC/js/app.js","line":696,"selector":"","detail":"Potential hardcoded login credential/password detected on line 696.","fixHint":"Remove hardcoded passwords from source code and load via secure auth/environment variables."},{"id":"F-0019","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":697,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0020","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":697,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0021","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"HARDCODED_LOGIN_CREDENTIALS","file":"_ct-SOC/js/app.js","line":697,"selector":"","detail":"Potential hardcoded login credential/password detected on line 697.","fixHint":"Remove hardcoded passwords from source code and load via secure auth/environment variables."},{"id":"F-0022","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":698,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0023","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":698,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0024","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"HARDCODED_LOGIN_CREDENTIALS","file":"_ct-SOC/js/app.js","line":698,"selector":"","detail":"Potential hardcoded login credential/password detected on line 698.","fixHint":"Remove hardcoded passwords from source code and load via secure auth/environment variables."},{"id":"F-0025","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":699,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0026","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":699,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0027","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"HARDCODED_LOGIN_CREDENTIALS","file":"_ct-SOC/js/app.js","line":699,"selector":"","detail":"Potential hardcoded login credential/password detected on line 699.","fixHint":"Remove hardcoded passwords from source code and load via secure auth/environment variables."},{"id":"F-0028","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":700,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0029","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":700,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0030","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"HARDCODED_LOGIN_CREDENTIALS","file":"_ct-SOC/js/app.js","line":700,"selector":"","detail":"Potential hardcoded login credential/password detected on line 700.","fixHint":"Remove hardcoded passwords from source code and load via secure auth/environment variables."},{"id":"F-0031","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":701,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0032","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":701,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0033","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"HARDCODED_LOGIN_CREDENTIALS","file":"_ct-SOC/js/app.js","line":701,"selector":"","detail":"Potential hardcoded login credential/password detected on line 701.","fixHint":"Remove hardcoded passwords from source code and load via secure auth/environment variables."},{"id":"F-0034","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":702,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0035","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":702,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0036","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"HARDCODED_LOGIN_CREDENTIALS","file":"_ct-SOC/js/app.js","line":702,"selector":"","detail":"Potential hardcoded login credential/password detected on line 702.","fixHint":"Remove hardcoded passwords from source code and load via secure auth/environment variables."},{"id":"F-0037","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":703,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0038","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":703,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0039","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"HARDCODED_LOGIN_CREDENTIALS","file":"_ct-SOC/js/app.js","line":703,"selector":"","detail":"Potential hardcoded login credential/password detected on line 703.","fixHint":"Remove hardcoded passwords from source code and load via secure auth/environment variables."},{"id":"F-0040","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":704,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0041","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":704,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0042","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"HARDCODED_LOGIN_CREDENTIALS","file":"_ct-SOC/js/app.js","line":704,"selector":"","detail":"Potential hardcoded login credential/password detected on line 704.","fixHint":"Remove hardcoded passwords from source code and load via secure auth/environment variables."},{"id":"F-0043","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":745,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0044","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/app.js","line":745,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0045","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/firebase.js","line":10,"selector":"","detail":"Potential Google Cloud API Key exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0046","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/html5-qrcode.min.js","line":1,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0047","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/modules/administration.js","line":254,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0048","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/modules/administration.js","line":254,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0049","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"HARDCODED_LOGIN_CREDENTIALS","file":"_ct-SOC/js/modules/administration.js","line":254,"selector":"","detail":"Potential hardcoded login credential/password detected on line 254.","fixHint":"Remove hardcoded passwords from source code and load via secure auth/environment variables."},{"id":"F-0050","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/modules/administration.js","line":271,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0051","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/modules/administration.js","line":271,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0052","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"UNMASKED_PHONE_NUMBER","file":"_ct-SOC/js/modules/emergency.js","line":51,"selector":"","detail":"Potentially unmasked phone number (\"027 461 0348\") found on line 51.","fixHint":"Mask patron phone numbers (e.g. 027 *** 1234) or remove PII from frontend assets."},{"id":"F-0053","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"UNMASKED_PHONE_NUMBER","file":"_ct-SOC/js/modules/emergency.js","line":65,"selector":"","detail":"Potentially unmasked phone number (\"021 384 395\") found on line 65.","fixHint":"Mask patron phone numbers (e.g. 027 *** 1234) or remove PII from frontend assets."},{"id":"F-0054","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"UNMASKED_PHONE_NUMBER","file":"_ct-SOC/js/modules/emergency.js","line":79,"selector":"","detail":"Potentially unmasked phone number (\"021 806 067\") found on line 79.","fixHint":"Mask patron phone numbers (e.g. 027 *** 1234) or remove PII from frontend assets."},{"id":"F-0055","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"UNMASKED_PHONE_NUMBER","file":"_ct-SOC/js/modules/emergency.js","line":93,"selector":"","detail":"Potentially unmasked phone number (\"021 505 064\") found on line 93.","fixHint":"Mask patron phone numbers (e.g. 027 *** 1234) or remove PII from frontend assets."},{"id":"F-0056","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"UNMASKED_PHONE_NUMBER","file":"_ct-SOC/js/modules/emergency.js","line":107,"selector":"","detail":"Potentially unmasked phone number (\"021 247 7813\") found on line 107.","fixHint":"Mask patron phone numbers (e.g. 027 *** 1234) or remove PII from frontend assets."},{"id":"F-0057","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"UNMASKED_PHONE_NUMBER","file":"_ct-SOC/js/modules/emergency.js","line":121,"selector":"","detail":"Potentially unmasked phone number (\"027 372 7209\") found on line 121.","fixHint":"Mask patron phone numbers (e.g. 027 *** 1234) or remove PII from frontend assets."},{"id":"F-0058","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/modules/permissions.js","line":431,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0059","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/modules/permissions.js","line":431,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0060","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/modules/permissions.js","line":438,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0061","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/modules/permissions.js","line":438,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0062","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/modules/permissions.js","line":440,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0063","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/modules/permissions.js","line":440,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0064","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/modules/permissions.js","line":475,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0065","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/modules/permissions.js","line":475,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0066","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/modules/settings.js","line":546,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0067","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/js/modules/settings.js","line":546,"selector":"","detail":"Potential Generic Password Pattern exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0068","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"EXPOSED_SECRET_TOKEN","file":"_ct-SOC/public/js/html5-qrcode.min.js","line":1,"selector":"","detail":"Potential Base64 Encoded Secret exposed in source file.","fixHint":"Revoke credential immediately and move secrets to environment config."},{"id":"F-0069","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"NPM_VULNERABILITY","file":"_ct-SOC/package.json","line":null,"selector":"","detail":"Package \"@firebase/firestore\" has HIGH severity vulnerability (@grpc/grpc-js). Range: 1.3.1-0 - 1.3.1-canary.df1b588 || 1.3.2-0 - 1.3.3-canary.bc4a844 || 1.13.1-0 - 1.13.1-canary.ce3addba || 1.14.0-0 - 1.15.1 || 3.7.3-20221108184443 - 3.7.3-canary.fde5adf63 || >=3.8.0-20221206221533.","fixHint":"Run \"npm audit fix --force\" to upgrade @firebase/firestore to firebase@9.14.0."},{"id":"F-0070","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"NPM_VULNERABILITY","file":"_ct-SOC/package.json","line":null,"selector":"","detail":"Package \"@firebase/firestore-compat\" has HIGH severity vulnerability (@firebase/firestore). Range: <=0.0.900-exp.520ca39d0 || 0.2.3-20221108184443 - 0.2.3-canary.fde5adf63 || >=0.3.0-20221206221533.","fixHint":"Run \"npm audit fix --force\" to upgrade @firebase/firestore-compat to firebase@9.14.0."},{"id":"F-0071","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"NPM_VULNERABILITY","file":"_ct-SOC/package.json","line":null,"selector":"","detail":"Package \"@google-cloud/firestore\" has MODERATE severity vulnerability (google-gax). Range: 7.5.0-pre.0 || 7.6.0 - 7.11.6.","fixHint":"Run \"npm audit fix --force\" to upgrade @google-cloud/firestore to firebase-admin@14.5.0."},{"id":"F-0072","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"NPM_VULNERABILITY","file":"_ct-SOC/package.json","line":null,"selector":"","detail":"Package \"@google-cloud/storage\" has MODERATE severity vulnerability (retry-request; teeny-request). Range: 2.2.0 - 2.5.0 || 5.19.0 - 8.0.0.","fixHint":"Run \"npm audit fix --force\" to upgrade @google-cloud/storage to firebase-admin@14.5.0."},{"id":"F-0073","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"NPM_VULNERABILITY","file":"_ct-SOC/package.json","line":null,"selector":"","detail":"Package \"@grpc/grpc-js\" has HIGH severity vulnerability (@grpc/grpc-js: In certain configurations, getAuthContext can return unauthorized certificates as though they were authorized; @grpc/grpc-js: The server transmits some error messages thrown by method handlers to the client in status messages). Range: <=1.13.5.","fixHint":"Run \"npm audit fix --force\" to upgrade @grpc/grpc-js to firebase@9.14.0."},{"id":"F-0074","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"NPM_VULNERABILITY","file":"_ct-SOC/package.json","line":null,"selector":"","detail":"Package \"firebase\" has HIGH severity vulnerability (@firebase/firestore; @firebase/firestore-compat). Range: 0.900.22 || 6.0.2-0 - 6.0.2-canary.42eae23 || 6.0.3-0 - 6.0.4-canary.bc4a844 || 7.9.1-0 - 7.9.1-canary.0396117e || 7.13.2-0 - 7.13.2-canary.ce3addba || 7.14.0-0 - 7.15.1 || 8.10.0-20217172214 - 8.10.0-canary.f40c0db53 || 9.0.0-20217250818 - 9.0.0-canary.d0d3acb10 || 9.0.1-2021727231341 - 9.0.1-canary.e039e1472 || 9.0.2-2021891633 - 9.0.2-canary.ff9baf70c || 9.0.3-202181503543 - 9.1.0-canary.f7d8324a1 || 9.1.1-2021830195733 - 9.1.1-canary.e70de6201 || 9.1.2-20219523556 - 9.1.2-canary.fc1d36497 || 9.13.1-20221108184443 - 9.14.0-canary.fde5adf63 || >=9.15.0-20221206221533.","fixHint":"Run \"npm audit fix --force\" to upgrade firebase to firebase@9.14.0."},{"id":"F-0075","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"NPM_VULNERABILITY","file":"_ct-SOC/package.json","line":null,"selector":"","detail":"Package \"firebase-admin\" has MODERATE severity vulnerability (@google-cloud/firestore; @google-cloud/storage). Range: 7.0.0 - 8.2.0 || 11.0.0 - 14.3.0.","fixHint":"Run \"npm audit fix --force\" to upgrade firebase-admin to firebase-admin@14.5.0."},{"id":"F-0076","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"NPM_VULNERABILITY","file":"_ct-SOC/package.json","line":null,"selector":"","detail":"Package \"gaxios\" has MODERATE severity vulnerability (uuid). Range: 6.4.0 - 6.7.1.","fixHint":"Run \"npm audit fix\" or upgrade \"gaxios\"."},{"id":"F-0077","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"NPM_VULNERABILITY","file":"_ct-SOC/package.json","line":null,"selector":"","detail":"Package \"google-gax\" has MODERATE severity vulnerability (retry-request; uuid). Range: 4.0.5-experimental - 4.6.1.","fixHint":"Run \"npm audit fix --force\" to upgrade google-gax to firebase-admin@14.5.0."},{"id":"F-0078","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"NPM_VULNERABILITY","file":"_ct-SOC/package.json","line":null,"selector":"","detail":"Package \"retry-request\" has MODERATE severity vulnerability (teeny-request). Range: 7.0.0 - 7.0.2.","fixHint":"Run \"npm audit fix --force\" to upgrade retry-request to firebase-admin@14.5.0."},{"id":"F-0079","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"NPM_VULNERABILITY","file":"_ct-SOC/package.json","line":null,"selector":"","detail":"Package \"teeny-request\" has MODERATE severity vulnerability (uuid). Range: 3.9.1 - 9.0.0.","fixHint":"Run \"npm audit fix --force\" to upgrade teeny-request to firebase-admin@14.5.0."},{"id":"F-0080","pillar":"SECURITY","severity":"WARNING","module":"_ct-SOC","type":"NPM_VULNERABILITY","file":"_ct-SOC/package.json","line":null,"selector":"","detail":"Package \"uuid\" has MODERATE severity vulnerability (uuid: Missing buffer bounds check in v3/v5/v6 when buf is provided). Range: <11.1.1.","fixHint":"Run \"npm audit fix --force\" to upgrade uuid to firebase-admin@14.5.0."},{"id":"F-0081","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"OSV_REMOTE_CVE","file":"_ct-SOC/package.json","line":null,"selector":"","detail":"[OSV.dev] Package \"vite@6.1.1\" has 17 advisory/CVE entry: GHSA-356w-63v5-8wf4 (Vite has an `server.fs.deny` bypass with an invalid `request-target`).","fixHint":"Check https://osv.dev/vulnerability/GHSA-356w-63v5-8wf4 and upgrade \"vite\"."},{"id":"F-0082","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"INSECURE_HTTP_LOGIN_FORM","file":"_ct-SOC/index.html","line":null,"selector":"form#login-form","detail":"[_ct-SOC Display] Form containing password input submits over unencrypted HTTP (\"http://127.0.0.1:36917/_ct-SOC/index.html\").","fixHint":"Ensure login forms submit exclusively via HTTPS."},{"id":"F-0083","pillar":"SECURITY","severity":"CRITICAL","module":"_ct-SOC","type":"INSECURE_HTTP_LOGIN_FORM","file":"_ct-SOC/index.html","line":null,"selector":"form#register-form","detail":"[_ct-SOC Display] Form containing password input submits over unencrypted HTTP (\"http://127.0.0.1:36917/_ct-SOC/index.html\").","fixHint":"Ensure login forms submit exclusively via HTTPS."}],"screenshots":["_ct-FACEB_index.png","_ct-FIR_index.png","_ct-HALLO_index.png","_ct-INSTA_index.png","_ct-MATRIX_admin2.png","_ct-MATRIX_billboard.png","_ct-MATRIX_main_queue.png","_ct-MATRIX_masteradmin.png","_ct-MATRIX_navi.png","_ct-MATRIX_remote.png","_ct-MMR_index.png","_ct-QUIZ_index.png","_ct-SOC_index.png","_ct-TIK_index.png","_ct-TRIP_index.png","_ct-WEST_index.png","_ct-wea1_index.png","ct-ACE2_index.png"],"screenshotPrefix":"2026-10-27_15-17-53/screenshots/"};
+    let state = {
+      pillar: 'ALL',
+      severity: 'ALL',
+      module: 'ALL',
+      search: ''
+    };
+
+    function updateClock() {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      const el = document.getElementById('live-clock');
+      if (el) {
+        el.innerHTML = pad(now.getHours()) + '<span class="clock-colon">:</span>' + pad(now.getMinutes()) + '<span class="clock-colon">:</span>' + pad(now.getSeconds());
+      }
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function initDashboard() {
+      const sc = DATA.scorecard;
+      document.getElementById('meta-subtitle').textContent =
+        'Run: ' + sc.timestamp + '  |  Project: ' + sc.primaryProject + '  |  Boundary Root: ' + sc.allowedRoot + '  |  Mode: ' + sc.mode;
+      document.getElementById('overall-score').textContent = sc.overallScore + '/100';
+      document.getElementById('overall-score').style.color =
+        sc.overallScore >= 80 ? 'var(--pass)' : sc.overallScore >= 50 ? 'var(--warn)' : 'var(--crit)';
+      document.getElementById('overall-counts').innerHTML =
+        '<span class="c-crit">' + sc.totals.critical + ' Crit</span> · <span class="c-warn">' + sc.totals.warning + ' Warn</span> · <span class="c-info">' + sc.totals.info + ' Info</span>';
+
+      renderPillars();
+      renderFilterPills();
+      renderTable();
+      renderScreenshots();
+
+      document.getElementById('search-box').addEventListener('input', e => {
+        state.search = e.target.value.trim().toLowerCase();
+        renderTable();
+      });
+    }
+
+    function renderPillars() {
+      const grid = document.getElementById('pillars-grid');
+      const entries = Object.entries(DATA.scorecard.byPillar);
+      grid.innerHTML = entries.map(([name, st]) => {
+        const isActive = state.pillar === name ? 'active' : '';
+        return '<div class="pillar-card ' + isActive + '" onclick="togglePillar(\'' + name + '\')">' +
+          '<div class="pillar-top">' +
+            '<span class="pillar-name">' + name + '</span>' +
+            '<span class="status-badge status-' + st.status + '">' + st.status + '</span>' +
+          '</div>' +
+          '<div class="pillar-score">' + st.score + '<span style="font-size:13px;color:var(--muted);font-weight:600;">/100</span></div>' +
+          '<div class="pillar-counts">' +
+            '<span class="c-crit">' + st.critical + ' Crit</span>' +
+            '<span class="c-warn">' + st.warning + ' Warn</span>' +
+            '<span class="c-info">' + st.info + ' Info</span>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function togglePillar(p) {
+      state.pillar = state.pillar === p ? 'ALL' : p;
+      renderPillars();
+      renderTable();
+    }
+
+    function setSeverity(sev) {
+      state.severity = sev;
+      renderFilterPills();
+      renderTable();
+    }
+
+    function setModule(mod) {
+      state.module = mod;
+      renderFilterPills();
+      renderTable();
+    }
+
+    function renderFilterPills() {
+      const sevEl = document.getElementById('severity-pills');
+      const sevs = ['ALL', 'CRITICAL', 'WARNING', 'INFO'];
+      sevEl.innerHTML = sevs.map(s =>
+        '<button class="filter-btn ' + (state.severity === s ? 'active' : '') + '" onclick="setSeverity(\'' + s + '\')">' + s + '</button>'
+      ).join('');
+
+      const modEl = document.getElementById('module-pills');
+      const mods = ['ALL', ...Object.keys(DATA.scorecard.byModule)];
+      modEl.innerHTML = mods.map(m => {
+        const count = m === 'ALL' ? DATA.findings.length : (DATA.scorecard.byModule[m]?.total || 0);
+        return '<button class="filter-btn ' + (state.module === m ? 'active' : '') + '" onclick="setModule(\'' + m + '\')">' + m + ' (' + count + ')</button>';
+      }).join('');
+    }
+
+    function escapeHtml(s) {
+      return String(s || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function renderTable() {
+      const order = { CRITICAL: 0, WARNING: 1, INFO: 2 };
+      const filtered = DATA.findings.filter(f => {
+        if (state.pillar !== 'ALL' && f.pillar !== state.pillar) return false;
+        if (state.severity !== 'ALL' && f.severity !== state.severity) return false;
+        if (state.module !== 'ALL' && f.module !== state.module) return false;
+        if (state.search) {
+          const hay = (f.id + ' ' + f.type + ' ' + f.file + ' ' + f.selector + ' ' + f.detail + ' ' + f.module).toLowerCase();
+          if (!hay.includes(state.search)) return false;
+        }
+        return true;
+      }).sort((a, b) => (order[a.severity] ?? 3) - (order[b.severity] ?? 3));
+
+      document.getElementById('filtered-count').textContent = filtered.length;
+      const tbody = document.getElementById('findings-tbody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);">No findings match the active filters.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(f => {
+        const loc = f.line ? (f.file + ':' + f.line) : (f.file || '-');
+        const sel = f.selector ? '<div class="code-tag cell-ellipsis" style="color:#94a3b8;margin-top:2px;" title="' + escapeHtml(f.selector) + '">' + escapeHtml(f.selector) + '</div>' : '';
+        const fix = f.fixHint || 'Review and remediate issue.';
+        return '<tr>' +
+          '<td class="code-tag">' + escapeHtml(f.id) + '</td>' +
+          '<td><span class="sev-badge sev-' + escapeHtml(f.severity) + '">' + escapeHtml(f.severity) + '</span></td>' +
+          '<td style="font-weight:700;">' + escapeHtml(f.pillar) + '</td>' +
+          '<td class="code-tag cell-ellipsis" title="' + escapeHtml(f.module) + '">' + escapeHtml(f.module) + '</td>' +
+          '<td class="code-tag cell-ellipsis" title="' + escapeHtml(f.type) + '">' + escapeHtml(f.type) + '</td>' +
+          '<td><div class="code-tag cell-ellipsis" title="' + escapeHtml(loc) + '">' + escapeHtml(loc) + '</div>' + sel + '</td>' +
+          '<td><div>' + escapeHtml(f.detail) + '</div></td>' +
+          '<td><div class="fix-hint" style="font-size:12px;color:#93c5fd;font-weight:600;">' + escapeHtml(fix) + '</div></td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function renderScreenshots() {
+      const shots = DATA.screenshots || [];
+      document.getElementById('shot-count').textContent = shots.length;
+      const grid = document.getElementById('screenshots-view');
+      grid.innerHTML = shots.map(file => {
+        const src = DATA.screenshotPrefix + file;
+        return '<div class="shot-card" onclick="openLightbox(\'' + src + '\', \'' + file + '\')">' +
+          '<img src="' + src + '" loading="lazy" alt="' + file + '">' +
+          '<div class="shot-label">' + file + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function switchTab(tab) {
+      const isFindings = tab === 'findings';
+      document.getElementById('tab-findings').classList.toggle('active', isFindings);
+      document.getElementById('tab-screenshots').classList.toggle('active', !isFindings);
+      document.getElementById('findings-view').style.display = isFindings ? 'block' : 'none';
+      document.getElementById('controls-bar').style.display = isFindings ? 'flex' : 'none';
+      document.getElementById('screenshots-view').style.display = isFindings ? 'none' : 'grid';
+    }
+
+    function openLightbox(src, caption) {
+      document.getElementById('lightbox-img').src = src;
+      document.getElementById('lightbox-caption').textContent = caption;
+      document.getElementById('lightbox').classList.add('open');
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('open');
+    }
+
+    initDashboard();
+  </script>
+</body>
+</html>

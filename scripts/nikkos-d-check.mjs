@@ -370,6 +370,93 @@ function walkProjectFiles(rootDir, maxDepth = 4) {
 // ============================================================================
 // 6. PILLAR 2 (CODE), PILLAR 4 (STATIC PROBLEMS) & PILLAR 5 (SECURITY)
 // ============================================================================
+function isValidCreditCard(str) {
+  if (!str) return false;
+  const s = String(str).replace(/[\s-]/g, '');
+  if (!/^\d{13,19}$/.test(s)) return false;
+  if (/^0+$/.test(s) || /^1+$/.test(s) || /^9+$/.test(s)) return false;
+  let sum = 0;
+  let shouldDouble = false;
+  for (let i = s.length - 1; i >= 0; i--) {
+    let digit = parseInt(s.charAt(i), 10);
+    if (shouldDouble) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+    sum += digit;
+    shouldDouble = !shouldDouble;
+  }
+  return (sum % 10) === 0;
+}
+
+function compilePythonRegex(patternStr) {
+  let flags = '';
+  let p = patternStr;
+  if (p.startsWith('(?i)')) {
+    p = p.slice(4);
+    flags = 'i';
+  }
+  return new RegExp(p, flags);
+}
+
+function loadSecurityRulesDB() {
+  const repSecRulesPath = path.join(ALLOWED_ROOT, '_REP-SEC', 'rules', 'rules_db.json');
+  try {
+    if (fs.existsSync(repSecRulesPath)) {
+      const raw = JSON.parse(fs.readFileSync(repSecRulesPath, 'utf8'));
+      const list = raw.secrets || raw;
+      if (Array.isArray(list) && list.length > 0) {
+        return list.map(r => ({
+          name: r.name,
+          regex: compilePythonRegex(r.regex),
+          severity: (r.severity === 'CRITICAL' || r.severity === 'HIGH') ? 'CRITICAL' : 'WARNING'
+        }));
+      }
+    }
+  } catch (_) {}
+
+  // Built-in fallback catalog matching _REP-SEC rules
+  return [
+    { name: 'AWS Access Key ID', regex: /\b(?:A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}\b/i, severity: 'CRITICAL' },
+    { name: 'AWS Secret Access Key', regex: /\baws_?(?:secret)?_?(?:access)?_?key\s*(?:=|:)\s*["']?[A-Za-z0-9/+=]{40}["']?\b/i, severity: 'CRITICAL' },
+    { name: 'Google Cloud API Key', regex: /\bAIza[0-9A-Za-z-_]{35}\b/i, severity: 'CRITICAL' },
+    { name: 'Slack Bot Token', regex: /\bxoxb-[0-9]{10,13}-[0-9]{10,13}-[a-zA-Z0-9]{24}\b/i, severity: 'CRITICAL' },
+    { name: 'Slack Webhook URL', regex: /\bhttps:\/\/hooks\.slack\.com\/services\/[T][a-zA-Z0-9]{8,10}\/[B][a-zA-Z0-9]{8,10}\/[a-zA-Z0-9]{24}\b/i, severity: 'CRITICAL' },
+    { name: 'Stripe Secret Key', regex: /\bsk_live_[0-9a-zA-Z]{24}\b/i, severity: 'CRITICAL' },
+    { name: 'Twilio Auth Token', regex: /\btwilio_auth_token\s*(?:=|:)\s*["']?[0-9a-f]{32}["']?\b/i, severity: 'CRITICAL' },
+    { name: 'SendGrid API Key', regex: /\bSG\.[a-zA-Z0-9_-]{22}\.[a-zA-Z0-9_-]{43}\b/i, severity: 'CRITICAL' },
+    { name: 'Discord Bot Token', regex: /\b[MN][A-Za-z0-9_-]{23,25}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27}\b/i, severity: 'CRITICAL' },
+    { name: 'SSH Private Key (RSA)', regex: /-----BEGIN RSA PRIVATE KEY-----/, severity: 'CRITICAL' },
+    { name: 'SSH Private Key (OPENSSH)', regex: /-----BEGIN OPENSSH PRIVATE KEY-----/, severity: 'CRITICAL' },
+    { name: 'SSH Private Key (EC)', regex: /-----BEGIN EC PRIVATE KEY-----/, severity: 'CRITICAL' },
+    { name: 'PGP Private Key Block', regex: /-----BEGIN PGP PRIVATE KEY BLOCK-----/, severity: 'CRITICAL' },
+    { name: 'GitHub Personal Access Token', regex: /\b(ghp_[0-9a-zA-Z]{36}|github_pat_[0-9a-zA-Z_]{30,})\b/i, severity: 'CRITICAL' },
+    { name: 'GitLab Personal Access Token', regex: /\bglpat-[0-9a-zA-Z_\-]{20}\b/i, severity: 'CRITICAL' },
+    { name: 'npm Access Token', regex: /\b(?:npm_[a-zA-Z0-9]{36})\b/i, severity: 'CRITICAL' },
+    { name: 'Database Connection URI with Credentials', regex: /(?:mongodb(?:\+srv)?|postgres(?:ql)?|mysql|redis):\/\/[^\s/@:]+:[^\s/@:]+@[^\s"']+/i, severity: 'CRITICAL' }
+  ];
+}
+
+const GLOBAL_SECURITY_RULES = loadSecurityRulesDB();
+
+const GLOBAL_MALWARE_PATTERNS = [
+  { name: 'Reverse Shell Payload', regex: /(?:nc|ncat|netcat)\s+[\d.]{7,15}\s+\d+\s+-e|\/dev\/tcp\/[\d.]{7,15}\/\d+/i, severity: 'CRITICAL', type: 'MALWARE_REVERSE_SHELL' },
+  { name: 'Obfuscated Code Execution', regex: /\b(eval|Function)\s*\(\s*(?:atob|Buffer\.from|unescape)\s*\(/i, severity: 'CRITICAL', type: 'MALWARE_OBFUSCATED_CODE' },
+  { name: 'Environment Variable Exfiltration', regex: /\b(process\.env|document\.cookie)\b[\s\S]{1,120}(?:webhook\.site|requestbin|pastebin\.com|ngrok\.io|discord\.com\/api\/webhooks)/i, severity: 'CRITICAL', type: 'MALWARE_DATA_EXFILTRATION' },
+  { name: 'In-Browser / Node Cryptominer', regex: /\b(coinhive(?:\.min)?\.js|cryptonight|stratum\+tcp:\/\/|monero-miner|webminerpool)\b/i, severity: 'CRITICAL', type: 'MALWARE_CRYPTOMINER' }
+];
+
+const KNOWN_TYPOSQUATS = new Map([
+  ['loadash', 'lodash'],
+  ['crossenv', 'cross-env'],
+  ['cross-env.js', 'cross-env'],
+  ['expresss', 'express'],
+  ['reacct', 'react'],
+  ['react-domm', 'react-dom'],
+  ['axioos', 'axios'],
+  ['chalk-color', 'chalk']
+]);
+
 function runStaticCodeProblemsSecurityChecks(target) {
   const modName = target.name;
   const files = walkProjectFiles(target.dir);
@@ -401,6 +488,32 @@ function runStaticCodeProblemsSecurityChecks(target) {
     if (!['.js', '.mjs', '.cjs', '.html', '.css', '.json'].includes(ext)) {
       continue;
     }
+    if (baseName.startsWith('nikkos-d-check')) {
+      continue;
+    }
+
+    // Malware Check: Disguised Executable Binary (ELF / PE headers in source files)
+    if (['.js', '.json', '.html', '.css', '.svg'].includes(ext)) {
+      try {
+        const fd = fs.openSync(filePath, 'r');
+        const buf = Buffer.alloc(4);
+        fs.readSync(fd, buf, 0, 4, 0);
+        fs.closeSync(fd);
+        if ((buf[0] === 0x7f && buf[1] === 0x45 && buf[2] === 0x4c && buf[3] === 0x46) || // ELF
+            (buf[0] === 0x4d && buf[1] === 0x5a)) { // PE / MZ
+          addFinding({
+            pillar: 'SECURITY',
+            severity: 'CRITICAL',
+            moduleName: modName,
+            type: 'DISGUISED_EXECUTABLE_BINARY',
+            file: relFile,
+            detail: `Executable binary header (${buf.toString('hex')}) detected inside source file "${baseName}".`,
+            fixHint: 'Remove disguised executable binary immediately.'
+          });
+          continue;
+        }
+      } catch (_) {}
+    }
 
     let content = '';
     try {
@@ -429,24 +542,125 @@ function runStaticCodeProblemsSecurityChecks(target) {
       }
     });
 
-    // Security: Secret / Token / Private Key Scan
-    const secretPatterns = [
-      { name: 'GitHub PAT', regex: /\b(ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{30,})\b/ },
-      { name: 'Private Key Block', regex: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/ },
-      { name: 'Slack/Webhook Token', regex: /\bxox[baprs]-[A-Za-z0-9-]{10,}\b/ }
-    ];
+    // Security: Login Information Patterns
+    const loginCredentialRegex = /(?:password|passwd|admin_pass|root_password)\s*[:=]\s*["'](?!(?:password|\*{3,}|placeholder|your[-_]password|admin)["'])([^"'\s]{4,})["']/i;
+    const urlCredentialRegex = /[a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s/@:]+:[^\s/@:]+@[^\s/]+/i;
+    const dbUriCredentialRegex = /(?:mongodb(?:\+srv)?|postgres(?:ql)?|mysql|redis):\/\/[^\s/@:]+:[^\s/@:]+@[^\s"']+/i;
+
+    // Security & Privacy: Unmasked PII Patterns
+    const phoneRegex = /(?<![#a-fA-F0-9])\b(?:\+?64\s?(?:2\d{1}|[3-9])\s?\d{3}\s?\d{3,4}|02\d{1}[- ]\d{3}[- ]?\d{3,4})\b(?!\s*[%pxrem])/g;
+    const ccRegex = /\b(?:4\d{3}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}|5[1-5]\d{2}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}|3[47]\d{2}[ -]?\d{6}[ -]?\d{5}|3(?:0[0-5]|[68]\d)\d[ -]?\d{6}[ -]?\d{4}|6(?:011|5\d{2})[ -]?\d{4}[ -]?\d{4}[ -]?\d{4})\b/g;
+
     lines.forEach((lineText, idx) => {
-      for (const sp of secretPatterns) {
-        if (sp.regex.test(lineText)) {
+      // Secret / Token / Cloud Credential check (from _REP-SEC rules catalog)
+      for (const rule of GLOBAL_SECURITY_RULES) {
+        if (rule.regex.test(lineText)) {
+          if (rule.name === 'Heroku API Key') {
+            const isAssetUrl = /(?:github\.com\/user-attachments|bookings\.nowbookit\.com|accountid=|[a-z0-9_-]+\.(?:png|jpg|jpeg|gif|svg|webp|mp4|webm))/i.test(lineText);
+            const hasAuthContext = /\b(?:heroku|api[_-]?key|secret|token|bearer|auth)\b/i.test(lineText);
+            if (isAssetUrl || !hasAuthContext) continue;
+          }
           addFinding({
             pillar: 'SECURITY',
-            severity: 'CRITICAL',
+            severity: rule.severity,
             moduleName: modName,
             type: 'EXPOSED_SECRET_TOKEN',
             file: relFile,
             line: idx + 1,
-            detail: `Potential ${sp.name} exposed in source file.`,
+            detail: `Potential ${rule.name} exposed in source file.`,
             fixHint: 'Revoke credential immediately and move secrets to environment config.'
+          });
+        }
+      }
+
+      // Login: Plaintext Credentials
+      if (loginCredentialRegex.test(lineText)) {
+        addFinding({
+          pillar: 'SECURITY',
+          severity: 'CRITICAL',
+          moduleName: modName,
+          type: 'HARDCODED_LOGIN_CREDENTIALS',
+          file: relFile,
+          line: idx + 1,
+          detail: `Potential hardcoded login credential/password detected on line ${idx + 1}.`,
+          fixHint: 'Remove hardcoded passwords from source code and load via secure auth/environment variables.'
+        });
+      }
+
+      // Login: URL Embedded Credentials
+      if (urlCredentialRegex.test(lineText)) {
+        addFinding({
+          pillar: 'SECURITY',
+          severity: 'CRITICAL',
+          moduleName: modName,
+          type: 'URL_EMBEDDED_CREDENTIALS',
+          file: relFile,
+          line: idx + 1,
+          detail: `URL contains embedded username/password credentials on line ${idx + 1}.`,
+          fixHint: 'Remove user credentials from URL schemes; transmit credentials via Authorization headers or secure vault.'
+        });
+      }
+
+      // Login: Database URI with Credentials
+      if (dbUriCredentialRegex.test(lineText)) {
+        addFinding({
+          pillar: 'SECURITY',
+          severity: 'CRITICAL',
+          moduleName: modName,
+          type: 'DATABASE_URI_CREDENTIALS',
+          file: relFile,
+          line: idx + 1,
+          detail: `Database connection URI with credentials found on line ${idx + 1}.`,
+          fixHint: 'Store database URIs in environment variables or cloud secrets manager, not in client source.'
+        });
+      }
+
+      // Privacy: Unmasked Phone Numbers
+      const phoneMatches = lineText.match(phoneRegex);
+      if (phoneMatches) {
+        addFinding({
+          pillar: 'SECURITY',
+          severity: 'WARNING',
+          moduleName: modName,
+          type: 'UNMASKED_PHONE_NUMBER',
+          file: relFile,
+          line: idx + 1,
+          detail: `Potentially unmasked phone number ("${phoneMatches[0]}") found on line ${idx + 1}.`,
+          fixHint: 'Mask patron phone numbers (e.g. 027 *** 1234) or remove PII from frontend assets.'
+        });
+      }
+
+      // Privacy: Exposed Credit Card Numbers
+      const ccMatches = lineText.match(ccRegex);
+      if (ccMatches) {
+        for (const cc of ccMatches) {
+          if (isValidCreditCard(cc)) {
+            addFinding({
+              pillar: 'SECURITY',
+              severity: 'CRITICAL',
+              moduleName: modName,
+              type: 'EXPOSED_CREDIT_CARD_NUMBER',
+              file: relFile,
+              line: idx + 1,
+              detail: `Luhn-valid credit card number detected on line ${idx + 1}.`,
+              fixHint: 'Never store or expose credit card numbers in source code. Use tokenized payment processors.'
+            });
+          }
+        }
+      }
+
+      // Malware & Malicious Payload Signatures
+      for (const mp of GLOBAL_MALWARE_PATTERNS) {
+        if (mp.regex.test(lineText)) {
+          addFinding({
+            pillar: 'SECURITY',
+            severity: mp.severity,
+            moduleName: modName,
+            type: mp.type,
+            file: relFile,
+            line: idx + 1,
+            detail: `Malware signature detected ("${mp.name}") on line ${idx + 1}.`,
+            fixHint: 'Inspect and remove suspicious/obfuscated payload immediately.'
           });
         }
       }
@@ -509,6 +723,213 @@ function runStaticCodeProblemsSecurityChecks(target) {
   // Special cross-file checks for _ct-MATRIX
   if (modName === '_ct-MATRIX') {
     runMatrixCrossFileChecks(target.dir, modName);
+  }
+
+  // NPM Dependency Vulnerability & Lockfile Audit
+  runNpmAudit(target);
+}
+
+function runNpmAudit(target) {
+  const modName = target.name;
+  const pkgPath = path.join(target.dir, 'package.json');
+  const lockPath = path.join(target.dir, 'package-lock.json');
+  if (!fs.existsSync(pkgPath)) return;
+
+  let pkgJson;
+  try {
+    pkgJson = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+  } catch (_) {
+    return;
+  }
+
+  // 1. Check suspicious install lifecycle scripts (Malware / Remote execution vectors)
+  const scripts = pkgJson.scripts || {};
+  for (const s of ['preinstall', 'install', 'postinstall']) {
+    const sBody = scripts[s] || '';
+    if (sBody && /\b(curl|wget)\b[\s\S]{1,40}\|\s*(?:bash|sh)|powershell\s+-enc|\brm\s+-rf\s+\/|\bdel\s+\/s\s+\/q/i.test(sBody)) {
+      addFinding({
+        pillar: 'SECURITY',
+        severity: 'CRITICAL',
+        moduleName: modName,
+        type: 'SUSPICIOUS_LIFECYCLE_SCRIPT',
+        file: `${modName}/package.json`,
+        detail: `Suspicious remote execution or destructive command in lifecycle script "${s}": "${sBody.slice(0, 70)}".`,
+        fixHint: `Audit or remove lifecycle script "${s}" from package.json.`
+      });
+    }
+  }
+
+  // 2. Check dependency risks: Typosquatting, unpinned wildcards, and direct git/remote tarball URLs
+  const allDeps = { ...(pkgJson.dependencies || {}), ...(pkgJson.devDependencies || {}) };
+  for (const [depName, depVer] of Object.entries(allDeps)) {
+    const lowerName = depName.toLowerCase();
+    if (KNOWN_TYPOSQUATS.has(lowerName)) {
+      addFinding({
+        pillar: 'SECURITY',
+        severity: 'CRITICAL',
+        moduleName: modName,
+        type: 'TYPOSQUATTING_RISK',
+        file: `${modName}/package.json`,
+        detail: `Dependency "${depName}" is a known typosquatting target of legitimate package "${KNOWN_TYPOSQUATS.get(lowerName)}".`,
+        fixHint: `Verify package authenticity and replace with "${KNOWN_TYPOSQUATS.get(lowerName)}".`
+      });
+    }
+    if (depVer === '*' || depVer === 'latest') {
+      addFinding({
+        pillar: 'SECURITY',
+        severity: 'WARNING',
+        moduleName: modName,
+        type: 'UNPINNED_WILDCARD_DEPENDENCY',
+        file: `${modName}/package.json`,
+        detail: `Dependency "${depName}" uses unpinned wildcard version "${depVer}", exposing build to malicious upstream updates.`,
+        fixHint: `Pin "${depName}" to a specific semantic version range.`
+      });
+    }
+    if (typeof depVer === 'string' && (depVer.startsWith('git:') || depVer.startsWith('git+') || depVer.startsWith('http:') || depVer.startsWith('https://github.com'))) {
+      addFinding({
+        pillar: 'SECURITY',
+        severity: 'WARNING',
+        moduleName: modName,
+        type: 'GIT_REMOTE_DEPENDENCY',
+        file: `${modName}/package.json`,
+        detail: `Dependency "${depName}" references unvetted remote git/tarball URL ("${depVer}") instead of official registry.`,
+        fixHint: `Use versioned release from official registry or verify commit integrity.`
+      });
+    }
+  }
+
+  const pnpmLockPath = path.join(target.dir, 'pnpm-lock.yaml');
+  const yarnLockPath = path.join(target.dir, 'yarn.lock');
+  const hasLock = fs.existsSync(lockPath) || fs.existsSync(pnpmLockPath) || fs.existsSync(yarnLockPath);
+
+  if (!hasLock) {
+    addFinding({
+      pillar: 'SECURITY',
+      severity: 'WARNING',
+      moduleName: modName,
+      type: 'MISSING_PACKAGE_LOCK',
+      file: `${modName}/package.json`,
+      detail: `Module has package.json but is missing dependency lockfile (package-lock.json, pnpm-lock.yaml, or yarn.lock). Dependency lockfile is required for deterministic builds and security auditing.`,
+      fixHint: `Generate a dependency lockfile in ${modName}.`
+    });
+    return;
+  }
+
+  let auditCmd = 'npm audit --json';
+  if (fs.existsSync(pnpmLockPath) && !fs.existsSync(lockPath)) {
+    auditCmd = 'pnpm audit --json';
+  } else if (fs.existsSync(yarnLockPath) && !fs.existsSync(lockPath)) {
+    auditCmd = 'yarn audit --json';
+  }
+
+  let output = '';
+  try {
+    output = execSync(auditCmd, {
+      cwd: target.dir,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      timeout: 25000
+    });
+  } catch (err) {
+    output = err.stdout ? String(err.stdout) : '';
+  }
+
+  if (!output.trim()) return;
+
+  let auditJson;
+  try {
+    auditJson = JSON.parse(output);
+  } catch (_) {
+    return;
+  }
+
+  if (auditJson.error) {
+    log(`[${modName}] npm audit skipped: ${auditJson.error.summary || auditJson.error.code}`, 'WARN');
+    return;
+  }
+
+  const vulns = auditJson.vulnerabilities || {};
+  for (const [pkgName, vuln] of Object.entries(vulns)) {
+    const rawSev = (vuln.severity || 'low').toLowerCase();
+    const severity = (rawSev === 'critical' || rawSev === 'high')
+      ? 'CRITICAL'
+      : (rawSev === 'moderate' ? 'WARNING' : 'INFO');
+
+    const viaTitles = (Array.isArray(vuln.via) ? vuln.via : [])
+      .map(v => (typeof v === 'object' && v ? v.title : String(v)))
+      .filter(Boolean)
+      .slice(0, 2)
+      .join('; ');
+
+    const titleStr = viaTitles ? ` (${viaTitles})` : '';
+
+    addFinding({
+      pillar: 'SECURITY',
+      severity,
+      moduleName: modName,
+      type: 'NPM_VULNERABILITY',
+      file: `${modName}/package.json`,
+      detail: `Package "${pkgName}" has ${rawSev.toUpperCase()} severity vulnerability${titleStr}. Range: ${vuln.range || 'all'}.`,
+      fixHint: typeof vuln.fixAvailable === 'object' && vuln.fixAvailable
+        ? `Run "npm audit fix --force" to upgrade ${pkgName} to ${vuln.fixAvailable.name}@${vuln.fixAvailable.version}.`
+        : `Run "npm audit fix" or upgrade "${pkgName}".`
+    });
+  }
+}
+
+async function queryOsvDependencies(target) {
+  const modName = target.name;
+  const pkgPath = path.join(target.dir, 'package.json');
+  if (!fs.existsSync(pkgPath)) return;
+
+  let pkgJson;
+  try {
+    pkgJson = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+  } catch (_) {
+    return;
+  }
+
+  const deps = { ...(pkgJson.dependencies || {}), ...(pkgJson.devDependencies || {}) };
+  const depEntries = Object.entries(deps);
+  if (!depEntries.length) return;
+
+  const checkPkg = async (name, ver) => {
+    const cleanVer = String(ver).replace(/^[\^~<>=v\s]+/, '').trim();
+    if (!cleanVer || cleanVer === '*' || cleanVer === 'latest' || /^\d+$/.test(cleanVer)) return null;
+    try {
+      const res = await fetch('https://api.osv.dev/v1/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          package: { name, ecosystem: 'npm' },
+          version: cleanVer
+        }),
+        signal: AbortSignal.timeout(6000)
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return (data.vulns && data.vulns.length > 0) ? { name, cleanVer, vulns: data.vulns } : null;
+    } catch (_) {
+      return null;
+    }
+  };
+
+  const results = await Promise.allSettled(depEntries.map(([n, v]) => checkPkg(n, v)));
+  for (const r of results) {
+    if (r.status === 'fulfilled' && r.value) {
+      const { name, cleanVer, vulns } = r.value;
+      const topVuln = vulns[0];
+      const summary = topVuln.summary || topVuln.id || 'Known vulnerability';
+      addFinding({
+        pillar: 'SECURITY',
+        severity: 'CRITICAL',
+        moduleName: modName,
+        type: 'OSV_REMOTE_CVE',
+        file: `${modName}/package.json`,
+        detail: `[OSV.dev] Package "${name}@${cleanVer}" has ${vulns.length} advisory/CVE entry: ${topVuln.id} (${summary.slice(0, 80)}).`,
+        fixHint: `Check https://osv.dev/vulnerability/${topVuln.id} and upgrade "${name}".`
+      });
+    }
   }
 }
 
@@ -706,6 +1127,50 @@ function checkHtmlSource(content, htmlFilePath, relFile, modName, htmlCacheBuste
       detail: `${missingNoopenerCount} <a target="_blank"> link(s) in ${baseName} missing rel="noopener noreferrer".`,
       fixHint: 'Add rel="noopener noreferrer" to external target="_blank" links.'
     });
+  }
+
+  // 5. Security: Password input with pre-filled default value
+  const pwInputRegex = /<input\b[^>]*\btype\s*=\s*["']password["'][^>]*>/gi;
+  let pwMatch;
+  while ((pwMatch = pwInputRegex.exec(content)) !== null) {
+    const tagStr = pwMatch[0];
+    const valMatch = tagStr.match(/\bvalue\s*=\s*["']([^"']+)["']/i);
+    if (valMatch && valMatch[1].trim() && !valMatch[1].includes('${') && !valMatch[1].includes('{{')) {
+      const lineNo = content.slice(0, pwMatch.index).split(/\r?\n/).length;
+      addFinding({
+        pillar: 'SECURITY',
+        severity: 'CRITICAL',
+        moduleName: modName,
+        type: 'DEFAULT_PASSWORD_IN_HTML',
+        file: relFile,
+        line: lineNo,
+        detail: `Password input field in ${baseName} contains hardcoded non-empty value attribute.`,
+        fixHint: 'Remove prefilled value attribute from password input fields.'
+      });
+    }
+  }
+
+  // 6. Security: Insecure login form submitting over unencrypted HTTP
+  const formRegex = /<form\b([^>]*)>([\s\S]*?)<\/form>/gi;
+  let formMatch;
+  while ((formMatch = formRegex.exec(content)) !== null) {
+    const formAttrs = formMatch[1];
+    const formBody = formMatch[2];
+    const actionMatch = formAttrs.match(/\baction\s*=\s*["'](http:\/\/[^"']+)["']/i);
+    const hasPasswordInput = /<input\b[^>]*\btype\s*=\s*["']password["']/i.test(formBody);
+    if (actionMatch && hasPasswordInput) {
+      const lineNo = content.slice(0, formMatch.index).split(/\r?\n/).length;
+      addFinding({
+        pillar: 'SECURITY',
+        severity: 'CRITICAL',
+        moduleName: modName,
+        type: 'INSECURE_HTTP_LOGIN_FORM',
+        file: relFile,
+        line: lineNo,
+        detail: `Login form with password input transmits credentials over unencrypted HTTP ("${actionMatch[1]}").`,
+        fixHint: 'Update login form action to use secure HTTPS.'
+      });
+    }
   }
 }
 
@@ -1420,7 +1885,7 @@ async function auditSinglePageState(cdp, moduleName, pageSpec, screenshotSlug) {
       file: pageSpec.relUrl,
       selector: v.selector,
       detail: `[${pageSpec.label}] ${v.detail}`,
-      fixHint: 'Adjust CSS layout, font-size, overflow, or container dimensions.'
+      fixHint: v.fixHint || 'Adjust CSS layout, font-size, overflow, or container dimensions.'
     });
   }
 
@@ -1529,7 +1994,7 @@ async function auditSignageSlideshowStates(cdp, moduleName, pageSpec) {
             file: `${pageSpec.relUrl} [slide #${slide.idx}: ${slide.slotKey}]`,
             selector: v.selector,
             detail: `[Slide ${slide.slotKey}] ${v.detail}`,
-            fixHint: 'Adjust slide card layout or typography in matrix-core.js / index.html.'
+            fixHint: v.fixHint || 'Adjust slide card layout or typography in matrix-core.js / index.html.'
           });
         }
       }
@@ -1658,7 +2123,7 @@ async function auditSignageSlideshowStates(cdp, moduleName, pageSpec) {
           file: pageSpec.relUrl,
           selector: v.selector,
           detail: `[Slide ${i + 1}/${info.count}] ${v.detail}`,
-          fixHint: 'Adjust CSS layout, font-size, overflow, or container dimensions.'
+          fixHint: v.fixHint || 'Adjust CSS layout, font-size, overflow, or container dimensions.'
         });
       }
     }
@@ -1827,12 +2292,13 @@ function generateMarkdownReport(scorecard, targets) {
       const order = { CRITICAL: 0, WARNING: 1, INFO: 2 };
       return (order[a.severity] ?? 3) - (order[b.severity] ?? 3);
     });
-    lines.push(`| ID | Severity | Pillar | Module | Type | Location | Detail |`);
-    lines.push(`| :--- | :--- | :--- | :--- | :--- | :--- | :--- |`);
+    lines.push(`| ID | Severity | Pillar | Module | Type | Location | Detail | Suggested Fix |`);
+    lines.push(`| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |`);
     for (const f of sorted) {
       const loc = f.line ? `${f.file}:${f.line}` : f.file || f.selector || '-';
       const safeDetail = String(f.detail || '').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
-      lines.push(`| \`${f.id}\` | **${f.severity}** | ${f.pillar} | \`${f.module}\` | \`${f.type}\` | \`${loc}\` | ${safeDetail} |`);
+      const safeFix = String(f.fixHint || 'Review and remediate issue.').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
+      lines.push(`| \`${f.id}\` | **${f.severity}** | ${f.pillar} | \`${f.module}\` | \`${f.type}\` | \`${loc}\` | ${safeDetail} | ${safeFix} |`);
     }
   }
   lines.push('');
@@ -2232,13 +2698,14 @@ function generateHtmlDashboard(scorecard, findings, screenshotsList = [], screen
     <table>
       <thead>
         <tr>
-          <th style="width:72px;">ID</th>
-          <th style="width:98px;">Severity</th>
-          <th style="width:94px;">Pillar</th>
-          <th style="width:120px;">Module</th>
-          <th style="width:220px;">Check Type</th>
-          <th style="width:270px;">File / Selector</th>
-          <th>Finding Detail & Recommended Fix</th>
+          <th style="width:68px;">ID</th>
+          <th style="width:92px;">Severity</th>
+          <th style="width:90px;">Pillar</th>
+          <th style="width:110px;">Module</th>
+          <th style="width:180px;">Check Type</th>
+          <th style="width:220px;">File / Selector</th>
+          <th style="width:320px;">Finding Detail</th>
+          <th>Suggested Fix</th>
         </tr>
       </thead>
       <tbody id="findings-tbody"></tbody>
@@ -2370,14 +2837,14 @@ function generateHtmlDashboard(scorecard, findings, screenshotsList = [], screen
       document.getElementById('filtered-count').textContent = filtered.length;
       const tbody = document.getElementById('findings-tbody');
       if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted);">No findings match the active filters.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);">No findings match the active filters.</td></tr>';
         return;
       }
 
       tbody.innerHTML = filtered.map(f => {
         const loc = f.line ? (f.file + ':' + f.line) : (f.file || '-');
         const sel = f.selector ? '<div class="code-tag cell-ellipsis" style="color:#94a3b8;margin-top:2px;" title="' + escapeHtml(f.selector) + '">' + escapeHtml(f.selector) + '</div>' : '';
-        const hint = f.fixHint ? '<div class="fix-hint">Fix: ' + escapeHtml(f.fixHint) + '</div>' : '';
+        const fix = f.fixHint || 'Review and remediate issue.';
         return '<tr>' +
           '<td class="code-tag">' + escapeHtml(f.id) + '</td>' +
           '<td><span class="sev-badge sev-' + escapeHtml(f.severity) + '">' + escapeHtml(f.severity) + '</span></td>' +
@@ -2385,7 +2852,8 @@ function generateHtmlDashboard(scorecard, findings, screenshotsList = [], screen
           '<td class="code-tag cell-ellipsis" title="' + escapeHtml(f.module) + '">' + escapeHtml(f.module) + '</td>' +
           '<td class="code-tag cell-ellipsis" title="' + escapeHtml(f.type) + '">' + escapeHtml(f.type) + '</td>' +
           '<td><div class="code-tag cell-ellipsis" title="' + escapeHtml(loc) + '">' + escapeHtml(loc) + '</div>' + sel + '</td>' +
-          '<td><div>' + escapeHtml(f.detail) + '</div>' + hint + '</td>' +
+          '<td><div>' + escapeHtml(f.detail) + '</div></td>' +
+          '<td><div class="fix-hint" style="font-size:12px;color:#93c5fd;font-weight:600;">' + escapeHtml(fix) + '</div></td>' +
         '</tr>';
       }).join('');
     }
@@ -2601,6 +3069,7 @@ async function main() {
   for (const target of targets) {
     log(`Scanning static CODE / PROBLEMS / SECURITY in [${target.name}]...`);
     runStaticCodeProblemsSecurityChecks(target);
+    await queryOsvDependencies(target);
   }
 
   // Step 2: JSDOM Full-Queue Loop & Time-Window Stress Suite (if _ct-MATRIX is in scope)

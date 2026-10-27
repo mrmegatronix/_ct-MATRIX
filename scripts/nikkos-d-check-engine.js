@@ -265,6 +265,109 @@
     return findings;
   }
 
+  function isValidCreditCard(str) {
+    if (!str) return false;
+    const s = String(str).replace(/[\s-]/g, '');
+    if (!/^\d{13,19}$/.test(s)) return false;
+    if (/^0+$/.test(s) || /^1+$/.test(s) || /^9+$/.test(s)) return false;
+    let sum = 0;
+    let shouldDouble = false;
+    for (let i = s.length - 1; i >= 0; i--) {
+      let digit = parseInt(s.charAt(i), 10);
+      if (shouldDouble) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+      sum += digit;
+      shouldDouble = !shouldDouble;
+    }
+    return (sum % 10) === 0;
+  }
+
+  function auditSecurityAndPrivacy() {
+    const findings = [];
+    const phoneRegex = /(?<![#a-fA-F0-9])\b(?:\+?64\s?(?:2\d{1}|[3-9])\s?\d{3}\s?\d{3,4}|02\d{1}[- ]\d{3}[- ]?\d{3,4})\b(?!\s*[%pxrem])/g;
+    const ccRegex = /\b(?:4\d{3}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}|5[1-5]\d{2}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}|3[47]\d{2}[ -]?\d{6}[ -]?\d{5}|3(?:0[0-5]|[68]\d)\d[ -]?\d{6}[ -]?\d{4}|6(?:011|5\d{2})[ -]?\d{4}[ -]?\d{4}[ -]?\d{4})\b/g;
+
+    const allEls = Array.from(document.querySelectorAll('body *'));
+    for (const el of allEls) {
+      if (isDecorative(el) || !isVisible(el) || !hasDirectText(el)) continue;
+      const txt = (el.textContent || '').trim();
+      if (!txt) continue;
+
+      const phoneMatches = txt.match(phoneRegex);
+      if (phoneMatches) {
+        const r = el.getBoundingClientRect();
+        findings.push({
+          pillar: 'SECURITY',
+          severity: 'WARNING',
+          type: 'UNMASKED_PHONE_NUMBER',
+          selector: getSelector(el),
+          text: phoneMatches[0],
+          rect: { left: Math.round(r.left), top: Math.round(r.top), width: Math.round(r.width), height: Math.round(r.height) },
+          detail: `Unmasked phone number ("${phoneMatches[0]}") displayed in live DOM text.`,
+          fixHint: 'Mask patron phone numbers (e.g. 027 *** 1234) before rendering in DOM.'
+        });
+      }
+
+      const ccMatches = txt.match(ccRegex);
+      if (ccMatches) {
+        for (const cc of ccMatches) {
+          if (isValidCreditCard(cc)) {
+            const r = el.getBoundingClientRect();
+            findings.push({
+              pillar: 'SECURITY',
+              severity: 'CRITICAL',
+              type: 'EXPOSED_CREDIT_CARD_NUMBER',
+              selector: getSelector(el),
+              text: cc.slice(0, 4) + ' **** **** ' + cc.slice(-4),
+              rect: { left: Math.round(r.left), top: Math.round(r.top), width: Math.round(r.width), height: Math.round(r.height) },
+              detail: `Valid credit card number pattern detected in live DOM text.`,
+              fixHint: 'Never display raw credit card numbers in DOM. Mask or tokenize payment data.'
+            });
+          }
+        }
+      }
+    }
+
+    const pwInputs = Array.from(document.querySelectorAll('input[type="password"]'));
+    for (const inp of pwInputs) {
+      if (inp.value || inp.getAttribute('value')) {
+        const r = inp.getBoundingClientRect();
+        findings.push({
+          pillar: 'SECURITY',
+          severity: 'CRITICAL',
+          type: 'DEFAULT_PASSWORD_IN_HTML',
+          selector: getSelector(inp),
+          rect: { left: Math.round(r.left), top: Math.round(r.top), width: Math.round(r.width), height: Math.round(r.height) },
+          detail: `Password input element has prefilled value attribute in DOM.`,
+          fixHint: 'Remove default value from password inputs; require active user authentication.'
+        });
+      }
+    }
+
+    const forms = Array.from(document.querySelectorAll('form'));
+    for (const form of forms) {
+      const action = form.getAttribute('action') || form.action || '';
+      const hasPw = form.querySelector('input[type="password"]');
+      const isLocalTest = action.startsWith('http://127.0.0.1') || action.startsWith('http://localhost');
+      if (hasPw && action.toLowerCase().startsWith('http://') && !isLocalTest) {
+        const r = form.getBoundingClientRect();
+        findings.push({
+          pillar: 'SECURITY',
+          severity: 'CRITICAL',
+          type: 'INSECURE_HTTP_LOGIN_FORM',
+          selector: getSelector(form),
+          rect: { left: Math.round(r.left), top: Math.round(r.top), width: Math.round(r.width), height: Math.round(r.height) },
+          detail: `Form containing password input submits over unencrypted HTTP ("${action}").`,
+          fixHint: 'Ensure login forms submit exclusively via HTTPS.'
+        });
+      }
+    }
+
+    return findings;
+  }
+
   function runAudit(options = {}) {
     const targetW = options.viewportWidth || DEFAULT_VIEWPORT_W;
     const targetH = options.viewportHeight || DEFAULT_VIEWPORT_H;
@@ -475,6 +578,10 @@
     // 9. Rules: Blinking Clock Colons
     const clockFindings = auditClocks(isSignagePage);
     violations.push(...clockFindings);
+
+    // 10. Security & Privacy: DOM Unmasked PII & Login Exposure
+    const securityFindings = auditSecurityAndPrivacy();
+    violations.push(...securityFindings);
 
     return {
       url: window.location.href,
