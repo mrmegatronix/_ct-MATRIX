@@ -17,6 +17,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb5hBydNyWzQU9h5QNR3kB8RdNsC9kTacKQoXhDZzCpht6StxTkJPU4uLewTX0UcnGy75MQ==" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
     <style>
         :root {
@@ -967,10 +969,317 @@
             display: none;
         }
 
+        /* ==========================================================================
+           GIANT MULTI-PAGE POSTER SLICER & BACK-SIDE ALIGNMENT MODULE
+           ========================================================================== */
+        #sidebarMultipageControls {
+            display: none;
+        }
+
+        .multipage-section {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            padding: 0.5rem 1rem 4rem;
+        }
+
+        .multipage-section.active {
+            display: flex;
+        }
+
+        .multipage-top-bar {
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(17, 24, 39, 0.95);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .multipage-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.74rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.03em;
+        }
+
+        .status-pill-clean {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: #34d399;
+        }
+
+        .status-pill-marked {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #fbbf24;
+        }
+
+        .multipage-grid-preview {
+            display: grid;
+            gap: 14px;
+            padding: 14px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            max-width: 1200px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            margin-bottom: 2rem;
+            transition: all 0.2s ease;
+        }
+
+        .multipage-tile-wrapper {
+            position: relative;
+            aspect-ratio: 210 / 297;
+            background: #000;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .multipage-tile-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: fill;
+        }
+
+        /* Screen-Only Crop Mark Overlay */
+        .crop-mark-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        .screen-crop-crosshair {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-color: #f59e0b;
+            border-style: solid;
+        }
+        .sc-tl { top: 6px; left: 6px; border-width: 2px 0 0 2px; }
+        .sc-tr { top: 6px; right: 6px; border-width: 2px 2px 0 0; }
+        .sc-bl { bottom: 6px; left: 6px; border-width: 0 0 2px 2px; }
+        .sc-br { bottom: 6px; right: 6px; border-width: 0 2px 2px 0; }
+
+        .screen-tile-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(17, 24, 39, 0.9);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.5);
+            font-size: 0.65rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 2px 8px;
+            border-radius: 4px;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        /* Back-Side Alignment Guide Sheet Styling */
+        .back-side-guide-sheet {
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            color: #0f172a;
+            position: relative;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 12px;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* 5mm Unprintable Printer Margin Cut Line */
+        .margin-trim-box {
+            position: absolute;
+            inset: 5mm;
+            border: 1.5px dashed #dc2626;
+            pointer-events: none;
+            box-sizing: border-box;
+            z-index: 5;
+        }
+
+        .margin-trim-label {
+            position: absolute;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8px;
+            font-weight: 700;
+            color: #dc2626;
+            background: #fff;
+            padding: 0 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .mtl-top { top: calc(5mm - 6px); left: 50%; transform: translateX(-50%); }
+        .mtl-bottom { bottom: calc(5mm - 6px); left: 50%; transform: translateX(-50%); }
+        .mtl-left { left: calc(5mm - 6px); top: 50%; transform: translateY(-50%) rotate(-90deg); }
+        .mtl-right { right: calc(5mm - 6px); top: 50%; transform: translateY(-50%) rotate(90deg); }
+
+        /* Overlap Tape Zones on Back */
+        .back-seam-tape-strip {
+            position: absolute;
+            background: repeating-linear-gradient(45deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.15) 6px, rgba(245, 158, 11, 0.28) 6px, rgba(245, 158, 11, 0.28) 12px);
+            border: 2px dashed #d97706;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 900;
+            font-size: 9px;
+            color: #92400e;
+            text-transform: uppercase;
+            z-index: 8;
+            box-sizing: border-box;
+        }
+        .tape-strip-left { top: 5mm; left: 5mm; bottom: 5mm; width: 10mm; writing-mode: vertical-rl; transform: rotate(180deg); }
+        .tape-strip-right { top: 5mm; right: 5mm; bottom: 5mm; width: 10mm; writing-mode: vertical-rl; }
+        .tape-strip-bottom { left: 5mm; right: 5mm; bottom: 5mm; height: 10mm; }
+        .tape-strip-top { left: 5mm; right: 5mm; top: 5mm; height: 10mm; }
+
+        /* Alignment Target Lines on Non-Overlap Side */
+        .back-align-target-line {
+            position: absolute;
+            border-color: #2563eb;
+            border-style: solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8.5px;
+            font-weight: 800;
+            color: #1e40af;
+            z-index: 8;
+        }
+        .target-line-left { top: 5mm; left: 5mm; bottom: 5mm; border-width: 0 0 0 2.5px; writing-mode: vertical-rl; transform: rotate(180deg); }
+        .target-line-right { top: 5mm; right: 5mm; bottom: 5mm; border-width: 0 2.5px 0 0; writing-mode: vertical-rl; }
+        .target-line-bottom { left: 5mm; right: 5mm; bottom: 5mm; border-width: 0 0 2.5px 0; }
+        .target-line-top { left: 5mm; right: 5mm; top: 5mm; border-width: 2.5px 0 0 0; }
+
+        .back-guide-center-card {
+            margin: auto;
+            background: rgba(248, 250, 252, 0.98);
+            border: 2px solid #0f172a;
+            border-radius: 8px;
+            padding: 12px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 6px;
+            max-width: 82%;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .back-tile-heading {
+            font-size: 16px;
+            font-weight: 900;
+            color: #0f172a;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .back-tile-coords {
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: #475569;
+        }
+
+        .back-mini-map {
+            display: grid;
+            gap: 3px;
+            padding: 4px;
+            background: #e2e8f0;
+            border: 1px solid #94a3b8;
+            border-radius: 4px;
+            margin: 4px 0;
+        }
+
+        .back-mini-cell {
+            width: 22px;
+            height: 18px;
+            border: 1px solid #64748b;
+            background: #fff;
+            color: #0f172a;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-mini-cell.active-cell {
+            background: #0f172a;
+            color: #f8fafc;
+            border-color: #000;
+        }
+
+        .back-tape-instructions {
+            font-size: 9.5px;
+            color: #334155;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        /* Multi-Page Print Output Container */
+        #multipagePrintContainer {
+            display: none;
+        }
+
+        .multipage-print-sheet {
+            width: 100vw !important;
+            height: 100vh !important;
+            page-break-inside: avoid !important;
+            page-break-after: always !important;
+            break-after: page !important;
+            overflow: hidden !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
+            position: relative !important;
+            display: block !important;
+        }
+
         /* PRINT STYLES FOR EXACT A4 PORTRAIT OUTPUT */
         @media print {
             @page {
                 size: A4 portrait;
+                margin: 0;
+            }
+
+            body.paper-a3 @page {
+                size: A3 portrait;
                 margin: 0;
             }
 
@@ -984,7 +1293,7 @@
                 overflow: visible !important;
             }
 
-            header, .sidebar, .stage-bar, .grid-section, .multi-select-bar {
+            header, .sidebar, .stage-bar, .grid-section, .multi-select-bar, .multipage-top-bar {
                 display: none !important;
             }
 
@@ -1027,6 +1336,22 @@
             body.batch-printing #batchPrintContainer .poster-container {
                 display: flex !important;
             }
+
+            /* Multi-page print support */
+            body.multipage-printing #posterCanvas,
+            body.multipage-printing #gridSection,
+            body.multipage-printing #batchPrintContainer,
+            body.multipage-printing .multipage-section {
+                display: none !important;
+            }
+
+            body.multipage-printing #multipagePrintContainer {
+                display: block !important;
+            }
+
+            body.multipage-printing .multipage-print-sheet {
+                display: block !important;
+            }
         }
     </style>
 </head>
@@ -1050,6 +1375,9 @@
             </button>
             <button class="btn" onclick="switchView('grid')">
                 <i data-lucide="layout-grid"></i> All Slides Grid
+            </button>
+            <button class="btn btn-primary" onclick="switchView('multipage')">
+                <i data-lucide="split"></i> Giant Multi-Page Slicer
             </button>
             <button class="btn btn-primary" onclick="downloadPosterPDF()">
                 <i data-lucide="file-down"></i> Save as PDF
@@ -1441,6 +1769,162 @@
             </div>
         </aside>
 
+        <!-- Sidebar Controls (Giant Multi-Page Slicer Mode) -->
+        <aside class="sidebar" id="sidebarMultipageControls" style="display: none;">
+            <!-- 1. Source Image or PDF Upload -->
+            <div class="sidebar-section">
+                <div class="section-title">
+                    <span>1. Source Document / Artwork</span>
+                </div>
+                <div class="form-group">
+                    <label>Upload Artwork Image or PDF</label>
+                    <input type="file" id="mpFileInput" accept="image/png, image/jpeg, image/webp, application/pdf" onchange="handleMpFileUpload(this.files[0])" style="display: none;">
+                    <button class="btn btn-primary" style="width: 100%; justify-content: center; margin-bottom: 0.5rem;" onclick="document.getElementById('mpFileInput').click()">
+                        <i data-lucide="upload"></i> Upload Image / PDF
+                    </button>
+                    <button class="btn" style="width: 100%; justify-content: center;" onclick="loadCurrentPosterToMp()">
+                        <i data-lucide="camera"></i> Grab Current Studio Poster
+                    </button>
+                </div>
+                <div id="mpSourceInfo" style="font-size: 0.72rem; color: var(--text-dim); background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; border: 1px solid var(--border); margin-top: 0.5rem; display: none;">
+                    <div><strong>File:</strong> <span id="mpFileName">-</span></div>
+                    <div><strong>Resolution:</strong> <span id="mpFileRes">-</span></div>
+                    <div><strong>Aspect:</strong> <span id="mpFileAspect">-</span></div>
+                </div>
+            </div>
+
+            <!-- 2. Grid Layout & Target Paper -->
+            <div class="sidebar-section">
+                <div class="section-title">2. Grid Layout & Paper Size</div>
+                
+                <div class="form-group">
+                    <label>Quick Grid Presets</label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem;">
+                        <button class="btn active" id="mpBtnGrid2x2" onclick="setMpGrid(2, 2)">2×2 (4 Sheets)</button>
+                        <button class="btn" id="mpBtnGrid3x3" onclick="setMpGrid(3, 3)">3×3 (9 Sheets)</button>
+                        <button class="btn" id="mpBtnGrid2x3" onclick="setMpGrid(2, 3)">2×3 (6 Sheets)</button>
+                        <button class="btn" id="mpBtnGrid3x4" onclick="setMpGrid(3, 4)">3×4 (12 Sheets)</button>
+                        <button class="btn" id="mpBtnGrid4x4" onclick="setMpGrid(4, 4)">4×4 (16 Sheets)</button>
+                        <button class="btn" id="mpBtnGridCustom" onclick="toggleCustomGridInputs()">Custom...</button>
+                    </div>
+                </div>
+
+                <div class="form-group" id="mpCustomGridRow" style="display: none;">
+                    <div class="form-row">
+                        <div style="flex: 1;">
+                            <label>Cols (Width)</label>
+                            <input type="number" id="mpInputCols" min="1" max="10" value="2" onchange="onCustomGridChange()">
+                        </div>
+                        <div style="flex: 1;">
+                            <label>Rows (Height)</label>
+                            <input type="number" id="mpInputRows" min="1" max="10" value="2" onchange="onCustomGridChange()">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Paper Size</label>
+                    <div class="form-row">
+                        <button class="btn active" id="mpPaperA4" onclick="setMpPaper('A4')" style="flex: 1; justify-content: center;">A4 (210×297)</button>
+                        <button class="btn" id="mpPaperA3" onclick="setMpPaper('A3')" style="flex: 1; justify-content: center;">A3 (297×420)</button>
+                    </div>
+                </div>
+
+                <div id="mpDimensionsCard" style="font-size: 0.75rem; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); border-radius: 6px; padding: 8px 10px; color: #fde68a;">
+                    <strong>Assembled Size:</strong> <span id="mpAssembledSize">420mm × 594mm (4 Sheets)</span>
+                </div>
+            </div>
+
+            <!-- 3. Overlap Seam & Margin Trimming -->
+            <div class="sidebar-section">
+                <div class="section-title">3. Overlap Seam & Trim Margin</div>
+
+                <div class="form-group">
+                    <label>Tape Overlap Seam</label>
+                    <select id="mpOverlapSelect" onchange="setMpOverlap(parseFloat(this.value))">
+                        <option value="10" selected>10mm (Tape Overlap - Recommended)</option>
+                        <option value="15">15mm (Wide Tape Overlap)</option>
+                        <option value="5">5mm (Narrow Overlap)</option>
+                        <option value="0">0mm (Borderless Butt Joint)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Printer Margin Trim Guide</label>
+                    <select id="mpTrimMarginSelect" onchange="setMpTrimMargin(parseFloat(this.value))">
+                        <option value="5" selected>5mm Margin (Standard Desktop/Laser)</option>
+                        <option value="7">7mm Margin (Budget / Inkjet)</option>
+                        <option value="3">3mm Margin (Tight Laser)</option>
+                        <option value="0">0mm (True Borderless / Photo)</option>
+                    </select>
+                </div>
+                <p style="font-size: 0.68rem; color: var(--text-dim); line-height: 1.35;">
+                    💡 Desktop printers leave ~5mm white unprintable margins. Our 5mm trim line shows where to slice with a craft knife and ruler before assembling.
+                </p>
+            </div>
+
+            <!-- 4. Front Artwork & Crop Marks Setting -->
+            <div class="sidebar-section">
+                <div class="section-title">4. Front Artwork & Crop Marks</div>
+
+                <div class="toggle-item">
+                    <span>Show Crop Marks on Screen Preview</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="mpPreviewCropMarks" checked onchange="toggleMpPreviewCropMarks(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="toggle-item" style="margin-top: 0.5rem;">
+                    <span>Print Crop Marks on Front Artwork</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="mpPrintCropMarks" onchange="toggleMpPrintCropMarks(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div id="mpFrontPrintStatusPill" class="multipage-status-pill status-pill-clean" style="margin-top: 0.65rem; width: 100%; justify-content: center;">
+                    <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i>
+                    <span id="mpFrontPrintStatusText">Front Artwork Prints: CLEAN (No Crop Marks)</span>
+                </div>
+            </div>
+
+            <!-- 5. Back-Side Alignment & Taping System -->
+            <div class="sidebar-section">
+                <div class="section-title">5. Back-Side Alignment System</div>
+
+                <div class="form-group">
+                    <label>Print Output Mode</label>
+                    <select id="mpPrintModeSelect" onchange="setMpPrintMode(this.value)">
+                        <option value="front_only" selected>🎨 Front Artwork Tiles Only</option>
+                        <option value="duplex">🔄 Duplex (Front Art + Back Guide on each sheet)</option>
+                        <option value="back_only">📐 Back Alignment Guides Only (Print on trimmed sheets)</option>
+                    </select>
+                </div>
+
+                <div style="background: rgba(15,23,42,0.6); border: 1px dashed rgba(245,158,11,0.4); border-radius: 8px; padding: 10px; font-size: 0.72rem; color: #cbd5e1; line-height: 1.4;">
+                    <strong style="color: var(--accent);">🛠️ Face-Down Assembly Protocol:</strong><br>
+                    Trim 5mm border whitespace off each sheet. Lay sheets face-down on table. Match the registration crosshairs and shaded overlap tape strips on the back. Tape along seams without flipping sheets!
+                </div>
+            </div>
+
+            <!-- 6. Actions -->
+            <div class="sidebar-section">
+                <div class="section-title">6. Production Output</div>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <button class="btn btn-gold" style="width: 100%; justify-content: center; font-size: 0.85rem; padding: 0.65rem;" onclick="printMultiPageTiles()">
+                        <i data-lucide="printer"></i> Print Multi-Page Poster
+                    </button>
+                    <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="downloadMultiPagePDF()">
+                        <i data-lucide="file-down"></i> Save as Multi-Page PDF
+                    </button>
+                    <button class="btn" style="width: 100%; justify-content: center;" onclick="exportAllTilesZip()">
+                        <i data-lucide="archive"></i> Download All Tiles (ZIP)
+                    </button>
+                </div>
+            </div>
+        </aside>
+
         <!-- Right Side: Preview & Print Stage -->
         <main class="preview-stage">
             <div class="stage-bar no-print">
@@ -1449,6 +1933,9 @@
                 </button>
                 <button class="view-tab-btn" id="tabGridBtn" onclick="switchView('grid')">
                     <i data-lucide="grid"></i> All Slides Grid (<span id="slideCountBadge">0</span>)
+                </button>
+                <button class="view-tab-btn" id="tabMultipageBtn" onclick="switchView('multipage')">
+                    <i data-lucide="split"></i> Giant Multi-Page Slicer
                 </button>
             </div>
 
@@ -1576,6 +2063,43 @@
 
             <!-- Container for Batch Printing -->
             <div id="batchPrintContainer"></div>
+
+            <!-- Giant Multi-Page Slicer Workspace -->
+            <div class="multipage-section" id="multipageSection">
+                <div class="multipage-top-bar no-print">
+                    <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+                        <span style="font-size: 0.78rem; font-weight: 800; color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase;">
+                            Preview Mode:
+                        </span>
+                        <div class="btn-group" style="display: flex; gap: 0.35rem;">
+                            <button class="btn active" id="mpTabPreviewFront" onclick="setMpPreviewSide('front')">
+                                <i data-lucide="eye"></i> Front Artwork
+                            </button>
+                            <button class="btn" id="mpTabPreviewBack" onclick="setMpPreviewSide('back')">
+                                <i data-lucide="rotate-cw"></i> Back Alignment Guide (Face-Down)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div class="multipage-status-pill status-pill-clean" id="mpTopPrintStatus">
+                            <i data-lucide="shield-check" style="width: 13px; height: 13px;"></i>
+                            <span id="mpTopPrintStatusText">Front Artwork Prints Clean</span>
+                        </div>
+                        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-dim);" id="mpGridReadout">
+                            2×2 • 4 Sheets
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tiled Grid Container -->
+                <div class="multipage-grid-preview" id="mpGridPreview">
+                    <!-- Dynamic preview rendered by JS -->
+                </div>
+            </div>
+
+            <!-- Hidden Container for Multi-Page Printing -->
+            <div id="multipagePrintContainer"></div>
         </main>
     </div>
 
@@ -2194,26 +2718,50 @@
             });
         }
 
-        // 6. Switch View Tabs (Studio vs All Slides Grid)
+        // 6. Switch View Tabs (Studio vs All Slides Grid vs Giant Multi-Page Slicer)
         function switchView(mode) {
             const sidebar = document.getElementById('sidebarControls');
+            const sidebarMp = document.getElementById('sidebarMultipageControls');
             const canvas = document.getElementById('posterCanvas');
             const grid = document.getElementById('gridSection');
+            const mpSection = document.getElementById('multipageSection');
             const tabEditor = document.getElementById('tabEditorBtn');
             const tabGrid = document.getElementById('tabGridBtn');
+            const tabMp = document.getElementById('tabMultipageBtn');
 
             if (mode === 'editor') {
                 sidebar.style.display = 'flex';
+                if (sidebarMp) sidebarMp.style.display = 'none';
                 canvas.style.display = 'flex';
                 grid.classList.remove('active');
+                if (mpSection) mpSection.classList.remove('active');
                 tabEditor.classList.add('active');
                 tabGrid.classList.remove('active');
-            } else {
+                if (tabMp) tabMp.classList.remove('active');
+            } else if (mode === 'grid') {
                 sidebar.style.display = 'none';
+                if (sidebarMp) sidebarMp.style.display = 'none';
                 canvas.style.display = 'none';
                 grid.classList.add('active');
+                if (mpSection) mpSection.classList.remove('active');
                 tabEditor.classList.remove('active');
                 tabGrid.classList.add('active');
+                if (tabMp) tabMp.classList.remove('active');
+            } else if (mode === 'multipage') {
+                sidebar.style.display = 'none';
+                if (sidebarMp) sidebarMp.style.display = 'flex';
+                canvas.style.display = 'none';
+                grid.classList.remove('active');
+                if (mpSection) mpSection.classList.add('active');
+                tabEditor.classList.remove('active');
+                tabGrid.classList.remove('active');
+                if (tabMp) tabMp.classList.add('active');
+
+                if (!mpState.sourceImage) {
+                    loadCurrentPosterToMp();
+                } else {
+                    renderMultiPage();
+                }
             }
             lucide.createIcons();
         }
@@ -2504,8 +3052,571 @@
             }
         }
 
+        // ==========================================================================
+        // GIANT MULTI-PAGE POSTER SLICER & BACK-SIDE ALIGNMENT ENGINE
+        // ==========================================================================
+        const mpState = {
+            sourceImage: null,
+            fileName: 'Current_Poster',
+            cols: 2,
+            rows: 2,
+            paper: 'A4',
+            overlapMm: 10,
+            trimMarginMm: 5,
+            previewCropMarks: true,
+            printCropMarks: false,
+            printMode: 'front_only',
+            previewSide: 'front'
+        };
+
+        if (window.pdfjsLib) {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
+        function handleMpFileUpload(file) {
+            if (!file) return;
+            mpState.fileName = file.name;
+            const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
+            if (isPdf) {
+                if (!window.pdfjsLib) {
+                    alert('PDF renderer is initializing, please try again in a moment.');
+                    return;
+                }
+                const fileReader = new FileReader();
+                fileReader.onload = function() {
+                    const typedarray = new Uint8Array(this.result);
+                    pdfjsLib.getDocument(typedarray).promise.then(pdf => {
+                        pdf.getPage(1).then(page => {
+                            const viewport = page.getViewport({ scale: 3.0 });
+                            const canvas = document.createElement('canvas');
+                            canvas.width = viewport.width;
+                            canvas.height = viewport.height;
+                            const ctx = canvas.getContext('2d');
+                            page.render({ canvasContext: ctx, viewport: viewport }).promise.then(() => {
+                                const img = new Image();
+                                img.src = canvas.toDataURL('image/png');
+                                img.onload = () => {
+                                    setMpSourceImage(img, file.name);
+                                };
+                            });
+                        });
+                    }).catch(err => {
+                        console.error('PDF render error:', err);
+                        alert('Could not render PDF. Please upload a high-resolution PNG or JPG image.');
+                    });
+                };
+                fileReader.readAsArrayBuffer(file);
+            } else {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        setMpSourceImage(img, file.name);
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function loadCurrentPosterToMp() {
+            const posterEl = document.getElementById('posterCanvas');
+            if (!posterEl) return;
+            html2canvas(posterEl, {
+                scale: 3,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#000000',
+                logging: false
+            }).then(canvas => {
+                const img = new Image();
+                img.src = canvas.toDataURL('image/png');
+                img.onload = () => {
+                    const titleText = (document.getElementById('posterTitle')?.innerText || 'Matrix_Poster').replace(/[^a-zA-Z0-9_-]/g, '_');
+                    setMpSourceImage(img, `${titleText}_Studio_A4.png`);
+                };
+            }).catch(err => {
+                console.warn('html2canvas error, using fallback image', err);
+            });
+        }
+
+        function setMpSourceImage(img, name) {
+            mpState.sourceImage = img;
+            mpState.fileName = name || 'Uploaded_Artwork';
+
+            const infoBox = document.getElementById('mpSourceInfo');
+            if (infoBox) {
+                infoBox.style.display = 'block';
+                document.getElementById('mpFileName').textContent = mpState.fileName;
+                document.getElementById('mpFileRes').textContent = `${img.naturalWidth} × ${img.naturalHeight} px`;
+                const ratio = (img.naturalWidth / img.naturalHeight).toFixed(2);
+                document.getElementById('mpFileAspect').textContent = `${ratio} : 1`;
+            }
+            renderMultiPage();
+        }
+
+        function setMpGrid(cols, rows) {
+            mpState.cols = cols;
+            mpState.rows = rows;
+            const customRow = document.getElementById('mpCustomGridRow');
+            if (customRow) customRow.style.display = 'none';
+
+            const ids = ['mpBtnGrid2x2', 'mpBtnGrid3x3', 'mpBtnGrid2x3', 'mpBtnGrid3x4', 'mpBtnGrid4x4', 'mpBtnGridCustom'];
+            ids.forEach(id => {
+                const b = document.getElementById(id);
+                if (b) b.classList.remove('active');
+            });
+            const activeId = `mpBtnGrid${cols}x${rows}`;
+            const activeBtn = document.getElementById(activeId);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            updateMpDimensionsCard();
+            renderMultiPage();
+        }
+
+        function toggleCustomGridInputs() {
+            const customRow = document.getElementById('mpCustomGridRow');
+            if (!customRow) return;
+            const isShown = customRow.style.display === 'block';
+            customRow.style.display = isShown ? 'none' : 'block';
+            document.getElementById('mpBtnGridCustom')?.classList.toggle('active', !isShown);
+        }
+
+        function onCustomGridChange() {
+            const c = parseInt(document.getElementById('mpInputCols').value) || 2;
+            const r = parseInt(document.getElementById('mpInputRows').value) || 2;
+            mpState.cols = Math.max(1, Math.min(10, c));
+            mpState.rows = Math.max(1, Math.min(10, r));
+            updateMpDimensionsCard();
+            renderMultiPage();
+        }
+
+        function setMpPaper(paper) {
+            mpState.paper = paper;
+            document.getElementById('mpPaperA4')?.classList.toggle('active', paper === 'A4');
+            document.getElementById('mpPaperA3')?.classList.toggle('active', paper === 'A3');
+            document.body.classList.toggle('paper-a3', paper === 'A3');
+            updateMpDimensionsCard();
+            renderMultiPage();
+        }
+
+        function setMpOverlap(mm) {
+            mpState.overlapMm = mm;
+            renderMultiPage();
+        }
+
+        function setMpTrimMargin(mm) {
+            mpState.trimMarginMm = mm;
+            renderMultiPage();
+        }
+
+        function toggleMpPreviewCropMarks(val) {
+            mpState.previewCropMarks = val;
+            renderMultiPage();
+        }
+
+        function toggleMpPrintCropMarks(val) {
+            mpState.printCropMarks = val;
+            const pill = document.getElementById('mpFrontPrintStatusPill');
+            const topPill = document.getElementById('mpTopPrintStatus');
+            const text = document.getElementById('mpFrontPrintStatusText');
+            const topText = document.getElementById('mpTopPrintStatusText');
+
+            if (val) {
+                if (pill) pill.className = 'multipage-status-pill status-pill-marked';
+                if (topPill) topPill.className = 'multipage-status-pill status-pill-marked';
+                if (text) text.textContent = 'Front Artwork Prints: WITH CROP MARKS';
+                if (topText) topText.textContent = 'Front Prints With Crop Marks';
+            } else {
+                if (pill) pill.className = 'multipage-status-pill status-pill-clean';
+                if (topPill) topPill.className = 'multipage-status-pill status-pill-clean';
+                if (text) text.textContent = 'Front Artwork Prints: CLEAN (No Crop Marks)';
+                if (topText) topText.textContent = 'Front Artwork Prints Clean';
+            }
+            renderMultiPage();
+        }
+
+        function setMpPrintMode(mode) {
+            mpState.printMode = mode;
+        }
+
+        function setMpPreviewSide(side) {
+            mpState.previewSide = side;
+            document.getElementById('mpTabPreviewFront')?.classList.toggle('active', side === 'front');
+            document.getElementById('mpTabPreviewBack')?.classList.toggle('active', side === 'back');
+            renderMultiPage();
+        }
+
+        function updateMpDimensionsCard() {
+            const sheetW = mpState.paper === 'A3' ? 297 : 210;
+            const sheetH = mpState.paper === 'A3' ? 420 : 297;
+            const totalW = sheetW * mpState.cols;
+            const totalH = sheetH * mpState.rows;
+            const totalSheets = mpState.cols * mpState.rows;
+            const desc = `${totalW}mm × ${totalH}mm (${totalSheets} Sheets)`;
+
+            const el = document.getElementById('mpAssembledSize');
+            if (el) el.textContent = desc;
+
+            const readout = document.getElementById('mpGridReadout');
+            if (readout) readout.textContent = `${mpState.cols}×${mpState.rows} • ${totalSheets} Sheets (${mpState.paper})`;
+        }
+
+        // Exact pixel slice math with overlap ratio
+        function getMpSliceCoordinates(col, row, totalCols, totalRows, imgW, imgH) {
+            function get1D(idx, total, size, ratio) {
+                if (total === 1) return [0, size];
+                if (ratio === 0) {
+                    const start = Math.round(idx * size / total);
+                    const end = Math.round((idx + 1) * size / total);
+                    return [start, end];
+                }
+                const overlapPx = Math.round(size * ratio);
+                const W = Math.round((size + (total - 1) * overlapPx) / total);
+                const step = W - overlapPx;
+                let start = idx * step;
+                let end = start + W;
+                if (idx === total - 1) {
+                    start = size - W;
+                    end = size;
+                }
+                return [Math.max(0, start), Math.min(size, end)];
+            }
+
+            const sheetW = mpState.paper === 'A3' ? 297 : 210;
+            const sheetH = mpState.paper === 'A3' ? 420 : 297;
+            const ratioX = (mpState.overlapMm / sheetW) / totalCols;
+            const ratioY = (mpState.overlapMm / sheetH) / totalRows;
+
+            const [sx, ex] = get1D(col, totalCols, imgW, ratioX);
+            const [sy, ey] = get1D(row, totalRows, imgH, ratioY);
+            return { sx, sy, sw: Math.max(1, ex - sx), sh: Math.max(1, ey - sy) };
+        }
+
+        // Build Back-Side Alignment Guide Sheet with Mirror-Correct Alignment Seams
+        function buildBackGuideSheet(pageNum, totalPages, r, c, totalRows, totalCols) {
+            const sheet = document.createElement('div');
+            sheet.className = 'back-side-guide-sheet';
+
+            // 1. 5mm Printer Margin Trim Box with Corner Crosshairs
+            const trimBox = document.createElement('div');
+            trimBox.className = 'margin-trim-box';
+            sheet.appendChild(trimBox);
+
+            const mtlTop = document.createElement('div'); mtlTop.className = 'margin-trim-label mtl-top'; mtlTop.textContent = '✂️ 5mm TRIM LINE'; sheet.appendChild(mtlTop);
+            const mtlBottom = document.createElement('div'); mtlBottom.className = 'margin-trim-label mtl-bottom'; mtlBottom.textContent = '✂️ 5mm TRIM LINE'; sheet.appendChild(mtlBottom);
+            const mtlLeft = document.createElement('div'); mtlLeft.className = 'margin-trim-label mtl-left'; mtlLeft.textContent = '✂️ 5mm TRIM LINE'; sheet.appendChild(mtlLeft);
+            const mtlRight = document.createElement('div'); mtlRight.className = 'margin-trim-label mtl-right'; mtlRight.textContent = '✂️ 5mm TRIM LINE'; sheet.appendChild(mtlRight);
+
+            // 2. Seam Alignment & Tape Flaps (Horizontal Mirroring for Face-Down Assembly)
+            // On front: Col c connects to Col c+1 on RIGHT edge. Face-down: that seam is on LEFT edge!
+            if (c < totalCols - 1) {
+                const tapeStrip = document.createElement('div');
+                tapeStrip.className = 'back-seam-tape-strip tape-strip-left';
+                tapeStrip.innerHTML = `<span>░░ ${mpState.overlapMm}mm TAPE FLAP [PLACE UNDER TILE ${pageNum + 1}] ░░</span>`;
+                sheet.appendChild(tapeStrip);
+            }
+            if (c > 0) {
+                const targetLine = document.createElement('div');
+                targetLine.className = 'back-align-target-line target-line-right';
+                targetLine.innerHTML = `<span>━━━━ ALIGN FLUSH TO TILE ${pageNum - 1} ━━━━</span>`;
+                sheet.appendChild(targetLine);
+            }
+
+            // Vertical connections (Row r connects to Row r+1 on BOTTOM edge; stays bottom when flipped horizontally)
+            if (r < totalRows - 1) {
+                const tapeBottom = document.createElement('div');
+                tapeBottom.className = 'back-seam-tape-strip tape-strip-bottom';
+                tapeBottom.innerHTML = `<span>░░ ${mpState.overlapMm}mm TAPE FLAP [PLACE UNDER TILE ${pageNum + totalCols}] ░░</span>`;
+                sheet.appendChild(tapeBottom);
+            }
+            if (r > 0) {
+                const targetTop = document.createElement('div');
+                targetTop.className = 'back-align-target-line target-line-top';
+                targetTop.innerHTML = `<span>━━━━ ALIGN FLUSH TO TILE ${pageNum - totalCols} ━━━━</span>`;
+                sheet.appendChild(targetTop);
+            }
+
+            // 3. Center Assembly Identification Card
+            const centerCard = document.createElement('div');
+            centerCard.className = 'back-guide-center-card';
+
+            const heading = document.createElement('div');
+            heading.className = 'back-tile-heading';
+            heading.textContent = `TILE ${pageNum} OF ${totalPages}`;
+            centerCard.appendChild(heading);
+
+            const coords = document.createElement('div');
+            coords.className = 'back-tile-coords';
+            coords.textContent = `ROW ${r + 1} OF ${totalRows} • COL ${c + 1} OF ${totalCols} [${mpState.paper}]`;
+            centerCard.appendChild(coords);
+
+            // Mini Grid Diagram
+            const miniMap = document.createElement('div');
+            miniMap.className = 'back-mini-map';
+            miniMap.style.gridTemplateColumns = `repeat(${totalCols}, 1fr)`;
+            for (let mr = 0; mr < totalRows; mr++) {
+                for (let mc = 0; mc < totalCols; mc++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'back-mini-cell';
+                    const num = mr * totalCols + mc + 1;
+                    cell.textContent = num;
+                    if (mr === r && mc === c) cell.classList.add('active-cell');
+                    miniMap.appendChild(cell);
+                }
+            }
+            centerCard.appendChild(miniMap);
+
+            const instructions = document.createElement('div');
+            instructions.className = 'back-tape-instructions';
+            instructions.innerHTML = `
+                <strong>FACE-DOWN ASSEMBLY STEPS:</strong><br>
+                1. Trim the 5mm unprintable border on red dashed line with craft knife.<br>
+                2. Lay all sheets face-down on table matching the grid numbering above.<br>
+                3. Align crosshairs over shaded tape flaps and tape along seam from behind!
+            `;
+            centerCard.appendChild(instructions);
+
+            sheet.appendChild(centerCard);
+            return sheet;
+        }
+
+        // Render Interactive Workspace Preview
+        function renderMultiPage() {
+            if (!mpState.sourceImage) return;
+
+            const gridContainer = document.getElementById('mpGridPreview');
+            if (!gridContainer) return;
+            gridContainer.innerHTML = '';
+            gridContainer.style.gridTemplateColumns = `repeat(${mpState.cols}, 1fr)`;
+
+            const totalPages = mpState.cols * mpState.rows;
+            const imgW = mpState.sourceImage.naturalWidth;
+            const imgH = mpState.sourceImage.naturalHeight;
+
+            // Target canvas display resolution
+            const targetW = mpState.paper === 'A3' ? 842 : 595;
+            const targetH = mpState.paper === 'A3' ? 1190 : 842;
+
+            let pageNumber = 1;
+
+            for (let r = 0; r < mpState.rows; r++) {
+                for (let c = 0; c < mpState.cols; c++) {
+                    const pageNum = pageNumber++;
+
+                    const tileWrap = document.createElement('div');
+                    tileWrap.className = 'multipage-tile-wrapper';
+
+                    if (mpState.previewSide === 'front') {
+                        const { sx, sy, sw, sh } = getMpSliceCoordinates(c, r, mpState.cols, mpState.rows, imgW, imgH);
+                        const canvas = document.createElement('canvas');
+                        canvas.className = 'multipage-tile-canvas';
+                        canvas.width = targetW;
+                        canvas.height = targetH;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(mpState.sourceImage, sx, sy, sw, sh, 0, 0, targetW, targetH);
+                        tileWrap.appendChild(canvas);
+
+                        // Screen crop marks & badge
+                        if (mpState.previewCropMarks) {
+                            const overlay = document.createElement('div');
+                            overlay.className = 'crop-mark-overlay';
+
+                            const scTL = document.createElement('div'); scTL.className = 'screen-crop-crosshair sc-tl'; overlay.appendChild(scTL);
+                            const scTR = document.createElement('div'); scTR.className = 'screen-crop-crosshair sc-tr'; overlay.appendChild(scTR);
+                            const scBL = document.createElement('div'); scBL.className = 'screen-crop-crosshair sc-bl'; overlay.appendChild(scBL);
+                            const scBR = document.createElement('div'); scBR.className = 'screen-crop-crosshair sc-br'; overlay.appendChild(scBR);
+
+                            const badge = document.createElement('div');
+                            badge.className = 'screen-tile-badge';
+                            badge.textContent = `PAGE ${pageNum}/${totalPages} [R${r + 1}:C${c + 1}]`;
+                            overlay.appendChild(badge);
+
+                            tileWrap.appendChild(overlay);
+                        }
+                    } else {
+                        // Back Alignment Guide Sheet
+                        const backSheet = buildBackGuideSheet(pageNum, totalPages, r, c, mpState.rows, mpState.cols);
+                        tileWrap.appendChild(backSheet);
+                    }
+
+                    gridContainer.appendChild(tileWrap);
+                }
+            }
+            lucide.createIcons();
+        }
+
+        // Native Browser Multi-Page Printing
+        function printMultiPageTiles() {
+            if (!mpState.sourceImage) return;
+
+            const printContainer = document.getElementById('multipagePrintContainer');
+            if (!printContainer) return;
+            printContainer.innerHTML = '';
+
+            const totalPages = mpState.cols * mpState.rows;
+            const imgW = mpState.sourceImage.naturalWidth;
+            const imgH = mpState.sourceImage.naturalHeight;
+
+            // Full 300 DPI high-res canvas for print output
+            const printW = mpState.paper === 'A3' ? 2480 : 1754;
+            const printH = mpState.paper === 'A3' ? 3508 : 2480;
+
+            let pageNumber = 1;
+
+            for (let r = 0; r < mpState.rows; r++) {
+                for (let c = 0; c < mpState.cols; c++) {
+                    const pageNum = pageNumber++;
+
+                    // Front Artwork Sheet
+                    if (mpState.printMode === 'front_only' || mpState.printMode === 'duplex') {
+                        const frontSheet = document.createElement('div');
+                        frontSheet.className = 'multipage-print-sheet';
+
+                        const { sx, sy, sw, sh } = getMpSliceCoordinates(c, r, mpState.cols, mpState.rows, imgW, imgH);
+                        const canvas = document.createElement('canvas');
+                        canvas.width = printW;
+                        canvas.height = printH;
+                        canvas.style.width = '100%';
+                        canvas.style.height = '100%';
+                        canvas.style.display = 'block';
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(mpState.sourceImage, sx, sy, sw, sh, 0, 0, printW, printH);
+
+                        // If user explicitly checked 'Print Crop Marks on Front Artwork'
+                        if (mpState.printCropMarks) {
+                            ctx.save();
+                            ctx.strokeStyle = '#000000';
+                            ctx.lineWidth = 4;
+                            const markLen = 40;
+                            // Top-left
+                            ctx.beginPath(); ctx.moveTo(0, markLen); ctx.lineTo(0, 0); ctx.lineTo(markLen, 0); ctx.stroke();
+                            // Top-right
+                            ctx.beginPath(); ctx.moveTo(printW - markLen, 0); ctx.lineTo(printW, 0); ctx.lineTo(printW, markLen); ctx.stroke();
+                            // Bottom-left
+                            ctx.beginPath(); ctx.moveTo(0, printH - markLen); ctx.lineTo(0, printH); ctx.lineTo(markLen, printH); ctx.stroke();
+                            // Bottom-right
+                            ctx.beginPath(); ctx.moveTo(printW - markLen, printH); ctx.lineTo(printW, printH); ctx.lineTo(printW, printH - markLen); ctx.stroke();
+                            ctx.restore();
+                        }
+
+                        frontSheet.appendChild(canvas);
+                        printContainer.appendChild(frontSheet);
+                    }
+
+                    // Back Alignment Guide Sheet
+                    if (mpState.printMode === 'duplex' || mpState.printMode === 'back_only') {
+                        const backSheet = document.createElement('div');
+                        backSheet.className = 'multipage-print-sheet is-back-sheet';
+                        const guideContent = buildBackGuideSheet(pageNum, totalPages, r, c, mpState.rows, mpState.cols);
+                        backSheet.appendChild(guideContent);
+                        printContainer.appendChild(backSheet);
+                    }
+                }
+            }
+
+            document.body.classList.add('multipage-printing');
+            window.print();
+            window.addEventListener('afterprint', () => {
+                document.body.classList.remove('multipage-printing');
+            }, { once: true });
+        }
+
+        // Export as Clean Multi-Page PDF
+        async function downloadMultiPagePDF() {
+            if (!mpState.sourceImage) return;
+
+            const totalPages = mpState.cols * mpState.rows;
+            const imgW = mpState.sourceImage.naturalWidth;
+            const imgH = mpState.sourceImage.naturalHeight;
+            const isA3 = mpState.paper === 'A3';
+            const pageFormat = isA3 ? 'a3' : 'a4';
+            const sheetWmm = isA3 ? 297 : 210;
+            const sheetHmm = isA3 ? 420 : 297;
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', pageFormat);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = isA3 ? 2480 : 1754;
+            canvas.height = isA3 ? 3508 : 2480;
+            const ctx = canvas.getContext('2d');
+
+            let pageNumber = 1;
+            let isFirst = true;
+
+            for (let r = 0; r < mpState.rows; r++) {
+                for (let c = 0; c < mpState.cols; c++) {
+                    const pageNum = pageNumber++;
+                    const { sx, sy, sw, sh } = getMpSliceCoordinates(c, r, mpState.cols, mpState.rows, imgW, imgH);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(mpState.sourceImage, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+
+                    if (!isFirst) {
+                        pdf.addPage(pageFormat, 'p');
+                    }
+                    isFirst = false;
+
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    pdf.addImage(imgData, 'JPEG', 0, 0, sheetWmm, sheetHmm);
+                }
+            }
+
+            const cleanName = (mpState.fileName || 'poster').replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+            pdf.save(`${cleanName}_Giant_${mpState.cols}x${mpState.rows}_Poster.pdf`);
+        }
+
+        // Export All Tiles as PNG in a ZIP file
+        async function exportAllTilesZip() {
+            if (!mpState.sourceImage) return;
+            if (!window.JSZip) {
+                alert('JSZip library is initializing, please try again.');
+                return;
+            }
+
+            const zip = new JSZip();
+            const totalPages = mpState.cols * mpState.rows;
+            const imgW = mpState.sourceImage.naturalWidth;
+            const imgH = mpState.sourceImage.naturalHeight;
+            const isA3 = mpState.paper === 'A3';
+
+            const canvas = document.createElement('canvas');
+            canvas.width = isA3 ? 2480 : 1754;
+            canvas.height = isA3 ? 3508 : 2480;
+            const ctx = canvas.getContext('2d');
+
+            let pageNumber = 1;
+
+            for (let r = 0; r < mpState.rows; r++) {
+                for (let c = 0; c < mpState.cols; c++) {
+                    const pageNum = pageNumber++;
+                    const { sx, sy, sw, sh } = getMpSliceCoordinates(c, r, mpState.cols, mpState.rows, imgW, imgH);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(mpState.sourceImage, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
+
+                    const dataUrl = canvas.toDataURL('image/png');
+                    const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
+                    zip.file(`poster_tile_${pageNum}_of_${totalPages}_[R${r + 1}C${c + 1}].png`, base64Data, { base64: true });
+                }
+            }
+
+            const content = await zip.generateAsync({ type: 'blob' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(content);
+            const cleanName = (mpState.fileName || 'poster').replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+            link.download = `${cleanName}_${mpState.cols}x${mpState.rows}_tiles.zip`;
+            link.click();
+        }
+
         // Initialize on load
         fetchGSheetsData();
+
+        // Check for ?view=multipage parameter
+        const urlViewParam = new URLSearchParams(window.location.search).get('view');
+        if (urlViewParam === 'multipage') {
+            switchView('multipage');
+        }
     </script>
 </body>
 </html>
