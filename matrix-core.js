@@ -1010,7 +1010,6 @@ function buildSlideQueue(data) {
   queue.push({ type: 'MODULE', id: 'ct-insta', url: instaUrl, title: "Coasters Tavern Instagram", pinned: true, priority: 7, duration: getModDur('ct-insta', 30) });
   queue.push({ type: 'MODULE', id: 'ct-loyalty', url: 'loyalty-slide.html', title: "Coasters Loyalty App", pinned: true, priority: 6, duration: getModDur('ct-loyalty', 30), accentColor: '#89CFF0' });
   queue.push({ type: 'MODULE', id: 'ct-west', url: resolveModuleUrl('../_ct-WEST/index.html', 'https://mrmegatronix.github.io/_ct-WEST/index.html'), title: "Wild West Karaoke", priority: 15, duration: getModDur('ct-west', 30), accentColor: '#d97706' });
-  queue.push({ type: 'MODULE', id: 'ct-hallo', url: resolveModuleUrl('../_ct-HALLO/index.html', 'https://mrmegatronix.github.io/_ct-HALLO/index.html'), title: "Halloween Karaoke", priority: 15, duration: getModDur('ct-hallo', 30), accentColor: '#ea580c' });
   // queue.push({ type: 'MODULE', id: 'ct-trip', url: '../_ct-TRIP/index.html', title: "Live Bus Tracking", priority: 50, duration: getModDur('ct-trip', 120) });
 
   // Flame Lantern Logo Slide removed from recurring queue (opening slide only in index.html)
@@ -1924,7 +1923,6 @@ function renderActiveSlide(skipBroadcast = false, overrideDelay = null) {
       if (slide.id === 'ct-loyalty') moduleColor = '#89CFF0';
       if (slide.id === 'ct-trip') moduleColor = '#10b981';
       if (slide.id === 'ct-west') moduleColor = '#d97706';
-      if (slide.id === 'ct-hallo') moduleColor = '#ea580c';
       if (slide.id === 'ct-wea1') moduleColor = '#38bdf8';
       
       document.documentElement.style.setProperty('--theme-color', moduleColor);

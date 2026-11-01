@@ -108,7 +108,6 @@ const MATRIX_SIBLING_MODULES = [
   '_ct-FACEB',
   '_ct-INSTA',
   '_ct-WEST',
-  '_ct-HALLO',
   '_ct-TRIP'
 ];
 

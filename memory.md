@@ -15,7 +15,7 @@
 ## Key Decisions & Root-Cause Reference
 - **Module ID Normalization (`normalizeModuleId`)**: Admin/Remote UI labels like `"ACE 2"` must always normalize by stripping whitespace (`"ct-ace2"`) before filtering `CONFIG.disabledModules`.
 - **Master Dashboard Preview vs Monitor Tray Iframes (`isMasterPreviewFrame`)**: Only `#preview-frame` inside `masteradmin.html` acts as Master broadcaster. `.monitor-thumb` iframes in `#monitor-tray` must load with `?noBroadcast=1&hideControls=1` so they never emit competing `SYNC_JUMP` or `CURRENT_SLIDE_BROADCAST` events.
-- **Module & Event Interleaving (`buildSlideQueue`)**: Active modules (`ct-mmr`, `ct-ace2`, `ct-quiz`, `ct-fir`, `ct-soc`, `ct-tik`, `ct-faceb`, `ct-insta`, `ct-loyalty`, `ct-west`, `ct-hallo`) are interleaved evenly with Google Sheet event slides (and default to `30s` hold when set to `"all"` outside draw windows) so displays never stall for 10+ minutes on front-loaded modules.
+- **Module & Event Interleaving (`buildSlideQueue`)**: Active modules (`ct-mmr`, `ct-ace2`, `ct-quiz`, `ct-fir`, `ct-soc`, `ct-tik`, `ct-faceb`, `ct-insta`, `ct-loyalty`, `ct-west`) are interleaved evenly with Google Sheet event slides (and default to `30s` hold when set to `"all"` outside draw windows) so displays never stall for 10+ minutes on front-loaded modules.
 - **Boot & Sync Resilience (`initMatrix` / `handleCloudState` / `handleLiveSlide`)**:
   - `setupSlideshowKeyboardNav()` and `setupBroadcastListener()` attach before `await loadAllDataSources()`.
   - `handleCloudState` ignores `LIVE_SLIDE: { active: false }` unless a live overlay is actually active, preventing `SYNC_STATE` from resetting the active slide timer.
